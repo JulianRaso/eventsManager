@@ -1,5 +1,6 @@
 interface InputProps {
   value: string;
+  name?: string;
   type?: string;
   min?: number;
   max?: number;
@@ -8,6 +9,7 @@ interface InputProps {
 
 export default function Input({
   value,
+  name,
   type,
   defaultValue,
   min,
@@ -15,6 +17,7 @@ export default function Input({
 }: InputProps) {
   return (
     <input
+      name={name}
       type={type}
       min={min}
       max={max}

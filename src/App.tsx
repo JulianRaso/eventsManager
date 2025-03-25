@@ -4,6 +4,7 @@ import Layout from "./routes/Layout";
 import Booking from "./routes/Booking";
 import Profile from "./routes/Profile";
 import AddBooking from "./components/AddBooking";
+import PageNotFound from "./routes/PageNotFound";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/iluminacion" element={<Dashboard />} />
         <Route path="/ambientacion" element={<Dashboard />} />
         <Route path="/perfil" element={<Profile />} />
+        <Route path="/*" element={<PageNotFound />} />
       </Route>
     </Routes>
   );

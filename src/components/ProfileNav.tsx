@@ -16,10 +16,12 @@ export default function ProfileNav({ display }: ProfileNavProps) {
   return (
     <NavLink
       to="/perfil"
-      className={`flex flex-col items-center text-xl p-1 hover:bg-gray-600 border-2 rounded-2xl
+      className={`flex flex-col items-center text-xl rounded-2xl ${
+        display ? "border-2 hover:bg-gray-600 p-2  " : ""
+      }
       `}
     >
-      <div className="text-4xl border-1 rounded-3xl p-2 ">
+      <div className="text-4xl border-1 rounded-3xl p-2 hover:bg-gray-600 ">
         {profilePicture != null ? profilePicture : <CiUser />}
       </div>
       {display ? name : ""}

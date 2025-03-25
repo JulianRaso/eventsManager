@@ -27,7 +27,10 @@ export default function Profile() {
           Apellido
           <input value={lastName} />
         </div>
-        <button disabled={true}>Guardar Cambios</button>
+        <div className="flex items-center justify-around">
+          <button>Cancelar</button>
+          <button disabled={true}>Guardar Cambios</button>
+        </div>
       </div>
     </div>
   );

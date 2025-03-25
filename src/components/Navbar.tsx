@@ -32,13 +32,13 @@ function Navbar() {
           )}
         </div>
         <div
-          className={`m-4 flex flex-col gap-4  items-center ${
+          className={`m-4 flex flex-col gap-4  items-center  ${
             display ? "" : "hidden"
           }`}
         >
           <img
             src={companyLogo}
-            className="w-[100px] h-[100px] rounded-3xl"
+            className="rounded-3xl w-[100px] h-[100px]"
             alt="company logo"
           />
           <div className="text-xl font-bold">{companyName}</div>
