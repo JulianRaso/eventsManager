@@ -70,31 +70,12 @@ const columns = [
 ];
 
 export default function Booking() {
-  const [data, setData] = useState(() => [...defaultData]);
+  const [data] = useState(() => [...defaultData]);
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
-
-  function handleSubmit() {
-    setData([
-      ...data,
-      {
-        id: 4,
-        firstName: "Test",
-        lastName: "Subject",
-        phoneNumber: "00000001",
-        date: "21-03-2025",
-        place: "Andes",
-        worker: "Test",
-        equipment: "",
-        price: 1000,
-        status: "pending",
-        paid: "seña",
-      },
-    ]);
-  }
 
   return (
     <div className="p-8 w-full ">
@@ -107,7 +88,7 @@ export default function Booking() {
         </NavLink>
       </div>
 
-      <table className="border-1 w-full ">
+      <table className="border-1 w-full">
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>

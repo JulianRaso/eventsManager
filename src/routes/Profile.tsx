@@ -1,16 +1,30 @@
 import { CiUser } from "react-icons/ci";
-import Input from "../ui/Input";
+import userData from "../_data/useData.json";
+import InputProfile from "../ui/InputProfile";
+import { useState } from "react";
+import { NavLink } from "react-router-dom";
 
 export default function Profile() {
-  const { name, lastName, profileImage } = {
-    name: "Test",
-    lastName: "Subject",
-    profileImage: null,
-  };
+  const [option, setOption] = useState(false);
+  const { name, lastName } = userData;
+  const profileImage = null;
+
+  function handleConfiguration(){
+    if(option != true) {
+      setOption(!option)
+      return
+    }
+    if(option) {
+      console.log(name);
+      setOption(!option)
+    }
+    
+
+  }
 
   return (
-    <div className="flex w-full items-center justify-center h-full text-xl">
-      <div className="border-2 rounded-2xl bg-gray-200 w-4/12 h-8/12 flex flex-col items-center justify-start gap-4 pt-16">
+    <div className="flex w-full items-center justify-center h-full sm:text-xl">
+      <div className="border-2 rounded-2xl bg-gray-200 flex flex-col items-center gap-4 p-8">
         <div className="text-5xl">
           {profileImage === null ? (
             <CiUser />
@@ -19,17 +33,20 @@ export default function Profile() {
             // <img src={profileImage} alt="profile picture" />
           )}
         </div>
-        <div className="flex flex-col">
-          Nombre
-          <Input value={name} />
+        
+        {/* Profile Information */}
+        <div className="flex flex-col w-full p-4 sm:p-8">
+
+        <InputProfile required={option} title="Nombre" inputValue={name} />
+        <InputProfile required={option} title="Apellido" inputValue={lastName} />
+        <InputProfile required={option} title="Email" inputValue={lastName} />
+        <InputProfile required={option} title="Telefono" inputValue={name} />
+
         </div>
-        <div>
-          Apellido
-          <input value={lastName} />
-        </div>
-        <div className="flex items-center justify-around">
-          <button>Cancelar</button>
-          <button disabled={true}>Guardar Cambios</button>
+
+        <div className="flex w-full justify-between items-center">
+        <NavLink to='/' className="border rounded-lg p-2">{option ? "Cancelar" : "Volver"}</NavLink>
+          <button onClick={() => handleConfiguration()} className="border rounded-lg p-2">{option ? "Guardar" : "Editar"}</button>
         </div>
       </div>
     </div>

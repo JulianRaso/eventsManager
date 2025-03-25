@@ -22,6 +22,7 @@ export default function AddBooking() {
       onSubmit={handleData}
     >
       <div className="border-1 w-8/12 md:w-5/12 p-8 rounded-2xl bg-bay-of-many-50 flex flex-col gap-8">
+        
         {/* Client Data */}
         <div className="flex flex-col gap-4 ">
           <div className="text-lg font-bold">Datos cliente</div>
@@ -46,15 +47,21 @@ export default function AddBooking() {
           </div>
         </div>
 
-        {/* //Event Equipment */}
+        {/* Event Equipment */}
         <div className="border-t-1">
           <div className="text-lg font-bold">Equipo</div>
           <div className="flex justify-between flex-wrap p-4">
-            <div>
-              <div>Iluminacion</div>
+            <div className="flex flex-col">
+              <div>Sonido</div>
+              <div className="border rounded-2xl p-1">Potencia 2x400w</div>
             </div>
             <div>
-              <div>Sonido</div>
+              <div>Iluminacion</div>
+              <div className="border rounded-2xl p-1">Tacho RGB</div>
+            </div>
+            <div>
+              <div>Ambientacion</div>
+              <div className="border rounded-2xl p-1">Entelado 4mts</div>
             </div>
           </div>
         </div>
@@ -70,7 +77,7 @@ export default function AddBooking() {
           ></textarea>
         </div>
 
-        {/* //Event states */}
+        {/* Event states */}
         <div className="flex justify-around flex-wrap border-t-1">
           <div className="flex flex-col">
             Estado Evento
