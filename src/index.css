@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bay-of-many-50: #f1f5fd;
+  --color-bay-of-many-100: #e0e8f9;
+  --color-bay-of-many-200: #c8d6f5;
+  --color-bay-of-many-300: #a1bcef;
+  --color-bay-of-many-400: #7599e5;
+  --color-bay-of-many-500: #5477dd;
+  --color-bay-of-many-600: #405bd0;
+  --color-bay-of-many-700: #3649bf;
+  --color-bay-of-many-800: #2f3a93;
+  --color-bay-of-many-900: #2d377b;
+  --color-bay-of-many-950: #1f234c;
+}
