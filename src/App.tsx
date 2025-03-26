@@ -5,6 +5,10 @@ import Booking from "./routes/Booking";
 import Profile from "./routes/Profile";
 import AddBooking from "./components/AddBooking";
 import PageNotFound from "./routes/PageNotFound";
+import HumandResource from "./routes/HumandResource";
+import Sound from "./routes/Sound";
+import Lightning from "./routes/Lightning";
+import Decoration from "./routes/Decoration";
 
 function App() {
   return (
@@ -18,10 +22,18 @@ function App() {
           <Route path="/reservas/agendar" element={<AddBooking />} />
         </Route>
 
-        <Route path="/personal" element={<Dashboard />} />
-        <Route path="/sonido" element={<Dashboard />} />
-        <Route path="/iluminacion" element={<Dashboard />} />
-        <Route path="/ambientacion" element={<Dashboard />} />
+        <Route path="/personal" element={<HumandResource />} />
+
+
+        <Route path="/sonido" element={<Sound />} />
+
+
+        <Route path="/iluminacion" element={<Lightning />} />
+
+
+        <Route path="/ambientacion" element={<Decoration />} />
+
+
         <Route path="/perfil" element={<Profile />} />
         <Route path="/*" element={<PageNotFound />} />
       </Route>

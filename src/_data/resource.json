@@ -1,0 +1,16 @@
+[
+    {
+        "id": 1,
+        "name": "Test",
+        "lastName": "Subject",
+        "phoneNumber": "",
+        "area": "Sonido"
+    },
+    {
+        "id": 2,
+        "name": "Test",
+        "lastName": "Subject",
+        "phoneNumber": "",
+        "area": "Entelado"
+    }
+]
