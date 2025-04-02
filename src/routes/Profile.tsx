@@ -1,6 +1,6 @@
 import { CiUser } from "react-icons/ci";
 import userData from "../_data/useData.json";
-import InputProfile from "../ui/InputProfile";
+import InputProfile from "../components/ui/InputProfile";
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 
@@ -9,17 +9,15 @@ export default function Profile() {
   const { name, lastName } = userData;
   const profileImage = null;
 
-  function handleConfiguration(){
-    if(option != true) {
-      setOption(!option)
-      return
+  function handleConfiguration() {
+    if (option != true) {
+      setOption(!option);
+      return;
     }
-    if(option) {
+    if (option) {
       console.log(name);
-      setOption(!option)
+      setOption(!option);
     }
-    
-
   }
 
   return (
@@ -33,20 +31,29 @@ export default function Profile() {
             // <img src={profileImage} alt="profile picture" />
           )}
         </div>
-        
+
         {/* Profile Information */}
         <div className="flex flex-col w-full p-4 sm:p-8">
-
-        <InputProfile required={option} title="Nombre" inputValue={name} />
-        <InputProfile required={option} title="Apellido" inputValue={lastName} />
-        <InputProfile required={option} title="Email" inputValue={lastName} />
-        <InputProfile required={option} title="Telefono" inputValue={name} />
-
+          <InputProfile required={option} title="Nombre" inputValue={name} />
+          <InputProfile
+            required={option}
+            title="Apellido"
+            inputValue={lastName}
+          />
+          <InputProfile required={option} title="Email" inputValue={lastName} />
+          <InputProfile required={option} title="Telefono" inputValue={name} />
         </div>
 
         <div className="flex w-full justify-between items-center">
-        <NavLink to='/' className="border rounded-lg p-2">{option ? "Cancelar" : "Volver"}</NavLink>
-          <button onClick={() => handleConfiguration()} className="border rounded-lg p-2">{option ? "Guardar" : "Editar"}</button>
+          <NavLink to="/" className="border rounded-lg p-2">
+            {option ? "Cancelar" : "Volver"}
+          </NavLink>
+          <button
+            onClick={() => handleConfiguration()}
+            className="border rounded-lg p-2"
+          >
+            {option ? "Guardar" : "Editar"}
+          </button>
         </div>
       </div>
     </div>

@@ -10,7 +10,7 @@ import { TfiBlackboard } from "react-icons/tfi";
 import companyLogo from "../assets/ShowRental.png";
 
 //UI
-import NavButton from "../ui/NavButton";
+import NavButton from "./ui/NavButton";
 import ProfileNav from "./ProfileNav";
 
 function Navbar() {

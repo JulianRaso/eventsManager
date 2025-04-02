@@ -3,6 +3,7 @@ import { IoMdAdd } from "react-icons/io";
 import { NavLink } from "react-router-dom";
 import Spinner from "../components/Spinner";
 import { getBookings } from "../services/data";
+import { Button } from "../components/ui/button";
 
 export default function Bookings() {
   const { data = [], isLoading } = useQuery({
@@ -21,6 +22,7 @@ export default function Bookings() {
         >
           <IoMdAdd />
         </NavLink>
+        <Button variant="destructive">Test</Button>
       </div>
 
       <table className="min-w-full border-collapse table-auto">
@@ -56,6 +58,7 @@ export default function Bookings() {
             <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-600">
               Estado Pago
             </th>
+            <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-600"></th>
           </tr>
         </thead>
         <tbody>
@@ -99,6 +102,7 @@ export default function Bookings() {
               <td className="px-4 py-2 border-b text-md text-gray-800">
                 {item.paid_status}
               </td>
+              <td className="border-b text-gray-800">Edit</td>
             </tr>
           ))}
         </tbody>
