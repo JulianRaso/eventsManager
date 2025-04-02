@@ -1,11 +1,8 @@
 export default function EventBooking() {
   return (
-    <div>
-      <div className="border-1 rounded-xl p-2 bg-gray-100 flex justify-center">
-        Precio ${0}
-      </div>
+    <div className="flex flex-col gap-4">
       {/* Event Equipment */}
-      <div className="border-t-1">
+      <div className="">
         <div className="text-lg font-bold">Equipo</div>
         <div className="flex justify-between flex-wrap p-4">
           <div className="flex flex-col">
@@ -66,6 +63,9 @@ export default function EventBooking() {
             </option>
           </select>
         </div>
+      </div>
+      <div className="border-1 rounded-xl p-2 bg-gray-100 flex justify-center items-center">
+        Precio ${0}
       </div>
     </div>
   );

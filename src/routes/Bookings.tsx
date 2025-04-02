@@ -1,58 +1,50 @@
+import { useQuery } from "@tanstack/react-query";
 import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { useState } from "react";
 import { IoMdAdd } from "react-icons/io";
-import data from "../_data/data.json";
 import { NavLink } from "react-router-dom";
+import { getBookings } from "../services/data";
 
-type Person = {
+type Booking = {
   id: number;
-  firstName: string;
+  name: string;
   lastName: string;
   phoneNumber: string;
-  date: string;
+  event_date: string;
   place: string;
-  worker: string;
   equipment: string;
   price: number;
-  status: string;
-  paid: string;
+  booking_status: string;
+  paid_status: string;
 };
 
-const defaultData: Person[] = data;
-
-const columnHelper = createColumnHelper<Person>();
+const columnHelper = createColumnHelper<Booking>();
 
 const columns = [
   columnHelper.accessor("id", {
     header: "ID",
   }),
-  columnHelper.accessor("firstName", {
+  columnHelper.accessor("name", {
     header: () => <span>Nombre</span>,
     cell: (info) => info.getValue(),
   }),
-  columnHelper.accessor((row) => row.lastName, {
-    id: "lastName",
-    cell: (info) => <i>{info.getValue()}</i>,
+  columnHelper.accessor("lastName", {
     header: () => <span>Apellido</span>,
+    cell: (info) => <i>{info.getValue()}</i>,
   }),
   columnHelper.accessor("phoneNumber", {
     header: () => "Contacto",
     cell: (info) => info.renderValue(),
   }),
-  columnHelper.accessor("date", {
+  columnHelper.accessor("event_date", {
     header: () => <span>Fecha</span>,
   }),
   columnHelper.accessor("place", {
     header: "Ubicación",
-    cell: (info) => info.renderValue(),
-  }),
-  columnHelper.accessor("worker", {
-    header: "Personal",
     cell: (info) => info.renderValue(),
   }),
   columnHelper.accessor("equipment", {
@@ -61,21 +53,29 @@ const columns = [
   columnHelper.accessor("price", {
     header: "Precio",
   }),
-  columnHelper.accessor("status", {
+  columnHelper.accessor("booking_status", {
     header: "Status",
   }),
-  columnHelper.accessor("paid", {
+  columnHelper.accessor("paid_status", {
     header: "Estado Pago",
   }),
 ];
 
 export default function Bookings() {
-  const [data] = useState(() => [...defaultData]);
+  const { data = [], isLoading } = useQuery({
+    queryKey: ["bookings"],
+    queryFn: getBookings,
+  });
+
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
+
+  if (isLoading) {
+    return <div>Data is Loading....</div>;
+  }
 
   return (
     <div className="p-8 w-full ">

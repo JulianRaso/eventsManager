@@ -1,0 +1,13 @@
+const [booking, setBooking] = useState({
+    name: "",
+    lastName: "",
+    phoneNumber: null,
+    date: new Date().toISOString().split("T")[0],
+    location: "",
+    soundEquipment: [],
+    iluminationEquipment: [],
+    decoration: [],
+    price: null,
+    status: "",
+    paymentStatus: "",
+  });

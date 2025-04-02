@@ -1,30 +1,15 @@
-import { useOutletContext } from "react-router-dom";
-
-// interface ClientContext {
-//   const { client, setClient } = useOutletContext<ClientContext>();
-//     name: string;
-//     lastName: string;
-//     phoneNumber: string;
-//     date: string;
-//     location: string;
-//   };
-//   setClient: (client: {
-//     name: string;
-//     lastName: string;
-//     phoneNumber: string;
-//     date: string;
-//     location: string;
-//   }) => void;
-// }
-
 export default function ClientBooking() {
-  const { client, setClient } = useOutletContext();
-  const { name, lastName, phoneNumber, date, location } = client;
+  const { name, lastName, phoneNumber, location } = {
+    name: "test",
+    lastName: "subject",
+    phoneNumber: "0000000000",
+    location: "Andes",
+  };
 
   return (
-    <div>
+    <div className="flex flex-col gap-6">
       {/* Client Data */}
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         <div className="text-lg font-bold flex gap-1">
           Datos cliente <p className="text-red-500">*</p>
         </div>
@@ -35,9 +20,9 @@ export default function ClientBooking() {
             defaultValue={name}
             placeholder="Nombre Cliente"
             className=" rounded-xl p-2 w-6/12 hover:bg-gray-100 outline-2"
-            onChange={(event) =>
-              setClient({ ...client, name: event.target.value })
-            }
+            // onChange={(event) =>
+            //   setClient({ ...client, name: event.target.value })
+            // }
             required
           />
           <input
@@ -46,27 +31,28 @@ export default function ClientBooking() {
             defaultValue={lastName}
             placeholder="Apellido Cliente"
             className=" rounded-xl p-2 w-6/12 hover:bg-gray-100 outline-2"
-            onChange={(event) =>
-              setClient({ ...client, lastName: event.target.value })
-            }
+            // onChange={(event) =>
+            //   // setClient({ ...client, lastName: event.target.value })
+            // }
             required
           />
           <input
             type="text"
             name="phone"
-            defaultValue={phoneNumber}
+            defaultValue={phoneNumber != null ? phoneNumber : 0}
             placeholder="Telefono Cliente"
             className=" rounded-xl p-2 w-6/12 hover:bg-gray-100 outline-2"
-            onChange={(event) =>
-              setClient({ ...client, phoneNumber: event.target.value })
-            }
+            // onChange={(event) =>
+            //   // setClient({ ...client, phoneNumber: event.target.value })
+
+            // }
             required
           />
         </div>
       </div>
 
       {/* Event Information */}
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         <div className="text-lg font-bold">Evento</div>
         <div className="flex flex-col items-center gap-8">
           <input
@@ -75,20 +61,20 @@ export default function ClientBooking() {
             defaultValue={location}
             placeholder="Nombre/Ubicacion del salon"
             className=" rounded-xl p-2 w-6/12 hover:bg-gray-100 outline-2"
-            onChange={(eventLocation) =>
-              setClient({
-                ...client,
-                location: eventLocation.target.value,
-              })
-            }
+            // onChange={(eventLocation) =>
+            //   setClient({
+            //     ...client,
+            //     location: eventLocation.target.value,
+            //   })
+            // }
           />
 
           <input
             type="date"
-            value={date}
-            onChange={(eventDate) =>
-              setClient({ ...client, date: eventDate.target.value })
-            }
+            // value={date}
+            // onChange={(eventDate) =>
+            //   setClient({ ...client, date: eventDate.target.value })
+            // }
             className=" rounded-xl p-2 w-6/12 hover:bg-gray-100 outline-2"
           />
         </div>
