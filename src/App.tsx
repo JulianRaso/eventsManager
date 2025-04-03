@@ -1,3 +1,5 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Route, Routes } from "react-router-dom";
 import ClientBooking from "./components/Booking/ClientBooking";
 import EventBooking from "./components/Booking/EventBooking";
@@ -11,8 +13,6 @@ import Lightning from "./routes/Lightning";
 import PageNotFound from "./routes/PageNotFound";
 import Profile from "./routes/Profile";
 import Sound from "./routes/Sound";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 const queryClient = new QueryClient({
   defaultOptions: {

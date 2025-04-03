@@ -1,12 +1,15 @@
-import { CiUser } from "react-icons/ci";
-import userData from "../_data/useData.json";
-import InputProfile from "../components/ui/InputProfile";
 import { useState } from "react";
+import { CiUser } from "react-icons/ci";
 import { NavLink } from "react-router-dom";
+import InputProfile from "../components/ui/InputProfile";
 
 export default function Profile() {
   const [option, setOption] = useState(false);
-  const { name, lastName } = userData;
+  const { displayName, email, password } = {
+    displayName: "Test",
+    email: "user@example.com",
+    password: "",
+  };
   const profileImage = null;
 
   function handleConfiguration() {
@@ -15,42 +18,56 @@ export default function Profile() {
       return;
     }
     if (option) {
-      console.log(name);
       setOption(!option);
     }
   }
 
   return (
-    <div className="flex w-full items-center justify-center h-full sm:text-xl">
-      <div className="border-2 rounded-2xl bg-gray-200 flex flex-col items-center gap-4 p-8">
-        <div className="text-5xl">
+    <div className="flex w-full items-center justify-center h-full sm:text-xl bg-gray-100">
+      <div className="border-2 rounded-3xl bg-white shadow-lg flex flex-col items-center gap-6 p-8 max-w-lg w-full">
+        {!logInStatus ? "Falso" : "Verdadero"}
+        <div className="text-6xl mb-4">
           {profileImage === null ? (
-            <CiUser />
+            <CiUser className="text-gray-500" />
           ) : (
+            // <img src={profileImage} alt="profile picture" className="rounded-full w-24 h-24 object-cover" />
             ""
-            // <img src={profileImage} alt="profile picture" />
           )}
         </div>
 
         {/* Profile Information */}
-        <div className="flex flex-col w-full p-4 sm:p-8">
-          <InputProfile required={option} title="Nombre" inputValue={name} />
+        <div className="flex flex-col w-full gap-6 p-4 sm:p-8">
           <InputProfile
             required={option}
-            title="Apellido"
-            inputValue={lastName}
+            title="Nombre"
+            inputValue={displayName}
+            disabled={!option}
           />
-          <InputProfile required={option} title="Email" inputValue={lastName} />
-          <InputProfile required={option} title="Telefono" inputValue={name} />
+          <InputProfile
+            required={option}
+            title="Email"
+            inputValue={email}
+            disabled={!option}
+          />
+          <InputProfile
+            required={option}
+            title="Contraseña"
+            inputValue={password}
+            disabled={!option}
+          />
         </div>
 
-        <div className="flex w-full justify-between items-center">
-          <NavLink to="/" className="border rounded-lg p-2">
+        {/* Action Buttons */}
+        <div className="flex w-full justify-between items-center mt-6">
+          <NavLink
+            to="/"
+            className="bg-gray-300 text-gray-800 hover:bg-gray-400 rounded-lg py-2 px-4 transition duration-300"
+          >
             {option ? "Cancelar" : "Volver"}
           </NavLink>
           <button
             onClick={() => handleConfiguration()}
-            className="border rounded-lg p-2"
+            className="bg-blue-500 text-white hover:bg-blue-600 rounded-lg py-2 px-4 transition duration-300"
           >
             {option ? "Guardar" : "Editar"}
           </button>
