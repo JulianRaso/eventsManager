@@ -54,7 +54,7 @@ const filterByStatus = [
   },
 ];
 
-function formatDate(date) {
+function formatDate(date: string) {
   const dateArr = date.split("-");
   const formatedDate = dateArr.reverse().join("/");
   return formatedDate;
