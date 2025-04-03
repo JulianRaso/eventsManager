@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { getLights } from "../services/data";
 import Spinner from "../components/Spinner";
+import { getStock } from "../services/data";
 
 export default function Lightning() {
   const { data, isLoading } = useQuery({
     queryKey: ["lights"],
-    queryFn: getLights,
+    queryFn: () => getStock({ category: "lights" }),
   });
 
   if (isLoading) return <Spinner />;

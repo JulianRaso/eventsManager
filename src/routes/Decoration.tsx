@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { getDecoration } from "../services/data";
 import Spinner from "../components/Spinner";
+import { getStock } from "../services/data";
 
 export default function Decoration() {
   const { data, isLoading } = useQuery({
     queryKey: ["decoration"],
-    queryFn: getDecoration,
+    queryFn: () => getStock({ category: "decoration" }),
   });
 
   if (isLoading) return <Spinner />;

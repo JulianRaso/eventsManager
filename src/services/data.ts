@@ -1,14 +1,9 @@
 import { supabase } from "./supabase";
 
+//Get data from database
 export async function getBookings() {
   const { data, error } = await supabase.from("booking").select(`
-      id, 
-      booking_status, 
-      paid_status, 
-      place, 
-      event_date, 
-      created_at, 
-      client_id, 
+      *, 
       client(name, lastName, phoneNumber)
     `);
 
@@ -19,26 +14,16 @@ export async function getBookings() {
   return data;
 }
 
-export async function getLights() {
+export async function getStock({ category }: { category: string }) {
   const { data, error } = await supabase
     .from("equipment_stock")
     .select("*")
-    .eq("type", "Iluminacion");
+    .eq("category", category);
 
   if (error) {
-    throw new Error("There was an error while loading bookings");
+    throw new Error(`There was an error while loading ${category}`);
   }
   return data;
 }
 
-export async function getDecoration() {
-  const { data, error } = await supabase
-    .from("equipment_stock")
-    .select("*")
-    .eq("type", "Ambientacion");
-
-  if (error) {
-    throw new Error("There was an error while loading bookings");
-  }
-  return data;
-}
+//Insert data to Database
