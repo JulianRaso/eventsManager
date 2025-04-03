@@ -16,11 +16,7 @@ export async function getBookings() {
     throw new Error("There was an error while loading bookings");
   }
 
-  return data.map((booking) => ({
-    ...booking,
-    ...booking.client, // Merge client fields directly into the booking object
-    client: undefined, // Remove the nested client object
-  }));
+  return data;
 }
 
 export async function getLights() {
