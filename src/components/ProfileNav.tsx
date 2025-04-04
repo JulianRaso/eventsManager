@@ -16,16 +16,25 @@ export default function ProfileNav({ display }: ProfileNavProps) {
   return (
     <NavLink
       to="/perfil"
-      className={`flex flex-col items-center text-xl rounded-2xl ${
-        display ? "border-2 hover:bg-gray-600 p-2  " : ""
-      }
-      `}
+      className={`flex flex-col items-center text-xl rounded-2xl transition-all duration-300 ${
+        display ? "border-2 hover:bg-gray-600 p-3" : ""
+      }`}
     >
-      <div className="text-4xl border-1 rounded-3xl p-2 hover:bg-gray-600 ">
+      <div className="text-4xl border-2 rounded-3xl p-3 hover:bg-gray-600 cursor-pointer transition-all duration-300">
         {profilePicture != null ? profilePicture : <CiUser />}
       </div>
-      {display ? name : ""}
-      {display ? <div className="text-xs">#{id}</div> : ""}
+      {display ? (
+        <div className="text-lg font-semibold mt-2 transition-all duration-300">
+          {name}
+        </div>
+      ) : (
+        ""
+      )}
+      {display ? (
+        <div className="text-xs mt-1 transition-all duration-300">#{id}</div>
+      ) : (
+        ""
+      )}
     </NavLink>
   );
 }
