@@ -30,6 +30,7 @@ import {
 import { cn } from "../lib/utils";
 import { getBookings } from "../services/data";
 import Row from "../components/ui/Row";
+import Data from "../components/ui/Data";
 
 const filterByStatus = [
   {
@@ -136,7 +137,7 @@ export default function Bookings() {
       <table className="min-w-full border-collapse table-auto ">
         <thead className="bg-gray-100">
           <tr>
-            <Row>ID</Row>
+            <td></td>
             <Row>Nombre</Row>
             <Row>Apellido</Row>
             <Row>Contacto</Row>
@@ -145,7 +146,7 @@ export default function Bookings() {
             <Row>Estado</Row>
             <Row>Estado pago</Row>
             <Row>Precio</Row>
-            <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-600"></th>
+            <Row>Acciones</Row>
           </tr>
         </thead>
         <tbody>
@@ -159,25 +160,13 @@ export default function Bookings() {
             })
             .map((item, index) => (
               <tr key={index} className="hover:bg-gray-50">
-                <td className="px-4 py-2 border-b text-md text-gray-800">
-                  {item.id}
-                </td>
-                <td className="px-4 py-2 border-b text-md text-gray-800">
-                  {item.client.name}
-                </td>
-                <td className="px-4 py-2 border-b text-md text-gray-800">
-                  {item.client.lastName}
-                </td>
-                <td className="px-4 py-2 border-b text-md text-gray-800">
-                  {item.client.phoneNumber}
-                </td>
-                <td className="px-4 py-2 border-b text-md text-gray-800">
-                  {formatDate(item.event_date)}
-                </td>
-                <td className="px-4 py-2 border-b text-md text-gray-800">
-                  {item.place}
-                </td>
-                <td className="px-4 py-2 border-b text-md text-gray-800">
+                <Data>{index + 1}</Data>
+                <Data>{item.client.name}</Data>
+                <Data>{item.client.lastName}</Data>
+                <Data>{item.client.phoneNumber}</Data>
+                <Data>{formatDate(item.event_date)}</Data>
+                <Data>{item.place}</Data>
+                <Data>
                   <p
                     className={`w-fit rounded-xl p-1.5 ${
                       item.booking_status === "confirm"
@@ -193,18 +182,16 @@ export default function Bookings() {
                       ? "Confirmado"
                       : "Cancelado"}
                   </p>
-                </td>
-                <td className="px-4 py-2 border-b text-md text-gray-800">
+                </Data>
+                <Data>
                   {item.paid_status === "pending"
                     ? "Pendiente"
                     : item.paid_status === "partially_paid"
                     ? "Señado"
                     : "Abonado"}
-                </td>
-                <td className="px-4 py-2 border-b text-md text-gray-800">
-                  {item.price}
-                </td>
-                <td className="border-b text-gray-800">Edit</td>
+                </Data>
+                <Data>{item.price}</Data>
+                <Data>Edit</Data>
               </tr>
             ))}
         </tbody>
