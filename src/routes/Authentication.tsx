@@ -6,6 +6,11 @@ export default function Authentication({ auth, setAuth, children }) {
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
+  function handleLocalStore(account, password) {
+    localStorage.setItem("account_email", account);
+    localStorage.setItem("account_password", account);
+  }
+
   const handleLogin = async () => {
     setAuth(await logIn({ email, password }));
   };
@@ -60,7 +65,6 @@ export default function Authentication({ auth, setAuth, children }) {
                   type="checkbox"
                   id="remember"
                   className="h-4 w-4 border-gray-300 rounded-md"
-                  required
                 />
                 <label htmlFor="remember" className="text-sm font-semibold">
                   Recordar contraseña

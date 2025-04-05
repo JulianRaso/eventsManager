@@ -3,6 +3,8 @@ import { Check, ChevronsUpDown } from "lucide-react";
 import { useState } from "react";
 import { IoMdAdd } from "react-icons/io";
 import { NavLink } from "react-router-dom";
+import BookingData from "../components/Bookings/BookingData";
+import BookingRow from "../components/Bookings/BookingRow";
 import Spinner from "../components/Spinner";
 import { Button } from "../components/ui/button";
 import {
@@ -29,8 +31,6 @@ import {
 } from "../components/ui/popover";
 import { cn } from "../lib/utils";
 import { getBookings } from "../services/data";
-import Row from "../components/ui/Row";
-import Data from "../components/ui/Data";
 
 const filterByStatus = [
   {
@@ -54,12 +54,6 @@ const filterByStatus = [
     label: "Señado",
   },
 ];
-
-function formatDate(date: string) {
-  const dateArr = date.split("-");
-  const formatedDate = dateArr.reverse().join("/");
-  return formatedDate;
-}
 
 export default function Bookings() {
   const { data = [], isLoading } = useQuery({
@@ -136,18 +130,7 @@ export default function Bookings() {
 
       <table className="min-w-full border-collapse table-auto ">
         <thead className="bg-gray-100">
-          <tr>
-            <td></td>
-            <Row>Nombre</Row>
-            <Row>Apellido</Row>
-            <Row>Contacto</Row>
-            <Row>Fecha</Row>
-            <Row>Ubicacion</Row>
-            <Row>Estado</Row>
-            <Row>Estado pago</Row>
-            <Row>Precio</Row>
-            <Row>Acciones</Row>
-          </tr>
+          <BookingData />
         </thead>
         <tbody>
           {data
@@ -159,40 +142,7 @@ export default function Bookings() {
                     .includes(filterByName.toLowerCase());
             })
             .map((item, index) => (
-              <tr key={index} className="hover:bg-gray-50">
-                <Data>{index + 1}</Data>
-                <Data>{item.client.name}</Data>
-                <Data>{item.client.lastName}</Data>
-                <Data>{item.client.phoneNumber}</Data>
-                <Data>{formatDate(item.event_date)}</Data>
-                <Data>{item.place}</Data>
-                <Data>
-                  <p
-                    className={`w-fit rounded-xl p-1.5 ${
-                      item.booking_status === "confirm"
-                        ? "bg-green-300"
-                        : item.booking_status === "pending"
-                        ? "bg-amber-300"
-                        : "bg-red-500"
-                    }`}
-                  >
-                    {item.booking_status === "pending"
-                      ? "Pendiente"
-                      : item.booking_status === "confirm"
-                      ? "Confirmado"
-                      : "Cancelado"}
-                  </p>
-                </Data>
-                <Data>
-                  {item.paid_status === "pending"
-                    ? "Pendiente"
-                    : item.paid_status === "partially_paid"
-                    ? "Señado"
-                    : "Abonado"}
-                </Data>
-                <Data>{item.price}</Data>
-                <Data>Edit</Data>
-              </tr>
+              <BookingRow key={index} booking={item} index={index} />
             ))}
         </tbody>
       </table>

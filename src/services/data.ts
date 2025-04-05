@@ -27,12 +27,11 @@ export async function getStock({ category }: { category: string }) {
 }
 
 //Insert data to Database
-async function addBooking(clientID: number, booking: object) {
+async function addBooking(booking: object) {
   const { data: bookingData, error: bookingError } = await supabase
     .from("booking")
     .insert([
       {
-        client_id: clientID,
         ...booking,
       },
     ])
@@ -44,10 +43,29 @@ async function addBooking(clientID: number, booking: object) {
   return bookingData;
 }
 
-export async function createBooking(clientData: object, booking: object) {
+interface BookingData {
+  name: string;
+  lastName: string;
+  phoneNumber: string;
+  email: string;
+  booking_status: string;
+  comments: string;
+  event_date: string;
+  payment_status: string;
+  location: string;
+}
+
+export async function createBooking(data: BookingData) {
   const { data: client, error } = await supabase
     .from("client")
-    .insert([clientData])
+    .insert([
+      {
+        name: data.name,
+        lastName: data.lastName,
+        phoneNumber: data.phoneNumber,
+        email: data.email,
+      },
+    ])
     .select();
 
   if (error) {
@@ -55,6 +73,21 @@ export async function createBooking(clientData: object, booking: object) {
   }
 
   if (client[0].id) {
-    addBooking(client[0].id, booking);
+    return addBooking({
+      client_id: client[0].id,
+      event_date: data.event_date,
+      place: data.location,
+      booking_status: data.booking_status,
+      payment_status: data.payment_status,
+      comments: data.comments,
+    });
+  }
+}
+
+export async function deleteBooking(id: number) {
+  const { error } = await supabase.from("booking").delete().eq("id", id);
+
+  if (error) {
+    throw new Error(`There was an error while deleting a booking`);
   }
 }

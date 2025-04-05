@@ -1,8 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Route, Routes } from "react-router-dom";
-import ClientBooking from "./components/Booking/ClientBooking";
-import EventBooking from "./components/Booking/EventBooking";
 import Booking from "./routes/Booking";
 import Bookings from "./routes/Bookings";
 import Dashboard from "./routes/Dashboard";
@@ -15,6 +13,7 @@ import Profile from "./routes/Profile";
 import Sound from "./routes/Sound";
 import Authentication from "./routes/Authentication";
 import { useState } from "react";
+import { Toaster } from "react-hot-toast";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -38,13 +37,10 @@ function App() {
             <Route path="/reservas">
               <Route index element={<Bookings />} />
               <Route path="/reservas/reserva" element={<Booking />}>
+                <Route path="/reservas/reserva/agendar" element={<Booking />} />
                 <Route
-                  path="/reservas/reserva/agendar"
-                  element={<ClientBooking />}
-                />
-                <Route
-                  path="/reservas/reserva/agendar/evento"
-                  element={<EventBooking />}
+                  path="/reservas/reserva/:bookingId"
+                  element={<Booking />}
                 />
               </Route>
             </Route>
@@ -62,6 +58,25 @@ function App() {
           </Route>
         </Routes>
       </Authentication>
+      <Toaster
+        position="top-center"
+        gutter={12}
+        containerStyle={{ margin: "8px" }}
+        toastOptions={{
+          success: {
+            duration: 3000,
+          },
+          error: {
+            duration: 5000,
+          },
+          style: {
+            fontSize: "16px",
+            maxWidth: "500px",
+            padding: "16px 24px",
+            backgroundColor: "lightgray",
+          },
+        }}
+      />
     </QueryClientProvider>
   );
 }
