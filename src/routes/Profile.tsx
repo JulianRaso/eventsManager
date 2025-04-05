@@ -1,30 +1,21 @@
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { CiUser } from "react-icons/ci";
 import { NavLink } from "react-router-dom";
+import Spinner from "../components/Spinner";
 import InputProfile from "../components/ui/InputProfile";
-import { getUserData, logIn } from "../services/user";
+import { getUserData } from "../services/user";
 
 export default function Profile() {
   const [option, setOption] = useState(false);
-  const { displayName, email, password } = {
-    displayName: "Test",
-    email: "user@example.com",
-    password: "",
-  };
+  const { data, isLoading } = useQuery({
+    queryKey: ["userData"],
+    queryFn: getUserData,
+  });
   const profileImage = null;
 
-  const userLogIn = async () => {
-    return await logIn({ email, password });
-  };
-
-  userLogIn();
-  const userData = async () => {
-    return await getUserData();
-  };
-  userData();
-
   function handleConfiguration() {
-    if (option != true) {
+    if (!option) {
       setOption(!option);
       return;
     }
@@ -32,6 +23,8 @@ export default function Profile() {
       setOption(!option);
     }
   }
+
+  if (isLoading) return <Spinner />;
 
   return (
     <div className="flex w-full items-center justify-center h-full sm:text-xl bg-gray-100">
@@ -50,21 +43,23 @@ export default function Profile() {
           <InputProfile
             required={option}
             title="Nombre"
-            inputValue={displayName}
+            inputValue=""
             disabled={!option}
           />
           <InputProfile
             required={option}
             title="Email"
-            inputValue={email}
+            inputValue={data?.email || ""}
             disabled={!option}
           />
-          <InputProfile
-            required={option}
-            title="Contraseña"
-            inputValue={password}
-            disabled={!option}
-          />
+          {option && (
+            <InputProfile
+              required={option}
+              title="Contraseña"
+              inputValue=""
+              disabled={!option}
+            />
+          )}
         </div>
 
         {/* Action Buttons */}

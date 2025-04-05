@@ -13,6 +13,8 @@ import Lightning from "./routes/Lightning";
 import PageNotFound from "./routes/PageNotFound";
 import Profile from "./routes/Profile";
 import Sound from "./routes/Sound";
+import Authentication from "./routes/Authentication";
+import { useState } from "react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,40 +25,43 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  const [auth, setAuth] = useState(false);
   return (
     <QueryClientProvider client={queryClient}>
       <ReactQueryDevtools initialIsOpen={false} />
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+      <Authentication auth={auth} setAuth={setAuth}>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="/dashboard" element={<Dashboard />} />
 
-          <Route path="/reservas">
-            <Route index element={<Bookings />} />
-            <Route path="/reservas/reserva" element={<Booking />}>
-              <Route
-                path="/reservas/reserva/agendar"
-                element={<ClientBooking />}
-              />
-              <Route
-                path="/reservas/reserva/agendar/evento"
-                element={<EventBooking />}
-              />
+            <Route path="/reservas">
+              <Route index element={<Bookings />} />
+              <Route path="/reservas/reserva" element={<Booking />}>
+                <Route
+                  path="/reservas/reserva/agendar"
+                  element={<ClientBooking />}
+                />
+                <Route
+                  path="/reservas/reserva/agendar/evento"
+                  element={<EventBooking />}
+                />
+              </Route>
             </Route>
+
+            <Route path="/personal" element={<HumandResource />} />
+
+            <Route path="/sonido" element={<Sound />} />
+
+            <Route path="/iluminacion" element={<Lightning />} />
+
+            <Route path="/ambientacion" element={<Decoration />} />
+
+            <Route path="/perfil" element={<Profile />} />
+            <Route path="/*" element={<PageNotFound />} />
           </Route>
-
-          <Route path="/personal" element={<HumandResource />} />
-
-          <Route path="/sonido" element={<Sound />} />
-
-          <Route path="/iluminacion" element={<Lightning />} />
-
-          <Route path="/ambientacion" element={<Decoration />} />
-
-          <Route path="/perfil" element={<Profile />} />
-          <Route path="/*" element={<PageNotFound />} />
-        </Route>
-      </Routes>
+        </Routes>
+      </Authentication>
     </QueryClientProvider>
   );
 }
