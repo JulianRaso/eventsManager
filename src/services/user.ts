@@ -18,7 +18,7 @@ async function signUp({ email, password }: userProps) {
   return data;
 }
 
-async function logIn(email, password) {
+async function logIn({ email, password }: userProps) {
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -36,7 +36,6 @@ async function logOut() {
 
   if (error) {
     throw new Error("There was an error trying to Log Out. Please try again!");
-    return error;
   }
 
   return "sucess";
@@ -57,4 +56,30 @@ async function updateUser({ email, password }: userProps) {
   return data;
 }
 
-export { signUp, logIn, logOut, updateUser };
+export async function getUserData() {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("No user found");
+  }
+
+  console.log(user);
+
+  return user;
+}
+
+async function inviteUser(email: string) {
+  const { data, error } = await supabase.auth.admin.inviteUserByEmail(email);
+
+  if (error) {
+    throw new Error(
+      "There was an error trying to invite the user. Please try again!"
+    );
+  }
+
+  return data;
+}
+
+export { signUp, logIn, logOut, updateUser, inviteUser };

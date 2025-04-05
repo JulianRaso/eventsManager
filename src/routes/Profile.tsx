@@ -2,6 +2,7 @@ import { useState } from "react";
 import { CiUser } from "react-icons/ci";
 import { NavLink } from "react-router-dom";
 import InputProfile from "../components/ui/InputProfile";
+import { getUserData, logIn } from "../services/user";
 
 export default function Profile() {
   const [option, setOption] = useState(false);
@@ -11,6 +12,16 @@ export default function Profile() {
     password: "",
   };
   const profileImage = null;
+
+  const userLogIn = async () => {
+    return await logIn({ email, password });
+  };
+
+  userLogIn();
+  const userData = async () => {
+    return await getUserData();
+  };
+  userData();
 
   function handleConfiguration() {
     if (option != true) {
@@ -25,7 +36,6 @@ export default function Profile() {
   return (
     <div className="flex w-full items-center justify-center h-full sm:text-xl bg-gray-100">
       <div className="border-2 rounded-3xl bg-white shadow-lg flex flex-col items-center gap-6 p-8 max-w-lg w-full">
-        {!logInStatus ? "Falso" : "Verdadero"}
         <div className="text-6xl mb-4">
           {profileImage === null ? (
             <CiUser className="text-gray-500" />
