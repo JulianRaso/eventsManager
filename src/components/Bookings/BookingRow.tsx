@@ -1,8 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteBooking } from "../../services/data";
+import { useNavigate } from "react-router-dom";
+import { useDeleteBooking } from "../../hooks/useDeleteBooking";
 import TableData from "../ui/TableData";
 import { Button } from "../ui/button";
-import toast from "react-hot-toast";
 
 function formatDate(date: string) {
   const dateArr = date.split("-");
@@ -31,17 +30,8 @@ interface bookingProps {
 }
 
 export default function BookingRow({ booking, index }: bookingProps) {
-  const queryClient = useQueryClient();
-  const { isLoading, mutate } = useMutation({
-    mutationFn: (id: number) => deleteBooking(id),
-    onSuccess: () => {
-      toast.success("La reserva fue eliminada con exito!");
-      queryClient.invalidateQueries({
-        queryKey: ["bookings"],
-      });
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const navigate = useNavigate();
+  const { isDeleting, deleteBooking } = useDeleteBooking();
   const { id, client, booking_status, event_date, payment_status, place } =
     booking;
   const { name, lastName, phoneNumber } = client;
@@ -84,15 +74,16 @@ export default function BookingRow({ booking, index }: bookingProps) {
           <Button
             variant="outline"
             className="hover:bg-gray-300"
-            disabled={isLoading}
+            disabled={isDeleting}
+            onClick={() => navigate(`/reservas/reserva/${id}`)}
           >
             Editar
           </Button>
           <Button
             variant="outline"
             className="hover:bg-red-500"
-            disabled={isLoading}
-            onClick={() => mutate(id)}
+            disabled={isDeleting}
+            onClick={() => deleteBooking(id)}
           >
             Eliminar
           </Button>

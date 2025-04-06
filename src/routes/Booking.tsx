@@ -1,35 +1,19 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/button";
-import { createBooking } from "../services/data";
+import { useAddBooking } from "../hooks/useAddBooking";
 
 export default function Booking() {
   const navigate = useNavigate();
+  const { bookingId } = useParams();
   const date = new Date().toISOString().split("T");
   const currentDate = date[0];
+  const isEditSession = Boolean(bookingId);
 
-  const { bookingId } = useParams();
   const { register, reset, handleSubmit } = useForm();
-  const queryClient = useQueryClient();
-
-  const { isLoading, mutate } = useMutation({
-    mutationFn: createBooking,
-    onSuccess: () => {
-      toast.success("La reserva fue creada con exito!");
-      queryClient.invalidateQueries({
-        queryKey: ["bookings"],
-      });
-      reset();
-      navigate("/reservas");
-    },
-    onError: (err) => {
-      toast.error(err.message);
-      alert(err.message);
-    },
-  });
+  const { isAdding, addBooking } = useAddBooking();
 
   function handleCancel() {
     toast.success("Reserva cancelada");
@@ -37,7 +21,8 @@ export default function Booking() {
   }
 
   function onSubmit(data) {
-    mutate(data);
+    addBooking(data);
+    reset();
   }
 
   return (
@@ -165,7 +150,7 @@ export default function Booking() {
           {/* Navegación */}
           <div className="flex justify-between items-center mt-6">
             <Button onClick={handleCancel}>Cancelar</Button>
-            <Button disabled={isLoading}>Agendar</Button>
+            <Button disabled={isAdding}>Agendar</Button>
           </div>
         </form>
       </div>
