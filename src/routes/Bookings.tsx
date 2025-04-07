@@ -5,7 +5,7 @@ import { NavLink } from "react-router-dom";
 import BookingRow from "../components/Bookings/BookingRow";
 import CategoryLayout from "../components/CategoryLayout";
 import Spinner from "../components/Spinner";
-import { Table, TableHead } from "../components/Table";
+import { Table, TableData, TableHead } from "../components/Table";
 import { Button } from "../components/ui/button";
 import {
   Command,
@@ -29,7 +29,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "../components/ui/popover";
-import TableData from "../components/ui/TableData";
 import useGetBookings from "../hooks/useGetBookings";
 import { cn } from "../lib/utils";
 
@@ -132,7 +131,6 @@ export default function Bookings() {
           </Button>
         </div>
       </div>
-
       <Table>
         <TableHead>
           <TableData>{null}</TableData>

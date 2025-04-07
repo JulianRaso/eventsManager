@@ -1,6 +1,8 @@
 export function Table({ children }: { children: React.ReactNode }) {
   return (
-    <table className="min-w-full border-collapse table-auto">{children}</table>
+    <div className="overflow-x-auto">
+      <table className="min-w-full border-collapse ">{children}</table>
+    </div>
   );
 }
 
@@ -9,6 +11,20 @@ export function TableBody({ children }: { children: React.ReactNode }) {
     <tbody>
       <tr className="hover:bg-gray-50">{children}</tr>
     </tbody>
+  );
+}
+
+export function TableRow({ children }: { children: React.ReactNode }) {
+  return (
+    <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-600">
+      {children}
+    </th>
+  );
+}
+
+export function TableData({ children }: { children: React.ReactNode }) {
+  return (
+    <td className="px-4 py-2 border-b text-md text-gray-800">{children}</td>
   );
 }
 
