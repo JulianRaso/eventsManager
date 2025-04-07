@@ -1,11 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { useState } from "react";
 import { IoMdAdd } from "react-icons/io";
 import { NavLink } from "react-router-dom";
-import BookingData from "../components/Bookings/BookingData";
 import BookingRow from "../components/Bookings/BookingRow";
+import CategoryLayout from "../components/CategoryLayout";
 import Spinner from "../components/Spinner";
+import { Table, TableHead } from "../components/Table";
 import { Button } from "../components/ui/button";
 import {
   Command,
@@ -29,8 +29,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "../components/ui/popover";
+import TableData from "../components/ui/TableData";
+import useGetBookings from "../hooks/useGetBookings";
 import { cn } from "../lib/utils";
-import { getBookings } from "../services/data";
 
 const filterByStatus = [
   {
@@ -56,28 +57,26 @@ const filterByStatus = [
 ];
 
 export default function Bookings() {
-  const { data = [], isLoading } = useQuery({
-    queryKey: ["bookings"],
-    queryFn: getBookings,
-  });
-  const [filterByName, setFilterByName] = useState("");
+  const { data = [], isLoading } = useGetBookings();
   const [open, setOpen] = useState(false);
+  const [filterByName, setFilterByName] = useState("");
   const [value, setValue] = useState("");
 
   if (isLoading) return <Spinner />;
 
   return (
-    <div className="p-8 w-full">
-      <div className="w-full flex  justify-between m-4">
+    <CategoryLayout title="Reservas">
+      <div className="w-full flex justify-between m-4">
         <NavLink to="/reservas/reserva/agendar">
           <Button variant="outline">
             <IoMdAdd />
           </Button>
         </NavLink>
-        <div className="flex gap-1  items-center">
+        <div className="flex gap-1 items-center">
           <input
             type="text"
             placeholder="Nombre del cliente"
+            value={filterByName}
             className="border rounded-lg p-1.5 bg-gray-50"
             onChange={(event) => setFilterByName(event.currentTarget.value)}
           />
@@ -125,27 +124,50 @@ export default function Bookings() {
               </Command>
             </PopoverContent>
           </Popover>
+          <Button
+            variant="outline"
+            onClick={() => (setValue(""), setFilterByName(""))}
+          >
+            X
+          </Button>
         </div>
       </div>
 
-      <table className="min-w-full border-collapse table-auto ">
-        <thead className="bg-gray-100">
-          <BookingData />
-        </thead>
-        <tbody>
-          {data
-            ?.filter((item) => {
-              return filterByName.toLowerCase() === ""
-                ? item
-                : item.client?.name
-                    ?.toLowerCase()
-                    .includes(filterByName.toLowerCase());
-            })
-            .map((item, index) => (
-              <BookingRow key={index} booking={item} index={index} />
-            ))}
-        </tbody>
-      </table>
+      <Table>
+        <TableHead>
+          <TableData>{null}</TableData>
+          <TableData>Nombre</TableData>
+          <TableData>Apellido</TableData>
+          <TableData>Contacto</TableData>
+          <TableData>Fecha</TableData>
+          <TableData>Ubicacion</TableData>
+          <TableData>Estado</TableData>
+          <TableData>Estado pago</TableData>
+          <TableData>Precio</TableData>
+          <TableData>Acciones</TableData>
+        </TableHead>
+        {data
+          ?.filter((item) => {
+            return filterByName.toLowerCase() === ""
+              ? item
+              : item.client?.name
+                  ?.toLowerCase()
+                  .includes(filterByName.toLowerCase());
+          })
+          .map((booking, index) =>
+            value ? (
+              booking.booking_status === value ? (
+                <BookingRow key={index} booking={booking} index={index} />
+              ) : booking.payment_status === value ? (
+                <BookingRow key={index} booking={booking} index={index} />
+              ) : (
+                ""
+              )
+            ) : (
+              <BookingRow key={index} booking={booking} index={index} />
+            )
+          )}
+      </Table>
       {data.length > 10 ? (
         <div className="w-full flex items-center mt-2">
           <Pagination>
@@ -176,6 +198,6 @@ export default function Bookings() {
       ) : (
         ""
       )}
-    </div>
+    </CategoryLayout>
   );
 }

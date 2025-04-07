@@ -1,7 +1,6 @@
-import { useNavigate } from "react-router-dom";
 import { useDeleteBooking } from "../../hooks/useDeleteBooking";
+import Action from "../Action";
 import TableData from "../ui/TableData";
-import { Button } from "../ui/button";
 
 function formatDate(date: string) {
   const dateArr = date.split("-");
@@ -30,65 +29,49 @@ interface bookingProps {
 }
 
 export default function BookingRow({ booking, index }: bookingProps) {
-  const navigate = useNavigate();
   const { isDeleting, deleteBooking } = useDeleteBooking();
   const { id, client, booking_status, event_date, payment_status, place } =
     booking;
   const { name, lastName, phoneNumber } = client;
 
   return (
-    <tr className="hover:bg-gray-50">
-      <TableData>{index + 1}</TableData>
-      <TableData>{name}</TableData>
-      <TableData>{lastName}</TableData>
-      <TableData>{phoneNumber}</TableData>
-      <TableData>{formatDate(event_date)}</TableData>
-      <TableData>{place}</TableData>
-      <TableData>
-        <p
-          className={`w-fit rounded-xl p-1.5 ${
-            booking_status === "confirm"
-              ? "bg-green-300"
-              : booking_status === "pending"
-              ? "bg-amber-300"
-              : "bg-red-500"
-          }`}
-        >
-          {booking_status === "pending"
+    <tbody>
+      <tr className="hover:bg-gray-50">
+        <TableData>{index + 1}</TableData>
+        <TableData>{name}</TableData>
+        <TableData>{lastName}</TableData>
+        <TableData>{phoneNumber}</TableData>
+        <TableData>{formatDate(event_date)}</TableData>
+        <TableData>{place}</TableData>
+        <TableData>
+          <p
+            className={`w-fit rounded-xl p-1.5 ${
+              booking_status === "confirm"
+                ? "bg-green-300"
+                : booking_status === "pending"
+                ? "bg-amber-300"
+                : "bg-red-500"
+            }`}
+          >
+            {booking_status === "pending"
+              ? "Pendiente"
+              : booking_status === "confirm"
+              ? "Confirmado"
+              : "Cancelado"}
+          </p>
+        </TableData>
+        <TableData>
+          {payment_status === "pending"
             ? "Pendiente"
-            : booking_status === "confirm"
-            ? "Confirmado"
-            : "Cancelado"}
-        </p>
-      </TableData>
-      <TableData>
-        {payment_status === "pending"
-          ? "Pendiente"
-          : payment_status === "partially_paid"
-          ? "Señado"
-          : "Abonado"}
-      </TableData>
-      <TableData>${0}</TableData>
-      <TableData>
-        <div className="flex gap-1 flex-wrap">
-          <Button
-            variant="outline"
-            className="hover:bg-gray-300"
-            disabled={isDeleting}
-            onClick={() => navigate(`/reservas/reserva/${id}`)}
-          >
-            Editar
-          </Button>
-          <Button
-            variant="outline"
-            className="hover:bg-red-500"
-            disabled={isDeleting}
-            onClick={() => deleteBooking(id)}
-          >
-            Eliminar
-          </Button>
-        </div>
-      </TableData>
-    </tr>
+            : payment_status === "partially_paid"
+            ? "Señado"
+            : "Abonado"}
+        </TableData>
+        <TableData>${0}</TableData>
+        <TableData>
+          <Action id={id} isDeleting={isDeleting} onDelete={deleteBooking} />
+        </TableData>
+      </tr>
+    </tbody>
   );
 }

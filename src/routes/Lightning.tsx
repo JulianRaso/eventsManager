@@ -1,55 +1,46 @@
-import { useQuery } from "@tanstack/react-query";
+import Action from "../components/Action";
+import CategoryLayout from "../components/CategoryLayout";
 import Spinner from "../components/Spinner";
-import { getStock } from "../services/data";
+import { Table, TableBody, TableHead } from "../components/Table";
+import TableData from "../components/ui/TableData";
+import TableRow from "../components/ui/TableRow";
+import useDeleteStock from "../hooks/useDeleteStock";
+import useGetData from "../hooks/UseGetData";
 
 export default function Lightning() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["lights"],
-    queryFn: () => getStock({ category: "lights" }),
-  });
+  const { data, isLoading } = useGetData({ category: "lights" });
+  const { isDelete, deleteStock } = useDeleteStock();
 
   if (isLoading) return <Spinner />;
+
   return (
-    <div className="p-8">
-      <div className="text-xl font-semibold mb-4">Iluminacion</div>
-      <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse table-auto">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-600">
-                Nombre
-              </th>
-              <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-600">
-                Cantidad
-              </th>
-              <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-600">
-                Ubicación
-              </th>
-              <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-600">
-                Precio
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {data?.map((item, index) => (
-              <tr key={index} className="hover:bg-gray-50">
-                <td className="px-4 py-2 border-b text-md text-gray-800">
-                  {item.name}
-                </td>
-                <td className="px-4 py-2 border-b text-md text-gray-800">
-                  {item.quantity}
-                </td>
-                <td className="px-4 py-2 border-b text-md text-gray-800">
-                  {item.location}
-                </td>
-                <td className="px-4 py-2 border-b text-md text-gray-800">
-                  {item.price}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <CategoryLayout title="Iluminacion">
+      <Table>
+        <TableHead>
+          <TableRow>{null}</TableRow>
+          <TableRow>Nombre</TableRow>
+          <TableRow>Cantidad</TableRow>
+          <TableRow>Ubicacion</TableRow>
+          <TableRow>Precio</TableRow>
+          <TableRow>Acciones</TableRow>
+        </TableHead>
+        {data?.map((light, index) => (
+          <TableBody key={index}>
+            <TableData>{index + 1}</TableData>
+            <TableData>{light.name}</TableData>
+            <TableData>{light.quantity}</TableData>
+            <TableData>{light.location}</TableData>
+            <TableData>{light.price}</TableData>
+            <TableData>
+              <Action
+                id={light.id}
+                isDeleting={isDelete}
+                onDelete={deleteStock}
+              />
+            </TableData>
+          </TableBody>
+        ))}
+      </Table>
+    </CategoryLayout>
   );
 }
