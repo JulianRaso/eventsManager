@@ -66,7 +66,7 @@ export default function Filter({
               <ChevronsUpDown className="opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[200px] p-0">
+          <PopoverContent className="w-[200px] h-[190px] p-0">
             <Command>
               <CommandInput placeholder="Buscar filtro" className="h-9" />
               <CommandList>

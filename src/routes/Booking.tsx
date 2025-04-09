@@ -1,27 +1,71 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/button";
 import { useAddBooking } from "../hooks/useAddBooking";
+import useCheckClient from "../hooks/useCheckClient";
+
+function handleCheckClient(dni: string) {
+  if (dni?.length >= 7 && dni?.length < 9) {
+    if (Number(dni) > 999999 && Number(dni) < 99999999) {
+      return true;
+    } else {
+      toast.error("El DNI debe tener entre 7 y 8 dígitos");
+      return false;
+    }
+  }
+  return false;
+}
 
 export default function Booking() {
+  const { register, reset, handleSubmit, setValue, getValues } = useForm();
+  const currentDate = new Date().toISOString().split("T")[0];
   const navigate = useNavigate();
-  const { bookingId } = useParams();
-  const date = new Date().toISOString().split("T");
-  const currentDate = date[0];
-  const isEditSession = Boolean(bookingId);
 
-  const { register, reset, handleSubmit } = useForm();
+  //Client Confirmation
+  const { client, isLoading, refetch, isRefetching } = useCheckClient(
+    getValues("dni")
+  );
+  const [checkClient, setCheckClient] = useState(false);
+  const [existClient, setExistClient] = useState(false);
+
   const { isAdding, addBooking } = useAddBooking();
 
-  function handleCancel() {
-    toast.success("Reserva cancelada");
-    navigate("/reservas");
+  if (client) {
+    setCheckClient(true);
+    const { name, lastName, phoneNumber, email } = client;
+    setValue("name", name);
+    setValue("lastName", lastName);
+    setValue("phoneNumber", phoneNumber);
+    setValue("email", email);
+  }
+
+  if (client === false) {
+    console.log("El cliente no existe");
+    setExistClient(false);
   }
 
   function onSubmit(data) {
-    addBooking(data);
+    const clientData = {
+      dni: data.dni,
+      name: data.name,
+      lastName: data.lastName,
+      phoneNumber: data.phoneNumber,
+      email: data.email,
+    };
+    const bookingData = {
+      client_id: client?.[0]?.id,
+      booking_status: data.booking_status,
+      comments: data.comments,
+      event_date: data.event_date,
+      event_type: data.event_type,
+      payment_status: data.payment_status,
+      location: data.location,
+    };
+
+    // addBooking(clientData, bookingData);
     reset();
   }
 
@@ -40,27 +84,38 @@ export default function Booking() {
               </div>
               <div className="flex flex-col gap-4">
                 <Input
+                  type="dni"
+                  placeholder="Dni del Cliente"
+                  required
+                  {...register("dni")}
+                  onBlur={() => setCheckClient(false)}
+                />
+                <Input
                   type="name"
                   placeholder="Nombre del Cliente"
                   required
                   {...register("name")}
+                  disabled={existClient || isRefetching || isLoading}
                 />
                 <Input
                   type="lastName"
                   placeholder="Apellido del Cliente"
                   required
                   {...register("lastName")}
+                  disabled={isRefetching || isLoading || existClient}
                 />
                 <Input
                   type="phone"
                   placeholder="Teléfono del Cliente"
                   required
                   {...register("phoneNumber")}
+                  disabled={isRefetching || isLoading || existClient}
                 />
                 <Input
                   type="email"
                   placeholder="Email del Cliente"
                   {...register("email")}
+                  disabled={isRefetching || isLoading || existClient}
                 />
               </div>
 
@@ -70,6 +125,21 @@ export default function Booking() {
                   Evento <p className="text-red-500">*</p>
                 </div>
                 <div className="flex flex-col gap-6">
+                  <div className="flex flex-col gap-1">
+                    Tipo de Evento
+                    <select
+                      className="border rounded-md h-9"
+                      {...register("event_type")}
+                      defaultValue={"birthday"}
+                      required
+                    >
+                      <option value="corporate">Corporativo</option>
+                      <option value="birthday">Cumpleaños</option>
+                      <option value="fifteen_party">XV años</option>
+                      <option value="marriage">Casamiento</option>
+                      <option value="other">Otro</option>
+                    </select>
+                  </div>
                   <Input
                     type="location"
                     placeholder="Ubicación del Evento"
@@ -86,7 +156,7 @@ export default function Booking() {
               </div>
             </div>
 
-            {/* Equipo y comentarios */}
+            {/* Presupuesto */}
             <div className="flex flex-col gap-6 col-span-2">
               {/* Equipo */}
               <div className="text-lg font-semibold">Equipo</div>
@@ -124,7 +194,6 @@ export default function Booking() {
                   >
                     <option value="confirm">Confirmado</option>
                     <option value="pending">Pendiente</option>
-                    {bookingId ? <option value="cancel">Cancelado</option> : ""}
                   </select>
                 </div>
 
@@ -149,7 +218,7 @@ export default function Booking() {
 
           {/* Navegación */}
           <div className="flex justify-between items-center mt-6">
-            <Button onClick={handleCancel}>Cancelar</Button>
+            <Button onClick={() => navigate("/reservas")}>Cancelar</Button>
             <Button disabled={isAdding}>Agendar</Button>
           </div>
         </form>

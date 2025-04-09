@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { deleteStock as deleteStockAPI } from "../services/data";
+import { deleteStock as deleteStockAPI } from "../services/stock";
 
 export default function useDeleteStock() {
   const queryClient = useQueryClient();

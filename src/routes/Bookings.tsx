@@ -36,6 +36,26 @@ const filterByStatus = [
     value: "partially_paid",
     label: "Señado",
   },
+  {
+    value: "marriage",
+    label: "Casamiento",
+  },
+  {
+    value: "corporate",
+    label: "Corporativo",
+  },
+  {
+    value: "fifteen_birthday",
+    label: "Cumpleaños XV",
+  },
+  {
+    value: "birthday",
+    label: "Cumpleaños",
+  },
+  {
+    value: "other",
+    label: "Otros",
+  },
 ];
 
 export default function Bookings() {
@@ -62,6 +82,7 @@ export default function Bookings() {
           <TableData>Apellido</TableData>
           <TableData>Contacto</TableData>
           <TableData>Fecha</TableData>
+          <TableData>Tipo</TableData>
           <TableData>Ubicacion</TableData>
           <TableData>Estado</TableData>
           <TableData>Estado pago</TableData>
@@ -82,6 +103,8 @@ export default function Bookings() {
                 <BookingRow key={index} booking={booking} index={index} />
               ) : booking.payment_status === value ? (
                 <BookingRow key={index} booking={booking} index={index} />
+              ) : booking.event_type === value ? (
+                <BookingRow key={index} booking={booking} index={index} />
               ) : (
                 ""
               )
@@ -90,6 +113,9 @@ export default function Bookings() {
             )
           )}
       </Table>
+      {data.length === 0 && (
+        <div className="text-2xl text-center mt-4">Agenda una Reserva!!</div>
+      )}
       {data.length > 10 ? (
         <div className="w-full flex items-center mt-2">
           <Pagination>

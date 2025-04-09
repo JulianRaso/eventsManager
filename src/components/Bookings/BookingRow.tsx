@@ -21,6 +21,7 @@ interface Booking {
   event_date: string;
   payment_status: string;
   place: string;
+  event_type: keyof typeof eventTypes;
 }
 
 interface bookingProps {
@@ -28,10 +29,40 @@ interface bookingProps {
   index: number;
 }
 
+const eventTypes = {
+  other: {
+    es: "Otro",
+    en: "Other",
+  },
+  fifteen_party: {
+    es: "Quince Años",
+    en: "Fifteen Party",
+  },
+  corporate: {
+    es: "Corporativo",
+    en: "Corporate",
+  },
+  marriage: {
+    es: "Casamiento",
+    en: "Marriage",
+  },
+  birthday: {
+    es: "Cumpleaños",
+    en: "Birthday",
+  },
+};
+
 export default function BookingRow({ booking, index }: bookingProps) {
   const { isDeleting, deleteBooking } = useDeleteBooking();
-  const { id, client, booking_status, event_date, payment_status, place } =
-    booking;
+  const {
+    id,
+    client,
+    booking_status,
+    event_date,
+    payment_status,
+    place,
+    event_type,
+  } = booking;
   const { name, lastName, phoneNumber } = client;
 
   return (
@@ -42,6 +73,7 @@ export default function BookingRow({ booking, index }: bookingProps) {
         <TableData>{lastName}</TableData>
         <TableData>{phoneNumber}</TableData>
         <TableData>{formatDate(event_date)}</TableData>
+        <TableData>{eventTypes[event_type]?.es}</TableData>
         <TableData>{place}</TableData>
         <TableData>
           <p

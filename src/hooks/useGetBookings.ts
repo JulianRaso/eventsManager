@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getBookings } from "../services/data";
+import { getBookings } from "../services/booking";
 
 export default function useGetBookings() {
   const { data, isLoading } = useQuery({

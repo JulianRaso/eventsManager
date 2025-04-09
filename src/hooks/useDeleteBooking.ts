@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteBooking as deleteBookingAPI } from "../services/data";
+import { deleteBooking as deleteBookingAPI } from "../services/booking";
 import toast from "react-hot-toast";
 
 export function useDeleteBooking() {
