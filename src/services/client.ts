@@ -27,10 +27,14 @@ export async function checkClient(dni: string) {
     throw new Error("There was an error while fetching client");
   }
 
-  //If it doen't exist, return false
-  //If it exists, return the client
   if (client.length === 0) {
-    return false;
+    return {
+      dni: "",
+      name: "",
+      lastName: "",
+      phoneNumber: "",
+      email: "",
+    };
   }
 
   return client[0];

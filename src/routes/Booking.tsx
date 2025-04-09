@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -6,45 +6,51 @@ import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/button";
 import { useAddBooking } from "../hooks/useAddBooking";
 import useCheckClient from "../hooks/useCheckClient";
-
-function handleCheckClient(dni: string) {
-  if (dni?.length >= 7 && dni?.length < 9) {
-    if (Number(dni) > 999999 && Number(dni) < 99999999) {
-      return true;
-    } else {
-      toast.error("El DNI debe tener entre 7 y 8 dígitos");
-      return false;
-    }
-  }
-  return false;
-}
+import { checkClient } from "../services/client";
 
 export default function Booking() {
+  const [dni, setDni] = useState("");
   const { register, reset, handleSubmit, setValue, getValues } = useForm();
-  const currentDate = new Date().toISOString().split("T")[0];
   const navigate = useNavigate();
-
-  //Client Confirmation
-  const { client, isLoading, refetch, isRefetching } = useCheckClient(
-    getValues("dni")
-  );
-  const [checkClient, setCheckClient] = useState(false);
+  const { isAdding, addBooking } = useAddBooking();
+  const [client, setClient] = useState({
+    dni: "",
+    name: "",
+    lastName: "",
+    phoneNumber: "",
+    email: "",
+  });
   const [existClient, setExistClient] = useState(false);
 
-  const { isAdding, addBooking } = useAddBooking();
+  useEffect(() => {
+    checkClient(dni)
+      .then((res) => {
+        if (res.dni === Number(dni)) {
+          setClient(res);
+          setExistClient(true);
+        } else {
+          setClient({
+            dni: "",
+            name: "",
+            lastName: "",
+            phoneNumber: "",
+            email: "",
+          });
+          setExistClient(false);
+        }
+      })
+      .catch((error) => {
+        console.error("Error checking client:", error);
+        toast.error("Error al verificar el cliente");
+      });
+  }, [dni]);
 
-  if (client) {
-    setCheckClient(true);
-    const { name, lastName, phoneNumber, email } = client;
-    setValue("name", name);
-    setValue("lastName", lastName);
-    setValue("phoneNumber", phoneNumber);
-    setValue("email", email);
-  }
-
-  if (client === false) {
-    console.log("El cliente no existe");
-    setExistClient(false);
+  function handleCheckClient(dni: string) {
+    if (Number(dni) > 999999 && Number(dni) < 99999999) {
+      return setDni(dni);
+    } else {
+      toast.error("El DNI debe tener entre 7 y 8 dígitos");
+    }
   }
 
   function onSubmit(data) {
@@ -55,8 +61,11 @@ export default function Booking() {
       phoneNumber: data.phoneNumber,
       email: data.email,
     };
+
+    console.log(data);
+
     const bookingData = {
-      client_id: client?.[0]?.id,
+      client_id: data.dni,
       booking_status: data.booking_status,
       comments: data.comments,
       event_date: data.event_date,
@@ -66,11 +75,11 @@ export default function Booking() {
     };
 
     // addBooking(clientData, bookingData);
-    reset();
+    // reset();
   }
 
   return (
-    <div className="w-full h-full flex items-center justify-center bg-gray-50">
+    <div className="w-full h-full flex items-center justify-center">
       <div className="border-2 w-11/12 md:w-8/12 lg:w-6/12 p-8 rounded-2xl bg-white shadow-lg">
         <form
           className="flex flex-col gap-10"
@@ -87,35 +96,41 @@ export default function Booking() {
                   type="dni"
                   placeholder="Dni del Cliente"
                   required
+                  minLength={7}
+                  maxLength={8}
                   {...register("dni")}
-                  onBlur={() => setCheckClient(false)}
+                  onBlur={(e) => handleCheckClient(e.currentTarget.value)}
                 />
                 <Input
                   type="name"
                   placeholder="Nombre del Cliente"
                   required
+                  defaultValue={client.name}
                   {...register("name")}
-                  disabled={existClient || isRefetching || isLoading}
+                  disabled={existClient}
                 />
                 <Input
                   type="lastName"
                   placeholder="Apellido del Cliente"
                   required
+                  defaultValue={client.lastName}
                   {...register("lastName")}
-                  disabled={isRefetching || isLoading || existClient}
+                  disabled={existClient}
                 />
                 <Input
                   type="phone"
                   placeholder="Teléfono del Cliente"
                   required
+                  defaultValue={client.phoneNumber}
                   {...register("phoneNumber")}
-                  disabled={isRefetching || isLoading || existClient}
+                  disabled={existClient}
                 />
                 <Input
                   type="email"
                   placeholder="Email del Cliente"
+                  defaultValue={client.email}
                   {...register("email")}
-                  disabled={isRefetching || isLoading || existClient}
+                  disabled={existClient}
                 />
               </div>
 
@@ -150,7 +165,7 @@ export default function Booking() {
                     type="date"
                     required
                     {...register("event_date")}
-                    min={currentDate}
+                    min={new Date().toISOString().split("T")[0]}
                   />
                 </div>
               </div>

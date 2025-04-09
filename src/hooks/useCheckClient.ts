@@ -11,6 +11,13 @@ export default function useCheckClient(dni: string) {
     queryKey: ["client"],
     queryFn: () => checkClient(dni),
     enabled: false,
+    initialData: {
+      dni: "",
+      name: "",
+      lastName: "",
+      phoneNumber: "",
+      email: "",
+    },
   });
 
   return { client, isLoading, refetch, isRefetching };
