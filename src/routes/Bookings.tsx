@@ -113,7 +113,7 @@ export default function Bookings() {
             )
           )}
       </Table>
-      {data.length === 0 && (
+      {data?.length === 0 && (
         <div className="text-2xl text-center mt-4">Agenda una Reserva!!</div>
       )}
       {data.length > 10 ? (

@@ -47,7 +47,7 @@ export default function Filter({
       <div className="flex gap-1 items-center">
         <input
           type="text"
-          placeholder="Nombre del cliente"
+          placeholder="Buscar por Nombre"
           value={filterByName}
           className="border rounded-lg p-1.5 bg-gray-50"
           onChange={(event) => setFilterByName(event.currentTarget.value)}
@@ -70,7 +70,7 @@ export default function Filter({
             <Command>
               <CommandInput placeholder="Buscar filtro" className="h-9" />
               <CommandList>
-                <CommandEmpty>No framework found.</CommandEmpty>
+                <CommandEmpty>No fue encontrado.</CommandEmpty>
                 <CommandGroup>
                   {filterByStatus.map((status) => (
                     <CommandItem

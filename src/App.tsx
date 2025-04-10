@@ -1,19 +1,18 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { useState } from "react";
+import { Toaster } from "react-hot-toast";
 import { Route, Routes } from "react-router-dom";
+import Authentication from "./routes/Authentication";
 import Booking from "./routes/Booking";
 import Bookings from "./routes/Bookings";
 import Dashboard from "./routes/Dashboard";
-import Decoration from "./routes/Decoration";
 import HumandResource from "./routes/HumandResource";
+import Invetory from "./routes/Inventory";
 import Layout from "./routes/Layout";
-import Lightning from "./routes/Lightning";
 import PageNotFound from "./routes/PageNotFound";
 import Profile from "./routes/Profile";
-import Sound from "./routes/Sound";
-import Authentication from "./routes/Authentication";
-import { useState } from "react";
-import { Toaster } from "react-hot-toast";
+import Transport from "./routes/Transport";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -47,11 +46,8 @@ function App() {
 
             <Route path="/personal" element={<HumandResource />} />
 
-            <Route path="/sonido" element={<Sound />} />
-
-            <Route path="/iluminacion" element={<Lightning />} />
-
-            <Route path="/ambientacion" element={<Decoration />} />
+            <Route path="/inventario" element={<Invetory />} />
+            <Route path="/transporte" element={<Transport />} />
 
             <Route path="/perfil" element={<Profile />} />
             <Route path="/*" element={<PageNotFound />} />

@@ -2,7 +2,7 @@ import { supabase } from "./supabase";
 
 export async function getStock({ category }: { category: string }) {
   const { data, error } = await supabase
-    .from("equipment_stock")
+    .from("inventory")
     .select("*")
     .eq("category", category);
 
@@ -14,7 +14,7 @@ export async function getStock({ category }: { category: string }) {
 
 export async function updateStock() {
   const { data, error } = await supabase
-    .from("equipment_stock")
+    .from("inventory")
     .update({ other_column: "otherValue" })
     .eq("some_column", "someValue")
     .select();
@@ -27,10 +27,7 @@ export async function updateStock() {
 }
 
 export async function deleteStock(id: number) {
-  const { error } = await supabase
-    .from("equipment_stock")
-    .delete()
-    .eq("id", id);
+  const { error } = await supabase.from("inventory").delete().eq("id", id);
 
   if (error) {
     throw new Error(`There was an error while deleting the stock`);

@@ -1,13 +1,12 @@
 import { useState } from "react";
 
 //Icons
-import { GiLightProjector } from "react-icons/gi";
 import { GoSidebarCollapse, GoSidebarExpand } from "react-icons/go";
+import { GrUserManager } from "react-icons/gr";
 import { IoPerson } from "react-icons/io5";
-import { MdDashboard, MdEvent } from "react-icons/md";
-import { RiSoundModuleFill } from "react-icons/ri";
-import { TfiBlackboard } from "react-icons/tfi";
+import { MdDashboard, MdEvent, MdOutlineInventory2 } from "react-icons/md";
 import companyLogo from "../assets/ShowRental.png";
+import { CiDeliveryTruck } from "react-icons/ci";
 
 //UI
 import ProfileNav from "./ProfileNav";
@@ -82,23 +81,23 @@ function Navbar() {
           />
           <NavButton
             display={display}
+            icon={<GrUserManager />}
+            description={"Clientes"}
+          />
+          <NavButton
+            display={display}
             icon={<IoPerson />}
             description={"Personal"}
           />
           <NavButton
             display={display}
-            icon={<RiSoundModuleFill />}
-            description={"Sonido"}
+            icon={<MdOutlineInventory2 />}
+            description={"Inventario"}
           />
           <NavButton
             display={display}
-            icon={<GiLightProjector />}
-            description={"Iluminacion"}
-          />
-          <NavButton
-            display={display}
-            icon={<TfiBlackboard />}
-            description={"Ambientacion"}
+            icon={<CiDeliveryTruck />}
+            description={"Transporte"}
           />
         </div>
       </div>

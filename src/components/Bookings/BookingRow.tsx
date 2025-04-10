@@ -1,12 +1,7 @@
 import { useDeleteBooking } from "../../hooks/useDeleteBooking";
 import Action from "../Action";
+import { formatDate } from "../formatDate";
 import TableData from "../ui/TableData";
-
-function formatDate(date: string) {
-  const dateArr = date.split("-");
-  const formatedDate = dateArr.reverse().join("/");
-  return formatedDate;
-}
 
 interface Client {
   name: string;
