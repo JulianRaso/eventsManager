@@ -12,13 +12,13 @@ interface clientProps {
 }
 
 interface bookingProps {
-  client_id: string;
+  client_dni: string;
   booking_status: string;
   comments: string;
   event_date: string;
   event_type: string;
   payment_status: string;
-  location: string;
+  place: string;
 }
 
 export function useAddBooking() {

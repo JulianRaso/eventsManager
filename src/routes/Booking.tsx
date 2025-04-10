@@ -5,14 +5,13 @@ import { useNavigate } from "react-router-dom";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/button";
 import { useAddBooking } from "../hooks/useAddBooking";
-import useCheckClient from "../hooks/useCheckClient";
 import { checkClient } from "../services/client";
 
 export default function Booking() {
-  const [dni, setDni] = useState("");
-  const { register, reset, handleSubmit, setValue, getValues } = useForm();
   const navigate = useNavigate();
+  const { register, reset, handleSubmit, setValue } = useForm();
   const { isAdding, addBooking } = useAddBooking();
+  const [dni, setDni] = useState("");
   const [client, setClient] = useState({
     dni: "",
     name: "",
@@ -23,10 +22,14 @@ export default function Booking() {
   const [existClient, setExistClient] = useState(false);
 
   useEffect(() => {
+    if (dni === "") return;
     checkClient(dni)
       .then((res) => {
-        if (res.dni === Number(dni)) {
-          setClient(res);
+        if (res.dni != "") {
+          setValue("name", res.name);
+          setValue("lastName", res.lastName);
+          setValue("phoneNumber", res.phoneNumber);
+          setValue("email", res.email);
           setExistClient(true);
         } else {
           setClient({
@@ -39,17 +42,14 @@ export default function Booking() {
           setExistClient(false);
         }
       })
-      .catch((error) => {
-        console.error("Error checking client:", error);
+      .catch(() => {
         toast.error("Error al verificar el cliente");
       });
-  }, [dni]);
+  }, [dni, setValue]);
 
   function handleCheckClient(dni: string) {
     if (Number(dni) > 999999 && Number(dni) < 99999999) {
       return setDni(dni);
-    } else {
-      toast.error("El DNI debe tener entre 7 y 8 dígitos");
     }
   }
 
@@ -65,17 +65,17 @@ export default function Booking() {
     console.log(data);
 
     const bookingData = {
-      client_id: data.dni,
+      client_dni: data.dni,
       booking_status: data.booking_status,
       comments: data.comments,
       event_date: data.event_date,
       event_type: data.event_type,
       payment_status: data.payment_status,
-      location: data.location,
+      place: data.place,
     };
 
-    // addBooking(clientData, bookingData);
-    // reset();
+    addBooking({ client: clientData, booking: bookingData });
+    reset();
   }
 
   return (
@@ -156,10 +156,10 @@ export default function Booking() {
                     </select>
                   </div>
                   <Input
-                    type="location"
+                    type="place"
                     placeholder="Ubicación del Evento"
                     required
-                    {...register("location")}
+                    {...register("place")}
                   />
                   <Input
                     type="date"
