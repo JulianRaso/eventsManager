@@ -70,7 +70,8 @@ export async function createBooking(
   client: clientProps,
   booking: bookingProps
 ) {
-  if ((await checkClient(client.dni)) != "") {
+  const confirmClient = await checkClient(client.dni);
+  if (confirmClient.dni === "") {
     const data = await createClient(client);
     if (data) {
       addBooking(booking);
