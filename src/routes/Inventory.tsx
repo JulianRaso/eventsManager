@@ -41,7 +41,7 @@ const filterByCategory = [
   },
   {
     value: "tools",
-    label: "Herramients",
+    label: "Herramientas",
   },
 ];
 
@@ -52,8 +52,8 @@ export default function Invetory() {
   const { data = [], isLoading } = useGetData({ category: value });
   const { isDelete, deleteStock } = useDeleteStock();
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil(data?.length / 5);
-  const limit = 5;
+  const limit = 10;
+  const totalPages = Math.ceil(data?.length / limit);
   const pages = [];
   for (let i = 1; i <= totalPages; i++) {
     pages.push(i);
