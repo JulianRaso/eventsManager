@@ -62,6 +62,17 @@ export default function Bookings() {
   const { data = [], isLoading } = useGetBookings();
   const [filterByName, setFilterByName] = useState("");
   const [value, setValue] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.ceil(data?.length / 5);
+  const limit = 5;
+  const pages = [];
+  for (let i = 1; i <= totalPages; i++) {
+    pages.push(i);
+  }
+
+  const lastPostIndex = currentPage * limit;
+  const firstPostIndex = lastPostIndex - limit;
+  const currentPosts = data?.slice(firstPostIndex, lastPostIndex);
 
   if (isLoading) return <Spinner />;
 
@@ -89,7 +100,7 @@ export default function Bookings() {
           <TableData>Precio</TableData>
           <TableData>Acciones</TableData>
         </TableHead>
-        {data
+        {currentPosts
           ?.filter((item) => {
             return filterByName.toLowerCase() === ""
               ? item
@@ -116,36 +127,40 @@ export default function Bookings() {
       {data?.length === 0 && (
         <div className="text-2xl text-center mt-4">Agenda una Reserva!!</div>
       )}
-      {data.length > 5 ? (
-        <div className="w-full flex items-center mt-2">
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious href="#" />
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink href="#">1</PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink href="#" isActive>
-                  2
+      <div className="w-full flex items-center mt-2">
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => {
+                  if (currentPage > 1) setCurrentPage(currentPage - 1);
+                }}
+                size={"lg"}
+              />
+            </PaginationItem>
+            {pages.map((page, index) => (
+              <PaginationItem key={index}>
+                <PaginationLink
+                  onClick={() => setCurrentPage(page)}
+                  isActive={currentPage === page}
+                  size={"sm"}
+                >
+                  {page}
                 </PaginationLink>
               </PaginationItem>
-              <PaginationItem>
-                <PaginationLink href="#">3</PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationEllipsis />
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationNext href="#" />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-      ) : (
-        ""
-      )}
+            ))}
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => {
+                  if (currentPage < Math.ceil(data?.length / limit))
+                    setCurrentPage(currentPage + 1);
+                }}
+                size={"lg"}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
     </CategoryLayout>
   );
 }

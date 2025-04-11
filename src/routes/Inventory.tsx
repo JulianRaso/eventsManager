@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Action from "../components/Action";
 import CategoryLayout from "../components/CategoryLayout";
-import FilterStock from "../components/FilterStock";
+import Filter from "../components/Filter";
 import { formatDateTime } from "../components/formatDate";
 import Spinner from "../components/Spinner";
 import {
@@ -12,8 +12,15 @@ import {
   TableRow,
 } from "../components/Table";
 import useDeleteStock from "../hooks/useDeleteStock";
-import useGetData from "../hooks/UseGetData";
-import Filter from "../components/Filter";
+import useGetData from "../hooks/useGetData";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "../components/ui/pagination";
 
 const filterByCategory = [
   {
@@ -42,8 +49,19 @@ export default function Invetory() {
   const defaultCategory = "sound";
   const [filterByName, setFilterByName] = useState("");
   const [value, setValue] = useState("sound");
-  const { data, isLoading } = useGetData({ category: value });
+  const { data = [], isLoading } = useGetData({ category: value });
   const { isDelete, deleteStock } = useDeleteStock();
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.ceil(data?.length / 5);
+  const limit = 5;
+  const pages = [];
+  for (let i = 1; i <= totalPages; i++) {
+    pages.push(i);
+  }
+
+  const lastPostIndex = currentPage * limit;
+  const firstPostIndex = lastPostIndex - limit;
+  const currentPosts = data?.slice(firstPostIndex, lastPostIndex);
 
   if (value === "") {
     setValue(defaultCategory);
@@ -72,7 +90,7 @@ export default function Invetory() {
           <TableRow>Ultima actualizacion</TableRow>
           <TableRow>Acciones</TableRow>
         </TableHead>
-        {data
+        {currentPosts
           ?.filter((item) => {
             return filterByName.toLowerCase() === ""
               ? item
@@ -97,6 +115,45 @@ export default function Invetory() {
             </TableBody>
           ))}
       </Table>
+      {data?.length === 0 && (
+        <div className="text-2xl text-center mt-4">
+          Empeza a cargar a tu inventario!!
+        </div>
+      )}
+      <div className="w-full flex items-center mt-2">
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => {
+                  if (currentPage > 1) setCurrentPage(currentPage - 1);
+                }}
+                size={"lg"}
+              />
+            </PaginationItem>
+            {pages.map((page, index) => (
+              <PaginationItem key={index}>
+                <PaginationLink
+                  onClick={() => setCurrentPage(page)}
+                  isActive={currentPage === page}
+                  size={"sm"}
+                >
+                  {page}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => {
+                  if (currentPage < Math.ceil(data?.length / limit))
+                    setCurrentPage(currentPage + 1);
+                }}
+                size={"lg"}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
     </CategoryLayout>
   );
 }
