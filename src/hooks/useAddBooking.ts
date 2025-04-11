@@ -42,7 +42,6 @@ export function useAddBooking() {
     },
     onError: (err) => {
       toast.error(err.message);
-      alert(err.message);
     },
   });
   return { isAdding, addBooking };

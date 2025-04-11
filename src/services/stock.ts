@@ -1,4 +1,14 @@
+import toast from "react-hot-toast";
 import { supabase } from "./supabase";
+
+interface StockProps {
+  name: string;
+  location: string;
+  price: number;
+  quantity: number;
+  category: string;
+  updated_by: string;
+}
 
 export async function getStock({ category }: { category: string }) {
   const { data, error } = await supabase
@@ -32,4 +42,16 @@ export async function deleteStock(id: number) {
   if (error) {
     throw new Error(`There was an error while deleting the stock`);
   }
+}
+
+export async function addStock(stockData: StockProps) {
+  const { data, error } = await supabase
+    .from("inventory")
+    .insert([{ ...stockData }]);
+
+  if (error) {
+    toast.error("Error al agregar el stock");
+  }
+
+  return data;
 }

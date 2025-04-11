@@ -13,6 +13,7 @@ import Layout from "./routes/Layout";
 import PageNotFound from "./routes/PageNotFound";
 import Profile from "./routes/Profile";
 import Transport from "./routes/Transport";
+import Equipment from "./routes/Equipment";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -36,17 +37,21 @@ function App() {
             <Route path="/reservas">
               <Route index element={<Bookings />} />
               <Route path="/reservas/reserva" element={<Booking />}>
-                <Route path="/reservas/reserva/agendar" element={<Booking />} />
                 <Route
                   path="/reservas/reserva/:bookingId"
                   element={<Booking />}
                 />
+                <Route path="/reservas/reserva/agendar" element={<Booking />} />
               </Route>
             </Route>
 
             <Route path="/personal" element={<HumandResource />} />
 
-            <Route path="/inventario" element={<Invetory />} />
+            <Route path="/inventario">
+              <Route index element={<Invetory />} />
+              <Route path="/inventario/agregar" element={<Equipment />} />
+              <Route path="/inventario/editar/:id" element={<Invetory />} />
+            </Route>
             <Route path="/transporte" element={<Transport />} />
 
             <Route path="/perfil" element={<Profile />} />

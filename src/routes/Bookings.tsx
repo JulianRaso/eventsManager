@@ -116,7 +116,7 @@ export default function Bookings() {
       {data?.length === 0 && (
         <div className="text-2xl text-center mt-4">Agenda una Reserva!!</div>
       )}
-      {data.length > 10 ? (
+      {data.length > 5 ? (
         <div className="w-full flex items-center mt-2">
           <Pagination>
             <PaginationContent>

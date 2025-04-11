@@ -54,7 +54,7 @@ export default function Invetory() {
   return (
     <CategoryLayout title="Inventario">
       <Filter
-        navigateTo="/reservas/reserva/agendar"
+        navigateTo="/inventario/agregar"
         filterByName={filterByName}
         filterByStatus={filterByCategory}
         setFilterByName={setFilterByName}
