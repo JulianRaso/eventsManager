@@ -127,8 +127,8 @@ export default function Bookings() {
       {data?.length === 0 && (
         <div className="text-2xl text-center mt-4">Agenda una Reserva!!</div>
       )}
-      <div className="w-full flex items-center mt-2">
-        <Pagination>
+      {data?.length > limit && (
+        <Pagination className="w-full flex items-center mt-2">
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious
@@ -160,7 +160,7 @@ export default function Bookings() {
             </PaginationItem>
           </PaginationContent>
         </Pagination>
-      </div>
+      )}
     </CategoryLayout>
   );
 }

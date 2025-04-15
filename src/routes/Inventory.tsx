@@ -31,17 +31,30 @@ const filterByCategory = [
     value: "lights",
     label: "Iluminacion",
   },
+  { value: "ambientation", label: "Ambientacion" },
   {
     value: "structure",
-    label: "Escenario",
+    label: "Estructuras",
   },
   {
     value: "cables",
     label: "Cables",
   },
   {
+    value: "screen",
+    label: "Pantalla",
+  },
+  {
+    value: "furniture",
+    label: "Muebles",
+  },
+  {
     value: "tools",
     label: "Herramientas",
+  },
+  {
+    value: "others",
+    label: "Otros",
   },
 ];
 
@@ -120,11 +133,12 @@ export default function Invetory() {
           Empeza a cargar a tu inventario!!
         </div>
       )}
-      <div className="w-full flex items-center mt-2">
-        <Pagination>
+      {data?.length > limit && (
+        <Pagination className="w-full flex items-center mt-2">
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious
+                className="cursor-pointer"
                 onClick={() => {
                   if (currentPage > 1) setCurrentPage(currentPage - 1);
                 }}
@@ -134,6 +148,7 @@ export default function Invetory() {
             {pages.map((page, index) => (
               <PaginationItem key={index}>
                 <PaginationLink
+                  className="cursor-pointer"
                   onClick={() => setCurrentPage(page)}
                   isActive={currentPage === page}
                   size={"sm"}
@@ -144,6 +159,7 @@ export default function Invetory() {
             ))}
             <PaginationItem>
               <PaginationNext
+                className="cursor-pointer"
                 onClick={() => {
                   if (currentPage < Math.ceil(data?.length / limit))
                     setCurrentPage(currentPage + 1);
@@ -153,7 +169,7 @@ export default function Invetory() {
             </PaginationItem>
           </PaginationContent>
         </Pagination>
-      </div>
+      )}
     </CategoryLayout>
   );
 }

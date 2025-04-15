@@ -6,10 +6,21 @@ export default function useDeleteStock() {
   const queryClient = useQueryClient();
   const { isLoading: isDelete, mutate: deleteStock } = useMutation({
     mutationFn: (id: number) => deleteStockAPI(id),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log(data);
       toast.success("El equipo fue eliminado con exito!");
       queryClient.invalidateQueries({
-        queryKey: ["lights"],
+        queryKey: [
+          "sound",
+          "lights",
+          "ambientation",
+          "structure",
+          "cables",
+          "screen",
+          "furniture",
+          "tools",
+          "others",
+        ],
       });
     },
     onError: (err) => toast.error(err.message),

@@ -81,11 +81,6 @@ function Navbar() {
           />
           <NavButton
             display={display}
-            icon={<GrUserManager />}
-            description={"Clientes"}
-          />
-          <NavButton
-            display={display}
             icon={<IoPerson />}
             description={"Personal"}
           />

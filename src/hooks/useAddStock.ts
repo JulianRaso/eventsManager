@@ -21,7 +21,17 @@ export default function useAddStock() {
     onSuccess: () => {
       toast.success("El equipo fue agregado con exito!");
       queryClient.invalidateQueries({
-        queryKey: ["sound"],
+        queryKey: [
+          "sound",
+          "lights",
+          "ambientation",
+          "structure",
+          "cables",
+          "screen",
+          "furniture",
+          "tools",
+          "others",
+        ],
       });
       navigate("/inventario");
     },

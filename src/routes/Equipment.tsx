@@ -1,10 +1,8 @@
 import { useForm } from "react-hook-form";
 import AddLayout from "../components/addLayout";
 import NavigationButtons from "../components/NavigationButtons";
-import useAddStock from "../hooks/useAddStock";
 import { Input } from "../components/ui/Input";
-
-//Check if a name existns for non duplication in DB
+import useAddStock from "../hooks/useAddStock";
 
 export default function Equipment() {
   const { register, reset, handleSubmit } = useForm();
@@ -54,8 +52,10 @@ export default function Equipment() {
             >
               <option value="sound">Sonido</option>
               <option value="lights">Iluminacion</option>
-              <option value="decoration">Ambiente</option>
+              <option value="ambientation">Ambientacion</option>
               <option value="structure">Estructura</option>
+              <option value="screen">Pantalla</option>
+              <option value="furniture">Muebles</option>
               <option value="cables">Cables</option>
               <option value="tools">Herramientas</option>
               <option value="others">Otro</option>
@@ -66,7 +66,7 @@ export default function Equipment() {
             <Input
               type="text"
               id="updated_by"
-              defaultValue={"Sistem"}
+              defaultValue={"Sistema"}
               {...register("updated_by")}
               disabled
             />
