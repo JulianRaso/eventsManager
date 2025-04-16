@@ -1,15 +1,57 @@
 import { useForm } from "react-hook-form";
-import AddLayout from "../components/addLayout";
 import NavigationButtons from "../components/NavigationButtons";
 import { Input } from "../components/ui/Input";
 import useAddStock from "../hooks/useAddStock";
+import AddLayout from "../components/AddLayout";
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getCurrentStock } from "../services/stock";
+import useUpdateStock from "../hooks/useUpdateStock";
+import toast from "react-hot-toast";
 
 export default function Equipment() {
-  const { register, reset, handleSubmit } = useForm();
+  const [category, setCategory] = useState("Sound");
+  const { register, reset, handleSubmit, setValue } = useForm();
   const { isAdding, addStock } = useAddStock();
+  const { isUpdating, updateStock } = useUpdateStock({ category: "sound" });
+  const stockId = useParams().stockId;
+  const isEdittingSession = Boolean(stockId);
+
+  useEffect(() => {
+    if (isEdittingSession) {
+      getCurrentStock(stockId)
+        .then((res = []) => {
+          if (res?.length != 0) {
+            const { name, location, price, quantity, category, updated_by } =
+              res[0];
+
+            setValue("name", name);
+            setValue("quantity", quantity);
+            setValue("location", location);
+            setValue("price", price);
+            setValue("category", category);
+            setValue("updated_by", updated_by);
+          }
+        })
+        .catch(() => {
+          toast.error("Error al actualizar el stock");
+        });
+    }
+  }, [stockId, isEdittingSession, setValue]);
 
   function onSubmit(data) {
-    addStock(data);
+    const updatedStock = {
+      id: stockId,
+      name: data.name,
+      quantity: data.quantity,
+      location: data.location,
+      price: data.price,
+      category: data.category,
+      updated_by: data.updated_by,
+    };
+
+    if (isEdittingSession) updateStock(updatedStock);
+    if (!isEdittingSession) addStock(data);
     reset();
   }
 
@@ -22,7 +64,12 @@ export default function Equipment() {
             <label htmlFor="name" className="block mb-2">
               Nombre
             </label>
-            <Input type="text" id="name" {...register("name")} />
+            <Input
+              type="text"
+              id="name"
+              {...register("name")}
+              disabled={isEdittingSession}
+            />
           </div>
           <div>
             <label htmlFor="quantity" className="block mb-2">
@@ -47,7 +94,8 @@ export default function Equipment() {
             <select
               className="border rounded-md h-9 w-full"
               {...register("category")}
-              defaultValue={"sound"}
+              defaultValue={category}
+              onBlur={(e) => setCategory(e.target.value)}
               required
             >
               <option value="sound">Sonido</option>
@@ -73,9 +121,9 @@ export default function Equipment() {
           </div>
         </div>
         <NavigationButtons
-          isAdding={isAdding}
+          isAdding={isAdding || isUpdating}
           navigateTo="/inventario"
-          addTitle="Agregar"
+          addTitle={isEdittingSession ? "Actualizar" : "Agregar"}
         />
       </form>
     </AddLayout>

@@ -4,7 +4,7 @@ import { deleteStock as deleteStockAPI } from "../services/stock";
 
 export default function useDeleteStock() {
   const queryClient = useQueryClient();
-  const { isLoading: isDelete, mutate: deleteStock } = useMutation({
+  const { isPending: isDelete, mutate: deleteStock } = useMutation({
     mutationFn: (id: number) => deleteStockAPI(id),
     onSuccess: (data) => {
       console.log(data);

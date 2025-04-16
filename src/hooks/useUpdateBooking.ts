@@ -17,7 +17,7 @@ interface bookingProps {
 export default function useUpdateBooking() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { isLoading: isUpdating, mutate: updateBooking } = useMutation({
+  const { isPending: isUpdating, mutate: updateBooking } = useMutation({
     mutationKey: ["bookings"],
     mutationFn: (booking: bookingProps) => updateBookingAPI(booking),
     onSuccess: () => {

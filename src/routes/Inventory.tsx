@@ -121,7 +121,7 @@ export default function Invetory() {
               <TableData>
                 <TableButtons
                   id={type.id}
-                  route="inventario/editar"
+                  route="/inventario/editar"
                   isDeleting={isDelete}
                   onDelete={deleteStock}
                 />

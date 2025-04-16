@@ -16,7 +16,7 @@ export default function useAddStock() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const { isLoading: isAdding, mutate: addStock } = useMutation({
+  const { isPending: isAdding, mutate: addStock } = useMutation({
     mutationFn: (data: StockProps) => addStockAPI(data),
     onSuccess: () => {
       toast.success("El equipo fue agregado con exito!");

@@ -50,7 +50,10 @@ function App() {
             <Route path="/inventario">
               <Route index element={<Invetory />} />
               <Route path="/inventario/agregar" element={<Equipment />} />
-              <Route path="/inventario/editar/:id" element={<Invetory />} />
+              <Route
+                path="/inventario/editar/:stockId"
+                element={<Equipment />}
+              />
             </Route>
             <Route path="/transporte" element={<Transport />} />
 
