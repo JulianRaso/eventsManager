@@ -1,6 +1,7 @@
 import { useState } from "react";
 import CategoryLayout from "../components/CategoryLayout";
 import FilterStock from "../components/FilterStock";
+import Spinner from "../components/Spinner";
 import {
   Table,
   TableBody,
@@ -8,9 +9,8 @@ import {
   TableHead,
   TableRow,
 } from "../components/Table";
+import TableButtons from "../components/TableButtons";
 import { useGetTransport } from "../hooks/useGetTransport";
-import Action from "../components/Action";
-import Spinner from "../components/Spinner";
 
 const statusTypes = {
   available: {
@@ -82,8 +82,9 @@ export default function Transport() {
               <TableData>{vehicle.last_service}</TableData>
               <TableData>{statusTypes[vehicle.status].es}</TableData>
               <TableData>
-                <Action
+                <TableButtons
                   id={vehicle.id}
+                  route="transporte/editar"
                   isDeleting={false}
                   onDelete={() => {}}
                 />

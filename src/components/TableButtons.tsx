@@ -1,12 +1,18 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 
-interface ActionProps {
+interface TableButtonsProps {
   id: number;
+  route: string;
   isDeleting: boolean;
   onDelete: (id: number) => void;
 }
-export default function Action({ id, isDeleting, onDelete }: ActionProps) {
+export default function TableButtons({
+  id,
+  route,
+  isDeleting,
+  onDelete,
+}: TableButtonsProps) {
   const navigate = useNavigate();
   return (
     <div className="flex gap-1 flex-wrap">
@@ -14,7 +20,7 @@ export default function Action({ id, isDeleting, onDelete }: ActionProps) {
         variant="outline"
         className="hover:bg-gray-300"
         disabled={isDeleting}
-        onClick={() => navigate(`/reservas/reserva/${id}`)}
+        onClick={() => navigate(`${route}/${id}`)}
       >
         Editar
       </Button>

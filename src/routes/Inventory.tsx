@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Action from "../components/Action";
 import CategoryLayout from "../components/CategoryLayout";
 import Filter from "../components/Filter";
 import { formatDateTime } from "../components/formatDate";
@@ -11,8 +10,7 @@ import {
   TableHead,
   TableRow,
 } from "../components/Table";
-import useDeleteStock from "../hooks/useDeleteStock";
-import useGetData from "../hooks/useGetData";
+import TableButtons from "../components/TableButtons";
 import {
   Pagination,
   PaginationContent,
@@ -21,6 +19,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "../components/ui/pagination";
+import useDeleteStock from "../hooks/useDeleteStock";
+import useGetData from "../hooks/useGetData";
 
 const filterByCategory = [
   {
@@ -119,8 +119,9 @@ export default function Invetory() {
               <TableData>{type.updated_by}</TableData>
               <TableData>{formatDateTime(type.last_update)}</TableData>
               <TableData>
-                <Action
+                <TableButtons
                   id={type.id}
+                  route="inventario/editar"
                   isDeleting={isDelete}
                   onDelete={deleteStock}
                 />

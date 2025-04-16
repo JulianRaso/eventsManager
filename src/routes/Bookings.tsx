@@ -124,9 +124,11 @@ export default function Bookings() {
             )
           )}
       </Table>
+      {/* {Check if the data is empty and show a message} */}
       {data?.length === 0 && (
         <div className="text-2xl text-center mt-4">Agenda una Reserva!!</div>
       )}
+      {/* Check if the data is more than the limit and show pagination */}
       {data?.length > limit && (
         <Pagination className="w-full flex items-center mt-2">
           <PaginationContent>

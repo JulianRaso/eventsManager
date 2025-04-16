@@ -11,6 +11,7 @@ interface clientProps {
 }
 
 interface bookingProps {
+  id?: number;
   client_dni: string;
   booking_status: string;
   comments: string;
@@ -78,4 +79,38 @@ export async function createBooking(
     }
   }
   return addBooking(booking);
+}
+
+export async function updateBooking(booking: bookingProps) {
+  console.log(booking);
+
+  const { data, error } = await supabase
+    .from("booking")
+    .update({ ...booking })
+    .eq("id", booking.id)
+    .select();
+
+  if (error) {
+    console.log(error);
+
+    toast.error(
+      "Hubo un error al actualizar la reserva, por favor intente nuevamente"
+    );
+  }
+  return data;
+}
+
+export async function getCurrentBooking(bookingId: number) {
+  const { data: booking, error } = await supabase
+    .from("booking")
+    .select("*")
+    .eq("id", bookingId);
+
+  if (error) {
+    toast.error(
+      "Hubo un error al cargar la reserva, por favor intente nuevamente"
+    );
+  }
+
+  return booking;
 }

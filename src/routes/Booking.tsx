@@ -1,16 +1,22 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import AddLayout from "../components/addLayout";
+import { useParams } from "react-router-dom";
+import AddLayout from "../components/AddLayout";
 import NavigationButtons from "../components/NavigationButtons";
+import Spinner from "../components/Spinner";
 import { Input } from "../components/ui/Input";
 import { useAddBooking } from "../hooks/useAddBooking";
+import useUpdateBooking from "../hooks/useUpdateBooking";
+import { getCurrentBooking } from "../services/booking";
 import { checkClient } from "../services/client";
 
 export default function Booking() {
   const { register, reset, handleSubmit, setValue } = useForm();
   const { isAdding, addBooking } = useAddBooking();
+  const { isUpdating, updateBooking } = useUpdateBooking();
   const [dni, setDni] = useState("");
+  const [existClient, setExistClient] = useState(false);
   const [client, setClient] = useState({
     dni: "",
     name: "",
@@ -18,9 +24,55 @@ export default function Booking() {
     phoneNumber: "",
     email: "",
   });
-  const [existClient, setExistClient] = useState(false);
+
+  //Editing Session
+  const bookingId = useParams().bookingId;
+  const isEditingSession = Boolean(bookingId);
+  const [isLoadingBooking, setIsLoadingBooking] = useState(
+    bookingId ? true : false
+  );
 
   useEffect(() => {
+    if (isEditingSession) {
+      getCurrentBooking(Number(bookingId))
+        .then((res = []) => {
+          if (res?.length != 0) {
+            const {
+              client_dni,
+              event_date,
+              event_type,
+              place,
+              booking_status,
+              payment_status,
+              comments,
+            } = res[0];
+
+            setValue("client_dni", client_dni);
+            setValue("event_date", event_date);
+            setValue("place", place);
+            setValue("booking_status", booking_status);
+            setValue("payment_status", payment_status);
+            setValue("comments", comments);
+            setValue("event_type", event_type);
+
+            checkClient(client_dni).then((res) => {
+              if (res.dni != "") {
+                const { dni, name, lastName, phoneNumber, email } = res;
+                setValue("dni", dni);
+                setValue("name", name);
+                setValue("lastName", lastName);
+                setValue("phoneNumber", phoneNumber);
+                setValue("email", email);
+                setExistClient(true);
+                setIsLoadingBooking(false);
+              }
+            });
+          }
+        })
+        .catch(() => {
+          toast.error("Error al cargar la reserva");
+        });
+    }
     if (dni === "") return;
     checkClient(dni)
       .then((res) => {
@@ -44,7 +96,9 @@ export default function Booking() {
       .catch(() => {
         toast.error("Error al verificar el cliente");
       });
-  }, [dni, setValue]);
+  }, [dni, setValue, isEditingSession, bookingId, client.dni]);
+
+  if (isLoadingBooking) return <Spinner />;
 
   function handleCheckClient(dni: string) {
     if (Number(dni) > 999999 && Number(dni) < 99999999) {
@@ -71,7 +125,19 @@ export default function Booking() {
       place: data.place,
     };
 
-    addBooking({ client: clientData, booking: bookingData });
+    if (isEditingSession)
+      updateBooking({
+        id: Number(bookingId),
+        client_dni: data.dni,
+        booking_status: data.booking_status,
+        comments: data.comments,
+        event_date: data.event_date,
+        event_type: data.event_type,
+        payment_status: data.payment_status,
+        place: data.place,
+      });
+    if (!isEditingSession)
+      addBooking({ client: clientData, booking: bookingData });
     reset();
   }
 
@@ -92,6 +158,7 @@ export default function Booking() {
                 minLength={7}
                 maxLength={8}
                 {...register("dni")}
+                disabled={isEditingSession}
                 onBlur={(e) => handleCheckClient(e.currentTarget.value)}
               />
               <Input
@@ -138,7 +205,7 @@ export default function Booking() {
                   <select
                     className="border rounded-md h-9"
                     {...register("event_type")}
-                    defaultValue={"birthday"}
+                    defaultValue={"corporate"}
                     required
                   >
                     <option value="corporate">Corporativo</option>
@@ -202,6 +269,9 @@ export default function Booking() {
                 >
                   <option value="confirm">Confirmado</option>
                   <option value="pending">Pendiente</option>
+                  {isEditingSession && (
+                    <option value="cancel">Cancelado</option>
+                  )}
                 </select>
               </div>
 
@@ -226,9 +296,9 @@ export default function Booking() {
 
         {/* Navegación */}
         <NavigationButtons
-          isAdding={isAdding}
+          isAdding={isAdding || isUpdating}
           navigateTo="/reservas"
-          addTitle="Agendar"
+          addTitle={isEditingSession ? "Actualizar" : "Agregar"}
         />
       </form>
     </AddLayout>

@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import { supabase } from "./supabase";
 
 interface clientProps {
@@ -12,7 +13,7 @@ export async function createClient(client: clientProps) {
   const { data, error } = await supabase.from("client").insert([client]);
 
   if (error) {
-    throw new Error("There was an error while creating client");
+    toast.error("Hubo un error al crear el cliente");
   }
   return data;
 }
@@ -24,7 +25,7 @@ export async function checkClient(dni: string) {
     .eq("dni", dni);
 
   if (error) {
-    throw new Error("There was an error while fetching client");
+    toast.error("Hubo un error al buscar el cliente");
   }
 
   if (client.length === 0) {
@@ -47,7 +48,7 @@ export async function updateClient(client: clientProps) {
     .eq("dni", client.dni);
 
   if (error) {
-    throw new Error("There was an error while updating client");
+    toast.error("Hubo un error al actualizar el cliente");
   }
   return data;
 }

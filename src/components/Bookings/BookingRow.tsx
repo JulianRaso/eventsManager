@@ -1,5 +1,5 @@
 import { useDeleteBooking } from "../../hooks/useDeleteBooking";
-import Action from "../Action";
+import TableButtons from "../TableButtons";
 import { formatDate } from "../formatDate";
 import TableData from "../ui/TableData";
 
@@ -96,7 +96,12 @@ export default function BookingRow({ booking, index }: bookingProps) {
         </TableData>
         <TableData>${0}</TableData>
         <TableData>
-          <Action id={id} isDeleting={isDeleting} onDelete={deleteBooking} />
+          <TableButtons
+            id={id}
+            route="/reservas/reserva"
+            isDeleting={isDeleting}
+            onDelete={deleteBooking}
+          />
         </TableData>
       </tr>
     </tbody>
