@@ -38,7 +38,7 @@ export default function Filter({
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="w-full flex justify-between m-4">
+    <div className="flex justify-between">
       <NavLink to={navigateTo}>
         <Button variant="outline">
           <IoMdAdd />

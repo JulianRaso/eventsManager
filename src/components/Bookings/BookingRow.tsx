@@ -13,6 +13,7 @@ interface Booking {
   id: number;
   client: Client;
   booking_status: string;
+  organization: string;
   event_date: string;
   payment_status: string;
   place: string;
@@ -53,6 +54,7 @@ export default function BookingRow({ booking, index }: bookingProps) {
     id,
     client,
     booking_status,
+    organization,
     event_date,
     payment_status,
     place,
@@ -67,6 +69,7 @@ export default function BookingRow({ booking, index }: bookingProps) {
         <TableData>{name}</TableData>
         <TableData>{lastName}</TableData>
         <TableData>{phoneNumber}</TableData>
+        <TableData>{organization}</TableData>
         <TableData>{formatDate(event_date)}</TableData>
         <TableData>{eventTypes[event_type]?.es}</TableData>
         <TableData>{place}</TableData>

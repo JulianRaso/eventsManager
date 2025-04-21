@@ -14,6 +14,7 @@ import PageNotFound from "./routes/PageNotFound";
 import Profile from "./routes/Profile";
 import Transport from "./routes/Transport";
 import Equipment from "./routes/Equipment";
+import Vehicle from "./routes/Vehicle";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -55,7 +56,14 @@ function App() {
                 element={<Equipment />}
               />
             </Route>
-            <Route path="/transporte" element={<Transport />} />
+            <Route path="/transporte">
+              <Route index element={<Transport />} />
+              <Route path="/transporte/agregar" element={<Vehicle />} />
+              <Route
+                path="/transporte/editar/:vehicleId"
+                element={<Vehicle />}
+              />
+            </Route>
 
             <Route path="/perfil" element={<Profile />} />
             <Route path="/*" element={<PageNotFound />} />

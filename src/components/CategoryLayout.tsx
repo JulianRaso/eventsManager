@@ -5,9 +5,9 @@ interface CategoryProps {
 
 export default function CategoryLayout({ children, title }: CategoryProps) {
   return (
-    <div className="p-8 w-full h-full">
-      <div className="text-xl font-semibold mb-4">{title}</div>
-      <div className="">{children}</div>
+    <div className="w-full h-full p-4">
+      <div className="text-xl lg:text-2xl font-semibold mb-4">{title}</div>
+      <div className="w-fit lg:w-full p-4 flex flex-col gap-2">{children}</div>
     </div>
   );
 }

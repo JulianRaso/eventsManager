@@ -1,12 +1,11 @@
 import { useState } from "react";
 
 //Icons
+import { CiDeliveryTruck } from "react-icons/ci";
 import { GoSidebarCollapse, GoSidebarExpand } from "react-icons/go";
-import { GrUserManager } from "react-icons/gr";
 import { IoPerson } from "react-icons/io5";
 import { MdDashboard, MdEvent, MdOutlineInventory2 } from "react-icons/md";
 import companyLogo from "../assets/ShowRental.png";
-import { CiDeliveryTruck } from "react-icons/ci";
 
 //UI
 import ProfileNav from "./ProfileNav";
@@ -17,7 +16,7 @@ function Navbar() {
   const [display, setDisplay] = useState(true);
 
   return (
-    <div className="flex flex-col justify-between p-6 border-r-2 bg-gray-800 text-gray-300 shadow-lg transition-all duration-300">
+    <div className="flex flex-col justify-between p-2 xl:p-4 bg-gray-800 text-gray-300 shadow-lg transition-all duration-300">
       <div
         className={`flex flex-col items-center justify-center${
           display ? "text-center" : "text-xl"
@@ -49,13 +48,13 @@ function Navbar() {
         >
           <img
             src={companyLogo}
-            className={`rounded-full border-2 border-gray-300 shadow-lg transition-all duration-300 ${
-              display ? "w-[100px] h-[100px]" : "w-[60px] h-[60px]"
+            className={`rounded-2xl border-2 border-gray-300 shadow-lg transition-all duration-300 ${
+              display ? "w-[90px] h-[90px]" : "w-[60px] h-[60px]"
             }`}
             alt="company logo"
           />
           <div
-            className={`text-xl font-bold mt-2 transition-all duration-300 ${
+            className={`xl:text-xl font-bold mt-2 transition-all duration-300 ${
               display ? "" : "hidden"
             }`}
           >

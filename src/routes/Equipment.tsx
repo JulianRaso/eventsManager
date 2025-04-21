@@ -10,7 +10,7 @@ import useUpdateStock from "../hooks/useUpdateStock";
 import toast from "react-hot-toast";
 
 export default function Equipment() {
-  const [category, setCategory] = useState("Sound");
+  const [category, setCategory] = useState("");
   const { register, reset, handleSubmit, setValue } = useForm();
   const { isAdding, addStock } = useAddStock();
   const { isUpdating, updateStock } = useUpdateStock({ category: "sound" });

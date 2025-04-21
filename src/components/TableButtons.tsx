@@ -18,7 +18,7 @@ export default function TableButtons({
     <div className="flex gap-1 flex-wrap">
       <Button
         variant="outline"
-        className="hover:bg-gray-300"
+        className="hover:bg-gray-300 w-full lg:w-fit"
         disabled={isDeleting}
         onClick={() => navigate(`${route}/${id}`)}
       >
@@ -26,7 +26,7 @@ export default function TableButtons({
       </Button>
       <Button
         variant="outline"
-        className="hover:bg-red-500"
+        className="hover:bg-red-500 w-full lg:w-fit"
         onClick={() => onDelete(id)}
       >
         Eliminar

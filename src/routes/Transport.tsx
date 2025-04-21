@@ -11,6 +11,7 @@ import {
 } from "../components/Table";
 import TableButtons from "../components/TableButtons";
 import { useGetTransport } from "../hooks/useGetTransport";
+import { formatDate } from "../components/formatDate";
 
 const statusTypes = {
   available: {
@@ -49,7 +50,7 @@ export default function Transport() {
       <FilterStock
         filterByName={filterByName}
         setFilterByName={setFilterByName}
-        navigateTo=""
+        navigateTo="/transporte/agregar"
       />
       <Table>
         <TableHead>
@@ -79,12 +80,12 @@ export default function Transport() {
               <TableData>{vehicle.year}</TableData>
               <TableData>{vehicle.license_plate}</TableData>
               <TableData>{vehicle.type}</TableData>
-              <TableData>{vehicle.last_service}</TableData>
+              <TableData>{formatDate(vehicle.last_service)}</TableData>
               <TableData>{statusTypes[vehicle.status].es}</TableData>
               <TableData>
                 <TableButtons
                   id={vehicle.id}
-                  route="transporte/editar"
+                  route="/transporte/editar"
                   isDeleting={false}
                   onDelete={() => {}}
                 />

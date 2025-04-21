@@ -23,7 +23,7 @@ export default function FilterStock({
       <div className="flex gap-1 items-center">
         <input
           type="text"
-          placeholder="Nombre del producto"
+          placeholder="Nombre del vehiculo"
           value={filterByName}
           className="border rounded-lg p-1.5 bg-gray-50"
           onChange={(event) => setFilterByName(event.currentTarget.value)}

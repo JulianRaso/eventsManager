@@ -7,7 +7,6 @@ import { Table, TableData, TableHead } from "../components/Table";
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -92,6 +91,7 @@ export default function Bookings() {
           <TableData>Nombre</TableData>
           <TableData>Apellido</TableData>
           <TableData>Contacto</TableData>
+          <TableData>Organizacion</TableData>
           <TableData>Fecha</TableData>
           <TableData>Tipo</TableData>
           <TableData>Ubicacion</TableData>

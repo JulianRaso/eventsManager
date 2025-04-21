@@ -15,10 +15,13 @@ interface bookingProps {
   client_dni: string;
   booking_status: string;
   comments: string;
+  organization: string;
   event_date: string;
   event_type: string;
   payment_status: string;
   place: string;
+  tax: string;
+  revenue: string;
 }
 
 //Get data from database
@@ -91,8 +94,6 @@ export async function updateBooking(booking: bookingProps) {
     .select();
 
   if (error) {
-    console.log(error);
-
     toast.error(
       "Hubo un error al actualizar la reserva, por favor intente nuevamente"
     );

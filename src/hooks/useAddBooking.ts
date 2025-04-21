@@ -15,10 +15,13 @@ interface bookingProps {
   client_dni: string;
   booking_status: string;
   comments: string;
+  organization: string;
   event_date: string;
   event_type: string;
   payment_status: string;
   place: string;
+  tax: string;
+  revenue: string;
 }
 
 export function useAddBooking() {
