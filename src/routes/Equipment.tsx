@@ -57,7 +57,9 @@ export default function Equipment() {
 
   return (
     <AddLayout>
-      <h1 className="text-2xl font-bold mb-4">Agregar equipo</h1>
+      <h1 className="text-2xl font-bold mb-4">
+        {isEdittingSession ? "Modificar equipo" : "Agregar equipo"}
+      </h1>
       <form className="flex flex-col gap-10" onSubmit={handleSubmit(onSubmit)}>
         <div className="grid grid-cols-2 gap-4">
           <div>

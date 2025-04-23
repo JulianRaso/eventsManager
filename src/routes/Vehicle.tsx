@@ -1,27 +1,81 @@
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
+import { useNavigate, useParams } from "react-router-dom";
 import AddLayout from "../components/AddLayout";
-import { useParams } from "react-router-dom";
-import { Input } from "../components/ui/Input";
-import { useState } from "react";
 import NavigationButtons from "../components/NavigationButtons";
+import { Input } from "../components/ui/Input";
 import useAddVehicle from "../hooks/useAddVehicle";
+import useUpdateVehicle from "../hooks/useUpdateVehicle";
+import { getCurrentTransport } from "../services/transport";
 
 export default function Vehicle() {
+  const navigate = useNavigate();
   const [status, setStatus] = useState("");
   const { register, reset, handleSubmit, setValue } = useForm();
   const { isPending, addVehicle } = useAddVehicle();
+  const { isUpdating, updateVehicle } = useUpdateVehicle();
   const vehicle = useParams().vehicleId;
   const isEdittingSession = Boolean(vehicle);
 
+  useEffect(() => {
+    if (isEdittingSession) {
+      getCurrentTransport(String(vehicle))
+        .then((res = []) => {
+          if (res?.length != 0) {
+            const {
+              brand,
+              last_service,
+              license_plate,
+              model,
+              notes,
+              status,
+              type,
+              updated_by,
+              year,
+            } = res[0];
+
+            setValue("brand", brand);
+            setValue("last_service", last_service);
+            setValue("model", model);
+            setValue("license_plate", license_plate);
+            setValue("status", status);
+            setValue("notes", notes);
+            setValue("type", type);
+            setValue("updated_by", updated_by);
+            setValue("year", year);
+          }
+        })
+        .catch(() => {
+          toast.error("Error al actualizar el stock");
+          navigate("/transporte");
+        });
+    }
+  }, [vehicle, isEdittingSession, setValue, navigate]);
+
   function onSubmit(data) {
-    // if (isEdittingSession) updateStock(updatedStock);
+    const updateVehicleProps = {
+      id: vehicle,
+      brand: data.brand,
+      last_service: data.last_service,
+      license_plate: data.license_plate,
+      model: data.model,
+      notes: data.notes,
+      status: data.status,
+      type: data.type,
+      updated_by: data.updated_by,
+      year: data.year,
+    };
+    if (isEdittingSession) updateVehicle(updateVehicleProps);
     if (!isEdittingSession) addVehicle(data);
     reset();
   }
 
   return (
     <AddLayout>
-      <h1 className="text-2xl font-bold mb-4">Agregar vehiculo</h1>
+      <h1 className="text-2xl font-bold mb-4">
+        {isEdittingSession ? "Modificar Vehiculo" : "Agregar Vehiculo"}
+      </h1>
       <form className="flex flex-col gap-10" onSubmit={handleSubmit(onSubmit)}>
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -37,22 +91,40 @@ export default function Vehicle() {
             />
           </div>
           <div>
-            <label htmlFor="quantity" className="block mb-2">
+            <label htmlFor="brand" className="block mb-2">
               Modelo
             </label>
-            <Input type="text" required id="model" {...register("model")} />
+            <Input
+              type="text"
+              required
+              id="model"
+              {...register("model")}
+              disabled={isEdittingSession}
+            />
           </div>
           <div>
             <label htmlFor="year" className="block mb-2">
               Año
             </label>
-            <Input type="text" required id="year" {...register("year")} />
+            <Input
+              type="text"
+              required
+              id="year"
+              {...register("year")}
+              disabled={isEdittingSession}
+            />
           </div>
           <div>
             <label htmlFor="type" className="block mb-2">
               Tipo
             </label>
-            <Input type="text" required id="type" {...register("type")} />
+            <Input
+              type="text"
+              required
+              id="type"
+              {...register("type")}
+              disabled={isEdittingSession}
+            />
           </div>
           <div>
             <label className="block mb-2">Patente</label>
@@ -60,6 +132,7 @@ export default function Vehicle() {
               type="text"
               id="licence_plate"
               required
+              disabled={isEdittingSession}
               {...register("license_plate")}
             />
           </div>
@@ -106,7 +179,7 @@ export default function Vehicle() {
           </div>
         </div>
         <NavigationButtons
-          isAdding={isPending}
+          isAdding={isPending || isUpdating}
           navigateTo="/transporte"
           addTitle={isEdittingSession ? "Actualizar" : "Agregar"}
         />
