@@ -1,15 +1,26 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { CiUser } from "react-icons/ci";
 import { NavLink } from "react-router-dom";
 import Spinner from "../components/Spinner";
-import InputProfile from "../components/ui/InputProfile";
+import { Input } from "../components/ui/Input";
 import { useUser } from "../hooks/useUser";
 
 export default function Profile() {
   const [option, setOption] = useState(false);
-  const { user: data, isLoading } = useUser();
+  const { user, isLoading } = useUser();
+  const [password, setPassword] = useState("");
+  const [checkPassword, setCheckPassword] = useState("");
+  const [grandAccess, setGrandAccess] = useState(false);
+  const { register, reset, handleSubmit, setValue } = useForm();
   const profileImage = null;
 
+  if (user) {
+    if (user.user_metadata.fullName) {
+      setValue("fullName", user.user_metadata?.fullName);
+    }
+    setValue("email", user.email);
+  }
   function handleConfiguration() {
     if (!option) {
       setOption(!option);
@@ -22,9 +33,18 @@ export default function Profile() {
 
   if (isLoading) return <Spinner />;
 
+  function onSubmitProfile(data) {
+    console.log(data);
+
+    reset();
+  }
+
   return (
     <div className="flex w-full items-center justify-center h-full sm:text-xl bg-gray-100">
-      <div className="border-2 rounded-3xl bg-white shadow-lg flex flex-col items-center gap-6 p-8 max-w-lg w-full">
+      <form
+        onSubmit={handleSubmit(onSubmitProfile)}
+        className="border-2 rounded-3xl bg-white shadow-lg flex flex-col items-center gap-6 p-8 max-w-lg w-full"
+      >
         <div className="text-6xl mb-4">
           {profileImage === null ? (
             <CiUser className="text-gray-500" />
@@ -36,26 +56,33 @@ export default function Profile() {
 
         {/* Profile Information */}
         <div className="flex flex-col w-full gap-6 p-4 sm:p-8">
-          <InputProfile
-            required={option}
-            title="Nombre"
-            inputValue=""
-            disabled={!option}
-          />
-          <InputProfile
-            required={option}
-            title="Email"
-            inputValue={data?.email || ""}
-            disabled={!option}
-          />
-          {option && (
-            <InputProfile
-              required={option}
-              title="Contraseña"
-              inputValue=""
-              disabled={!option}
+          <div className="flex flex-col gap-2">
+            <p>Nombre completo</p>
+            <Input type="text" {...register("fullName")} required />
+          </div>
+          <div className="flex flex-col gap-2">
+            <p>Email</p>
+            <Input type="text" {...register("email")} disabled={true}></Input>
+          </div>
+          <div className="flex flex-col gap-2">
+            <p>Contraseña</p>
+            <Input
+              type="text"
+              {...register("password")}
+              disabled
+              required
+              onChange={(e) => setPassword(e.target.value)}
+            ></Input>
+          </div>
+          <div className="flex flex-col gap-2">
+            <p>Repetir contraseña</p>
+            <Input
+              type="text"
+              disabled
+              required
+              onBlur={(e) => setCheckPassword(e.target.value)}
             />
-          )}
+          </div>
         </div>
 
         {/* Action Buttons */}
@@ -73,7 +100,7 @@ export default function Profile() {
             {option ? "Guardar" : "Editar"}
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
