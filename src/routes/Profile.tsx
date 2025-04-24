@@ -1,17 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { CiUser } from "react-icons/ci";
 import { NavLink } from "react-router-dom";
 import Spinner from "../components/Spinner";
 import InputProfile from "../components/ui/InputProfile";
-import { getUserData } from "../services/user";
+import { useUser } from "../hooks/useUser";
 
 export default function Profile() {
   const [option, setOption] = useState(false);
-  const { data, isLoading } = useQuery({
-    queryKey: ["userData"],
-    queryFn: getUserData,
-  });
+  const { user: data, isLoading } = useUser();
   const profileImage = null;
 
   function handleConfiguration() {

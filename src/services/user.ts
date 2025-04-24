@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import { supabase } from "./supabase";
 
 interface userProps {
@@ -5,11 +6,10 @@ interface userProps {
   password: string;
 }
 
-async function signUp({ email, password }: userProps) {
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-  });
+async function signUp(user: userProps) {
+  console.log(user);
+
+  const { data, error } = await supabase.auth.signUp(user);
 
   if (error) {
     throw new Error("There was an error trying to Sign Up. Please try again!");
@@ -25,7 +25,7 @@ async function logIn({ email, password }: userProps) {
   });
 
   if (error) {
-    throw new Error("There was an error trying to Log In. Please try again!");
+    throw new Error(error.message);
   }
 
   return data;
@@ -56,18 +56,16 @@ async function updateUser({ email, password }: userProps) {
   return data;
 }
 
-export async function getUserData() {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export async function getCurrentUser() {
+  const { data: session } = await supabase.auth.getSession();
 
-  if (!user) {
-    throw new Error("No user found");
-  }
+  if (!session.session) return null;
 
-  console.log(user);
+  const { data, error } = await supabase.auth.getUser();
 
-  return user;
+  if (error) throw new Error(error.message);
+
+  return data?.user;
 }
 
 async function inviteUser(email: string) {
