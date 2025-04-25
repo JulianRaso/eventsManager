@@ -1,4 +1,3 @@
-import toast from "react-hot-toast";
 import { supabase } from "./supabase";
 
 interface userProps {
@@ -7,8 +6,6 @@ interface userProps {
 }
 
 async function signUp(user: userProps) {
-  console.log(user);
-
   const { data, error } = await supabase.auth.signUp(user);
 
   if (error) {
@@ -73,11 +70,11 @@ async function inviteUser(email: string) {
 
   if (error) {
     throw new Error(
-      "There was an error trying to invite the user. Please try again!"
+      "Hubo un error al intentar invitar al usuario. Intentelo de nuevo!"
     );
   }
 
   return data;
 }
 
-export { signUp, logIn, logOut, updateUser, inviteUser };
+export { inviteUser, logIn, logOut, signUp, updateUser };

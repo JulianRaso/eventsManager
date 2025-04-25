@@ -10,12 +10,11 @@ import Equipment from "./routes/Equipment";
 import HumandResource from "./routes/HumandResource";
 import Invetory from "./routes/Inventory";
 import Layout from "./routes/Layout";
+import Login from "./routes/Login";
 import PageNotFound from "./routes/PageNotFound";
 import Profile from "./routes/Profile";
 import Transport from "./routes/Transport";
 import Vehicle from "./routes/Vehicle";
-import { LogIn } from "lucide-react";
-import Login from "./routes/Login";
 
 const queryClient = new QueryClient({
   defaultOptions: {

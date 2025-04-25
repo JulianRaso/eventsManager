@@ -1,18 +1,24 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { CiUser } from "react-icons/ci";
-import { NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Spinner from "../components/Spinner";
+import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/Input";
 import { useUser } from "../hooks/useUser";
 
+function validatePassword(pass: string, toCheck: string) {
+  if (pass && toCheck) {
+    if (pass === toCheck) return true;
+    return false;
+  }
+}
+
 export default function Profile() {
-  const [option, setOption] = useState(false);
+  const navigate = useNavigate();
   const { user, isLoading } = useUser();
-  const [password, setPassword] = useState("");
-  const [checkPassword, setCheckPassword] = useState("");
-  const [grandAccess, setGrandAccess] = useState(false);
-  const { register, reset, handleSubmit, setValue } = useForm();
+  const [validated, setValidated] = useState(false);
+  const { register, reset, handleSubmit, setValue, getValues } = useForm();
   const profileImage = null;
 
   if (user) {
@@ -21,29 +27,24 @@ export default function Profile() {
     }
     setValue("email", user.email);
   }
-  function handleConfiguration() {
-    if (!option) {
-      setOption(!option);
-      return;
-    }
-    if (option) {
-      setOption(!option);
-    }
-  }
 
   if (isLoading) return <Spinner />;
 
   function onSubmitProfile(data) {
     console.log(data);
-
     reset();
+  }
+
+  function handleCancel() {
+    reset();
+    navigate("/dashboard");
   }
 
   return (
     <div className="flex w-full items-center justify-center h-full sm:text-xl bg-gray-100">
       <form
         onSubmit={handleSubmit(onSubmitProfile)}
-        className="border-2 rounded-3xl bg-white shadow-lg flex flex-col items-center gap-6 p-8 max-w-lg w-full"
+        className="border-2 rounded-3xl bg-white shadow-lg flex flex-col items-center p-8 w-2/5"
       >
         <div className="text-6xl mb-4">
           {profileImage === null ? (
@@ -58,47 +59,43 @@ export default function Profile() {
         <div className="flex flex-col w-full gap-6 p-4 sm:p-8">
           <div className="flex flex-col gap-2">
             <p>Nombre completo</p>
-            <Input type="text" {...register("fullName")} required />
+            <Input
+              type="text"
+              id="fullName"
+              {...register("fullName")}
+              required
+            />
           </div>
           <div className="flex flex-col gap-2">
             <p>Email</p>
-            <Input type="text" {...register("email")} disabled={true}></Input>
+            <Input
+              type="text"
+              id="email"
+              {...register("email")}
+              disabled
+            ></Input>
           </div>
           <div className="flex flex-col gap-2">
             <p>Contraseña</p>
             <Input
-              type="text"
+              type="password"
+              id="password"
               {...register("password")}
-              disabled
               required
-              onChange={(e) => setPassword(e.target.value)}
             ></Input>
           </div>
           <div className="flex flex-col gap-2">
             <p>Repetir contraseña</p>
-            <Input
-              type="text"
-              disabled
-              required
-              onBlur={(e) => setCheckPassword(e.target.value)}
-            />
+            <Input type="password" id="passwordCheck" required />
           </div>
         </div>
 
         {/* Action Buttons */}
         <div className="flex w-full justify-between items-center mt-6">
-          <NavLink
-            to="/"
-            className="bg-gray-300 text-gray-800 hover:bg-gray-400 rounded-lg py-2 px-4 transition duration-300"
-          >
-            {option ? "Cancelar" : "Volver"}
-          </NavLink>
-          <button
-            onClick={() => handleConfiguration()}
-            className="bg-blue-500 text-white hover:bg-blue-600 rounded-lg py-2 px-4 transition duration-300"
-          >
-            {option ? "Guardar" : "Editar"}
-          </button>
+          <Button onClick={handleCancel}>Cancelar</Button>
+          <Button variant="outline" disabled={validated}>
+            Guardar cambios
+          </Button>
         </div>
       </form>
     </div>
