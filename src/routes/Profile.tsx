@@ -6,6 +6,7 @@ import Spinner from "../components/Spinner";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/Input";
 import { useUser } from "../hooks/useUser";
+import useUpdateUser from "../hooks/useUpdateUser";
 
 function validatePassword(pass: string, toCheck: string) {
   if (pass && toCheck) {
@@ -15,29 +16,33 @@ function validatePassword(pass: string, toCheck: string) {
 }
 
 export default function Profile() {
-  const navigate = useNavigate();
   const { user, isLoading } = useUser();
-  const [validated, setValidated] = useState(false);
-  const { register, reset, handleSubmit, setValue, getValues } = useForm();
+  let email = "";
+  const { register, reset, handleSubmit, setValue } = useForm();
+  const { isUpdating, updateUser } = useUpdateUser();
   const profileImage = null;
 
   if (user) {
+    console.log(user);
+
     if (user.user_metadata.fullName) {
       setValue("fullName", user.user_metadata?.fullName);
     }
-    setValue("email", user.email);
+    email = user.email || "";
   }
 
   if (isLoading) return <Spinner />;
 
   function onSubmitProfile(data) {
-    console.log(data);
+    const { fullName, password } = data || [];
+    // console.log(data);
+
+    if (fullName) updateUser({ fullName });
     reset();
   }
 
   function handleCancel() {
     reset();
-    navigate("/dashboard");
   }
 
   return (
@@ -59,21 +64,11 @@ export default function Profile() {
         <div className="flex flex-col w-full gap-6 p-4 sm:p-8">
           <div className="flex flex-col gap-2">
             <p>Nombre completo</p>
-            <Input
-              type="text"
-              id="fullName"
-              {...register("fullName")}
-              required
-            />
+            <Input type="text" id="name" {...register("fullName")} required />
           </div>
           <div className="flex flex-col gap-2">
             <p>Email</p>
-            <Input
-              type="text"
-              id="email"
-              {...register("email")}
-              disabled
-            ></Input>
+            <Input type="text" id="email" defaultValue={email} disabled></Input>
           </div>
           <div className="flex flex-col gap-2">
             <p>Contraseña</p>
@@ -81,19 +76,18 @@ export default function Profile() {
               type="password"
               id="password"
               {...register("password")}
-              required
             ></Input>
           </div>
           <div className="flex flex-col gap-2">
             <p>Repetir contraseña</p>
-            <Input type="password" id="passwordCheck" required />
+            <Input type="password" id="passwordCheck" />
           </div>
         </div>
 
         {/* Action Buttons */}
         <div className="flex w-full justify-between items-center mt-6">
           <Button onClick={handleCancel}>Cancelar</Button>
-          <Button variant="outline" disabled={validated}>
+          <Button variant="outline" disabled={isUpdating}>
             Guardar cambios
           </Button>
         </div>

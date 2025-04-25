@@ -19,8 +19,8 @@ export default function useLogin() {
       toast.success(`Bienvenido de regreso!`);
       navigate("/dashboard");
     },
-    onError: () => {
-      toast.error("Hubo un error al intentar ingresar. Intentelo de nuevo!");
+    onError: (err) => {
+      toast.error(err.message);
     },
   });
 

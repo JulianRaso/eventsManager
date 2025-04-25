@@ -1,25 +1,37 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 //Icons
-import { CiDeliveryTruck } from "react-icons/ci";
+import { CiDeliveryTruck, CiUser } from "react-icons/ci";
 import { GoSidebarCollapse, GoSidebarExpand } from "react-icons/go";
-import { IoPerson } from "react-icons/io5";
+import { GrConfigure } from "react-icons/gr";
+import { IoExitOutline, IoPerson } from "react-icons/io5";
 import { MdDashboard, MdEvent, MdOutlineInventory2 } from "react-icons/md";
 import companyLogo from "../assets/ShowRental.png";
 
 //UI
-import ProfileNav from "./ProfileNav";
 import NavButton from "./ui/NavButton";
+import { Button } from "./ui/button";
+import { logOut } from "../services/user";
 
-function Navbar() {
+export default function Sidebar() {
   const companyName = "Show Rental";
   const [display, setDisplay] = useState(true);
+  const { profilePicture } = {
+    profilePicture: null,
+  };
+  const { user_metadata, email } = useQueryClient().getQueryData(["user"]);
+  const { fullName } = user_metadata || "";
+
+  function handleLogOut() {
+    logOut();
+  }
 
   return (
-    <div className="flex flex-col justify-between p-2 xl:p-4 bg-gray-800 text-gray-300 shadow-lg transition-all duration-300">
+    <div className="flex flex-col justify-between bg-gray-800 text-gray-300 shadow-lg transition-all duration-300">
       <div
-        className={`flex flex-col items-center justify-center${
-          display ? "text-center" : "text-xl"
+        className={`flex flex-col  items-center justify-center${
+          display ? "text-center m-7" : "text-xl m-2"
         }`}
       >
         <div
@@ -93,13 +105,44 @@ function Navbar() {
             icon={<CiDeliveryTruck />}
             description={"Transporte"}
           />
+          <NavButton
+            display={display}
+            icon={<GrConfigure />}
+            description={"Configuracion"}
+          />
         </div>
       </div>
 
       {/* Perfil de usuario */}
-      <ProfileNav display={display} />
+      <div className="border-t-1 p-2">
+        <div
+          className={`flex items-center justify-between gap-2 p-2  ${
+            display ? "" : "flex-col"
+          }`}
+        >
+          <div
+            className={`flex gap-1 items-center transition-all duration-300 ${
+              display ? "" : "flex-col"
+            }`}
+          >
+            {display && (
+              <>
+                <div className="p-3">
+                  {profilePicture != null ? profilePicture : <CiUser />}
+                </div>
+
+                <div>
+                  <div className=" font-semibold mt-2 text-sm">{fullName}</div>
+                  <div className=" font-semibold mt-2 text-xs">{email}</div>
+                </div>
+              </>
+            )}
+          </div>
+          <Button variant="secondary" onClick={handleLogOut}>
+            <IoExitOutline />
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
-
-export default Navbar;
