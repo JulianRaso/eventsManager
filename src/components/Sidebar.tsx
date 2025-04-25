@@ -10,13 +10,14 @@ import { MdDashboard, MdEvent, MdOutlineInventory2 } from "react-icons/md";
 import companyLogo from "../assets/ShowRental.png";
 
 //UI
+import useLogOut from "../hooks/useLogOut";
 import NavButton from "./ui/NavButton";
 import { Button } from "./ui/button";
-import { logOut } from "../services/user";
 
 export default function Sidebar() {
   const companyName = "Show Rental";
   const [display, setDisplay] = useState(true);
+  const { isLoginOut, logOut } = useLogOut();
   const { profilePicture } = {
     profilePicture: null,
   };
@@ -138,7 +139,11 @@ export default function Sidebar() {
               </>
             )}
           </div>
-          <Button variant="secondary" onClick={handleLogOut}>
+          <Button
+            variant="secondary"
+            onClick={handleLogOut}
+            disabled={isLoginOut}
+          >
             <IoExitOutline />
           </Button>
         </div>
