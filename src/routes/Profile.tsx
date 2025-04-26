@@ -1,26 +1,17 @@
-import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { CiUser } from "react-icons/ci";
 import { useNavigate } from "react-router-dom";
 import Spinner from "../components/Spinner";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/Input";
-import { useUser } from "../hooks/useUser";
 import useUpdateUser from "../hooks/useUpdateUser";
-
-function validatePassword(pass: string, toCheck: string) {
-  if (pass && toCheck) {
-    if (pass === toCheck) return true;
-    return false;
-  }
-}
+import { useUser } from "../hooks/useUser";
 
 export default function Profile() {
+  const navigate = useNavigate();
   const { user, isLoading } = useUser();
   let email = "";
-  const { register, reset, handleSubmit, setValue } = useForm();
+  const { register, reset, handleSubmit, setValue, getValues } = useForm();
   const { isUpdating, updateUser } = useUpdateUser();
-  const profileImage = null;
 
   if (user) {
     if (user.user_metadata.fullName) {
@@ -32,13 +23,16 @@ export default function Profile() {
   if (isLoading) return <Spinner />;
 
   function onSubmitProfile(data) {
-    const { fullName, password } = data || [];
+    const { fullName, password, picture } = data || [];
+    const avatar = picture[0];
 
-    if (fullName) updateUser({ fullName });
+    if (fullName) updateUser({ fullName, avatar });
+    if (password) updateUser({ password });
     reset();
   }
 
   function handleCancel() {
+    navigate("/dashboard");
     reset();
   }
 
@@ -48,36 +42,59 @@ export default function Profile() {
         onSubmit={handleSubmit(onSubmitProfile)}
         className="border-2 rounded-3xl bg-white shadow-lg flex flex-col items-center justify-center p-6 "
       >
-        <div className="text-6xl">
-          {profileImage === null ? (
-            <CiUser className="text-gray-500" />
-          ) : (
-            // <img src={profileImage} alt="profile picture" className="rounded-full w-24 h-24 object-cover" />
-            ""
-          )}
-        </div>
-
         {/* Profile Information */}
         <div className="flex flex-col w-full gap-5 p-4 sm:p-8">
           <div className="flex flex-col gap-2">
             <p>Nombre completo</p>
-            <Input type="text" id="name" {...register("fullName")} required />
+            <Input
+              type="text"
+              id="name"
+              {...register("fullName")}
+              required
+              disabled={isUpdating}
+            />
           </div>
           <div className="flex flex-col gap-2">
             <p>Email</p>
             <Input type="text" id="email" defaultValue={email} disabled></Input>
           </div>
           <div className="flex flex-col gap-2">
+            <p>Foto de perfil</p>
+            <Input
+              id="picture"
+              type="file"
+              {...register("picture")}
+              disabled={isUpdating}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
             <p>Contraseña</p>
             <Input
               type="password"
               id="password"
-              {...register("password")}
-            ></Input>
+              required
+              {...register("password", {
+                minLength: {
+                  value: 8,
+                  message: "Password needs a minimum of 8 characters",
+                },
+              })}
+              disabled={isUpdating}
+            />
           </div>
           <div className="flex flex-col gap-2">
             <p>Repetir contraseña</p>
-            <Input type="password" id="passwordCheck" />
+            <Input
+              type="password"
+              id="passwordCheck"
+              required
+              {...register("passwordConfirm", {
+                validate: (value) =>
+                  getValues().password === value ||
+                  "Las contraseñas no coinciden",
+              })}
+              disabled={isUpdating}
+            />
           </div>
         </div>
 

@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { supabase, supabaseUrl } from "./supabase";
 
 interface userProps {
   fullName?: string;
@@ -47,7 +47,7 @@ async function updateCurrentUser({
   password,
   avatar,
 }: {
-  fullName: string;
+  fullName?: string;
   password?: string;
   avatar?: string;
 }) {
@@ -79,7 +79,7 @@ async function updateCurrentUser({
 
   const { data: updatedUser, error: error2 } = await supabase.auth.updateUser({
     data: {
-      avatar: ``,
+      avatar: `${supabaseUrl}/storage/v1/object/public/avatars/${fileName}`,
     },
   });
 

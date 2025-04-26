@@ -19,12 +19,9 @@ export default function Sidebar() {
   const { user, isLoading } = useUser();
   const [display, setDisplay] = useState(true);
   const { isLoginOut, logOut } = useLogOut();
-  const { profilePicture } = {
-    profilePicture: null,
-  };
 
   const { email, user_metadata } = user;
-  const { fullName } = user_metadata;
+  const { fullName, avatar } = user_metadata;
 
   function handleLogOut() {
     logOut();
@@ -125,7 +122,11 @@ export default function Sidebar() {
             {display && (
               <div className="flex items-center justify-between gap-4 pl-2 pb-2">
                 <div className="">
-                  {profilePicture != null ? profilePicture : <CiUser />}
+                  {avatar != null ? (
+                    <img src={avatar} className="w-[65px] rounded-lg" />
+                  ) : (
+                    <CiUser />
+                  )}
                 </div>
 
                 <div>
