@@ -1,4 +1,5 @@
 import { useState } from "react";
+import AddButton from "../components/AddButton";
 import BookingRow from "../components/Bookings/BookingRow";
 import CategoryLayout from "../components/CategoryLayout";
 import Filter from "../components/Filter";
@@ -13,10 +14,6 @@ import {
   PaginationPrevious,
 } from "../components/ui/pagination";
 import useGetBookings from "../hooks/useGetBookings";
-import { NavLink } from "react-router-dom";
-import { Button } from "../components/ui/button";
-import { IoMdAdd } from "react-icons/io";
-import AddButton from "../components/AddButton";
 
 const filterByStatus = [
   {

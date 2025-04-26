@@ -1,7 +1,7 @@
 import { useDeleteBooking } from "../../hooks/useDeleteBooking";
+import { TableBody, TableData } from "../Table";
 import TableButtons from "../TableButtons";
 import { formatDate } from "../formatDate";
-import TableData from "../ui/TableData";
 
 interface Client {
   name: string;
@@ -63,50 +63,48 @@ export default function BookingRow({ booking, index }: bookingProps) {
   const { name, lastName, phoneNumber } = client;
 
   return (
-    <tbody>
-      <tr className="hover:bg-gray-50">
-        <TableData>{index + 1}</TableData>
-        <TableData>{name}</TableData>
-        <TableData>{lastName}</TableData>
-        <TableData>{phoneNumber}</TableData>
-        <TableData>{organization}</TableData>
-        <TableData>{formatDate(event_date)}</TableData>
-        <TableData>{eventTypes[event_type]?.es}</TableData>
-        <TableData>{place}</TableData>
-        <TableData>
-          <p
-            className={`w-fit rounded-xl p-1.5 ${
-              booking_status === "confirm"
-                ? "bg-green-300"
-                : booking_status === "pending"
-                ? "bg-amber-300"
-                : "bg-red-500"
-            }`}
-          >
-            {booking_status === "pending"
-              ? "Pendiente"
-              : booking_status === "confirm"
-              ? "Confirmado"
-              : "Cancelado"}
-          </p>
-        </TableData>
-        <TableData>
-          {payment_status === "pending"
+    <TableBody>
+      <TableData>{index + 1}</TableData>
+      <TableData>{name}</TableData>
+      <TableData>{lastName}</TableData>
+      <TableData>{phoneNumber}</TableData>
+      <TableData>{organization}</TableData>
+      <TableData>{formatDate(event_date)}</TableData>
+      <TableData>{eventTypes[event_type]?.es}</TableData>
+      <TableData>{place}</TableData>
+      <TableData>
+        <p
+          className={`rounded-xl p-1.5 ${
+            booking_status === "confirm"
+              ? "bg-green-300"
+              : booking_status === "pending"
+              ? "bg-amber-300"
+              : "bg-red-500"
+          }`}
+        >
+          {booking_status === "pending"
             ? "Pendiente"
-            : payment_status === "partially_paid"
-            ? "Señado"
-            : "Abonado"}
-        </TableData>
-        <TableData>${0}</TableData>
-        <TableData>
-          <TableButtons
-            id={id}
-            route="/reservas/reserva"
-            isDeleting={isDeleting}
-            onDelete={deleteBooking}
-          />
-        </TableData>
-      </tr>
-    </tbody>
+            : booking_status === "confirm"
+            ? "Confirmado"
+            : "Cancelado"}
+        </p>
+      </TableData>
+      <TableData>
+        {payment_status === "pending"
+          ? "Pendiente"
+          : payment_status === "partially_paid"
+          ? "Señado"
+          : "Abonado"}
+      </TableData>
+      <TableData>${0}</TableData>
+      <TableData>
+        <TableButtons
+          id={id}
+          route="/reservas/reserva"
+          isDeleting={isDeleting}
+          onDelete={deleteBooking}
+        />
+      </TableData>
+    </TableBody>
   );
 }

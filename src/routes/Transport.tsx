@@ -1,6 +1,8 @@
 import { useState } from "react";
+import AddButton from "../components/AddButton";
 import CategoryLayout from "../components/CategoryLayout";
-import FilterStock from "../components/FilterStock";
+import Filter from "../components/Filter";
+import { formatDate } from "../components/formatDate";
 import Spinner from "../components/Spinner";
 import {
   Table,
@@ -11,9 +13,6 @@ import {
 } from "../components/Table";
 import TableButtons from "../components/TableButtons";
 import { useGetTransport } from "../hooks/useGetTransport";
-import { formatDate } from "../components/formatDate";
-import AddButton from "../components/AddButton";
-import Filter from "../components/Filter";
 
 const statusTypes = {
   available: {
@@ -81,6 +80,7 @@ export default function Transport() {
           <TableRow>Tipo</TableRow>
           <TableRow>Service</TableRow>
           <TableRow>Estado</TableRow>
+          <TableRow>Modificado</TableRow>
           <TableRow>Acciones</TableRow>
         </TableHead>
         {data
@@ -101,6 +101,7 @@ export default function Transport() {
               <TableData>{vehicle.type}</TableData>
               <TableData>{formatDate(vehicle.last_service)}</TableData>
               <TableData>{statusTypes[vehicle.status].es}</TableData>
+              <TableData>{vehicle.updated_by}</TableData>
               <TableData>
                 <TableButtons
                   id={vehicle.id}

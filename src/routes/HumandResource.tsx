@@ -9,12 +9,11 @@ export default function HumandResource() {
   return (
     <div className="">
       <CategoryLayout title="Personal">
-        <div>
-          <AddUser />
-        </div>
         <Table>
           <TableHead>
-            <TableRow>{null}</TableRow>
+            <TableRow>
+              <AddUser />
+            </TableRow>
             <TableRow>Usuario</TableRow>
             <TableRow>Email</TableRow>
             <TableRow>Dashboard</TableRow>
@@ -22,7 +21,7 @@ export default function HumandResource() {
             <TableRow>Personal</TableRow>
             <TableRow>Inventario</TableRow>
             <TableRow>Transporte</TableRow>
-            <TableRow>Modificado por</TableRow>
+            <TableRow>Modificado</TableRow>
             <TableRow>Cambios</TableRow>
           </TableHead>
           <TableBody>

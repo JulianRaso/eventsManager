@@ -8,9 +8,11 @@ import { useEffect, useState } from "react";
 import { getCurrentStock } from "../services/stock";
 import useUpdateStock from "../hooks/useUpdateStock";
 import toast from "react-hot-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function Equipment() {
   const [category, setCategory] = useState("");
+  const { email, user_metadata } = useQueryClient().getQueryData(["user"]);
   const { register, reset, handleSubmit, setValue } = useForm();
   const { isAdding, addStock } = useAddStock();
   const { isUpdating, updateStock } = useUpdateStock({ category: "sound" });
@@ -47,7 +49,7 @@ export default function Equipment() {
       location: data.location,
       price: data.price,
       category: data.category,
-      updated_by: data.updated_by,
+      updated_by: user_metadata.fullName != "" ? user_metadata.fullName : email,
     };
 
     if (isEdittingSession) updateStock(updatedStock);
@@ -116,7 +118,9 @@ export default function Equipment() {
             <Input
               type="text"
               id="updated_by"
-              defaultValue={"Sistema"}
+              defaultValue={
+                user_metadata.fullName != "" ? user_metadata.fullName : email
+              }
               {...register("updated_by")}
               disabled
             />

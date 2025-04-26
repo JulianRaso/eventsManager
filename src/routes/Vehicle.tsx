@@ -8,8 +8,10 @@ import { Input } from "../components/ui/Input";
 import useAddVehicle from "../hooks/useAddVehicle";
 import useUpdateVehicle from "../hooks/useUpdateVehicle";
 import { getCurrentTransport } from "../services/transport";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function Vehicle() {
+  const { email, user_metadata } = useQueryClient().getQueryData(["user"]);
   const navigate = useNavigate();
   const [status, setStatus] = useState("");
   const { register, reset, handleSubmit, setValue } = useForm();
@@ -63,7 +65,7 @@ export default function Vehicle() {
       notes: data.notes,
       status: data.status,
       type: data.type,
-      updated_by: data.updated_by,
+      updated_by: user_metadata.fullName != "" ? user_metadata.fullName : email,
       year: data.year,
     };
     if (isEdittingSession) updateVehicle(updateVehicleProps);
@@ -164,7 +166,9 @@ export default function Vehicle() {
             <Input
               type="text"
               id="updated_by"
-              defaultValue={"Sistema"}
+              defaultValue={
+                user_metadata.fullName != "" ? user_metadata.fullName : email
+              }
               {...register("updated_by")}
               disabled
             />
