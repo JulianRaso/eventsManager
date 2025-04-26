@@ -15,7 +15,7 @@ export default function TableButtons({
 }: TableButtonsProps) {
   const navigate = useNavigate();
   return (
-    <div className="flex gap-1 flex-wrap">
+    <div className="flex gap-1 flex-wrap justify-center items-center">
       <Button
         variant="outline"
         className="hover:bg-gray-300 w-full lg:w-fit"

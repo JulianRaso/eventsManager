@@ -13,6 +13,10 @@ import {
   PaginationPrevious,
 } from "../components/ui/pagination";
 import useGetBookings from "../hooks/useGetBookings";
+import { NavLink } from "react-router-dom";
+import { Button } from "../components/ui/button";
+import { IoMdAdd } from "react-icons/io";
+import AddButton from "../components/AddButton";
 
 const filterByStatus = [
   {
@@ -78,7 +82,6 @@ export default function Bookings() {
   return (
     <CategoryLayout title="Reservas">
       <Filter
-        navigateTo="/reservas/reserva/agendar"
         filterByName={filterByName}
         filterByStatus={filterByStatus}
         setFilterByName={setFilterByName}
@@ -87,7 +90,9 @@ export default function Bookings() {
       />
       <Table>
         <TableHead>
-          <TableData>{null}</TableData>
+          <TableData>
+            <AddButton navigateTo="/reservas/reserva/agendar" />
+          </TableData>
           <TableData>Nombre</TableData>
           <TableData>Apellido</TableData>
           <TableData>Contacto</TableData>

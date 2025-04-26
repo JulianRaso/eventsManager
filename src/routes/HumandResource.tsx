@@ -1,9 +1,11 @@
-import AddUser from "../components/addUser";
+import AddUser from "../components/AddUser";
 import CategoryLayout from "../components/CategoryLayout";
 import { Table, TableBody, TableHead, TableRow } from "../components/Table";
 import { Button } from "../components/ui/button";
 
 export default function HumandResource() {
+  const roles = ["Ver", "Agregar", "Modificar", "Eliminar"];
+
   return (
     <div className="">
       <CategoryLayout title="Personal">
@@ -28,30 +30,29 @@ export default function HumandResource() {
             <TableRow>Julian</TableRow>
             <TableRow>Test@example.com</TableRow>
             <TableRow>
-              <Button>Leer</Button>
-              <Button>Agregar</Button>
-              <Button>Modificar</Button>
-              <Button>Borrar</Button>
+              {roles.map((role) => (
+                <p>{role}</p>
+              ))}
             </TableRow>
             <TableRow>
-              <Button>Leer</Button>
-              <Button>Modificar</Button>
-              <Button>Borrar</Button>
+              {roles.map((role) => (
+                <p>{role}</p>
+              ))}
             </TableRow>
             <TableRow>
-              <Button>Leer</Button>
-              <Button>Modificar</Button>
-              <Button>Borrar</Button>
+              {roles.map((role) => (
+                <p>{role}</p>
+              ))}
             </TableRow>
             <TableRow>
-              <Button>Leer</Button>
-              <Button>Modificar</Button>
-              <Button>Borrar</Button>
+              {roles.map((role) => (
+                <p>{role}</p>
+              ))}
             </TableRow>
             <TableRow>
-              <Button>Leer</Button>
-              <Button>Modificar</Button>
-              <Button>Borrar</Button>
+              {roles.map((role) => (
+                <p>{role}</p>
+              ))}
             </TableRow>
             <TableRow>Sistema</TableRow>
             <TableRow>

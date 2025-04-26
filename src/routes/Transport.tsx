@@ -12,6 +12,8 @@ import {
 import TableButtons from "../components/TableButtons";
 import { useGetTransport } from "../hooks/useGetTransport";
 import { formatDate } from "../components/formatDate";
+import AddButton from "../components/AddButton";
+import Filter from "../components/Filter";
 
 const statusTypes = {
   available: {
@@ -28,6 +30,18 @@ const statusTypes = {
   },
 };
 
+const filterByCategory = [
+  {
+    value: "available",
+    label: "Disponible",
+  },
+  {
+    value: "inUse",
+    label: "En uso",
+  },
+  { value: "maintenance", label: "En Mantenimiento" },
+];
+
 interface vehicleProps {
   id: number;
   brand: string;
@@ -40,6 +54,7 @@ interface vehicleProps {
 }
 
 export default function Transport() {
+  const [value, setValue] = useState("");
   const [filterByName, setFilterByName] = useState("");
   const { data, isLoading } = useGetTransport();
 
@@ -47,14 +62,18 @@ export default function Transport() {
 
   return (
     <CategoryLayout title="Transporte">
-      <FilterStock
+      <Filter
         filterByName={filterByName}
+        filterByStatus={filterByCategory}
         setFilterByName={setFilterByName}
-        navigateTo="/transporte/agregar"
+        value={value}
+        setValue={setValue}
       />
       <Table>
         <TableHead>
-          <TableRow>{null}</TableRow>
+          <TableRow>
+            <AddButton navigateTo="/transporte/agregar" />
+          </TableRow>
           <TableRow>Marca</TableRow>
           <TableRow>Modelo</TableRow>
           <TableRow>Año</TableRow>

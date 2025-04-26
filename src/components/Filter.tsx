@@ -1,7 +1,5 @@
 import { Check, ChevronsUpDown } from "lucide-react";
 import { useState } from "react";
-import { IoMdAdd } from "react-icons/io";
-import { NavLink } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import {
   Command,
@@ -22,7 +20,6 @@ interface FilterProps {
   filterByStatus: Array<{ value: string; label: string }>;
   value: string;
   filterByName: string;
-  navigateTo: string;
   setValue: (value: string) => void;
   setFilterByName: (value: string) => void;
 }
@@ -33,18 +30,12 @@ export default function Filter({
   setValue,
   filterByName,
   setFilterByName,
-  navigateTo,
 }: FilterProps) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="flex justify-between">
-      <NavLink to={navigateTo}>
-        <Button variant="outline">
-          <IoMdAdd />
-        </Button>
-      </NavLink>
-      <div className="flex gap-1 items-center">
+    <div className="flex justify-end">
+      <div className="flex gap-1 items-center overflow-x-auto">
         <input
           type="text"
           placeholder="Buscar por Nombre"

@@ -42,7 +42,7 @@ async function logOut() {
   return "sucess";
 }
 
-export async function updateCurrentUser({
+async function updateCurrentUser({
   fullName,
   password,
   avatar,
@@ -115,4 +115,4 @@ async function inviteUser(email: string) {
   return data;
 }
 
-export { inviteUser, logIn, logOut, signUp, updateUser };
+export { inviteUser, logIn, logOut, signUp, updateCurrentUser };

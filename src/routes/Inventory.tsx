@@ -21,6 +21,7 @@ import {
 } from "../components/ui/pagination";
 import useDeleteStock from "../hooks/useDeleteStock";
 import useGetData from "../hooks/useGetData";
+import AddButton from "../components/AddButton";
 
 const filterByCategory = [
   {
@@ -85,7 +86,6 @@ export default function Invetory() {
   return (
     <CategoryLayout title="Inventario">
       <Filter
-        navigateTo="/inventario/agregar"
         filterByName={filterByName}
         filterByStatus={filterByCategory}
         setFilterByName={setFilterByName}
@@ -94,7 +94,9 @@ export default function Invetory() {
       />
       <Table>
         <TableHead>
-          <TableRow>{null}</TableRow>
+          <TableRow>
+            <AddButton navigateTo="/inventario/agregar" />
+          </TableRow>
           <TableRow>Nombre</TableRow>
           <TableRow>Cantidad</TableRow>
           <TableRow>Ubicacion</TableRow>

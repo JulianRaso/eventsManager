@@ -64,7 +64,7 @@ function App() {
             <Route path="/transporte/editar/:vehicleId" element={<Vehicle />} />
           </Route>
 
-          <Route path="/perfil" element={<Profile />} />
+          <Route path="/configuracion" element={<Profile />} />
         </Route>
         <Route path="/login" element={<Login />} />
         <Route path="/*" element={<PageNotFound />} />

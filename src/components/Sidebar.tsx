@@ -1,4 +1,3 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 //Icons
@@ -10,19 +9,22 @@ import { MdDashboard, MdEvent, MdOutlineInventory2 } from "react-icons/md";
 import companyLogo from "../assets/ShowRental.png";
 
 //UI
-import useLogOut from "../hooks/useLogOut";
 import NavButton from "./ui/NavButton";
+import { useUser } from "../hooks/useUser";
+import useLogOut from "../hooks/useLogOut";
 import { Button } from "./ui/button";
 
 export default function Sidebar() {
   const companyName = "Show Rental";
+  const { user, isLoading } = useUser();
   const [display, setDisplay] = useState(true);
   const { isLoginOut, logOut } = useLogOut();
   const { profilePicture } = {
     profilePicture: null,
   };
-  const { user_metadata, email } = useQueryClient().getQueryData(["user"]);
-  const { fullName } = user_metadata || "";
+
+  const { email, user_metadata } = user;
+  const { fullName } = user_metadata;
 
   function handleLogOut() {
     logOut();
@@ -30,11 +32,7 @@ export default function Sidebar() {
 
   return (
     <div className="flex flex-col justify-between bg-gray-800 text-gray-300 shadow-lg transition-all duration-300">
-      <div
-        className={`flex flex-col  items-center justify-center${
-          display ? "text-center m-7" : "text-xl m-2"
-        }`}
-      >
+      <div className="flex flex-col items-center p-2 justify-center">
         <div
           className={`w-full flex text-3xl mb-4 transition-all duration-300 ${
             display ? "justify-end" : "justify-center"
@@ -62,7 +60,7 @@ export default function Sidebar() {
           <img
             src={companyLogo}
             className={`rounded-2xl border-2 border-gray-300 shadow-lg transition-all duration-300 ${
-              display ? "w-[90px] h-[90px]" : "w-[60px] h-[60px]"
+              display ? "w-[80px] h-[80px]" : "w-[50px] h-[50px]"
             }`}
             alt="company logo"
           />
@@ -113,11 +111,9 @@ export default function Sidebar() {
           />
         </div>
       </div>
-
-      {/* Perfil de usuario */}
-      <div className="border-t-1 p-2">
+      <div className="border-t-1 p-1">
         <div
-          className={`flex items-center justify-between gap-2 p-2  ${
+          className={`flex items-center justify-between gap-2  ${
             display ? "" : "flex-col"
           }`}
         >
@@ -127,20 +123,20 @@ export default function Sidebar() {
             }`}
           >
             {display && (
-              <>
-                <div className="p-3">
+              <div className="flex items-center justify-between gap-4 pl-2 pb-2">
+                <div className="">
                   {profilePicture != null ? profilePicture : <CiUser />}
                 </div>
 
                 <div>
-                  <div className=" font-semibold mt-2 text-sm">{fullName}</div>
-                  <div className=" font-semibold mt-2 text-xs">{email}</div>
+                  <div className="font-semibold text-md">{fullName}</div>
+                  <div className="font-semibold text-xs">{email}</div>
                 </div>
-              </>
+              </div>
             )}
           </div>
           <Button
-            variant="secondary"
+            variant="outline"
             onClick={handleLogOut}
             disabled={isLoginOut}
           >

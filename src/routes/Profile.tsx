@@ -23,8 +23,6 @@ export default function Profile() {
   const profileImage = null;
 
   if (user) {
-    console.log(user);
-
     if (user.user_metadata.fullName) {
       setValue("fullName", user.user_metadata?.fullName);
     }
@@ -35,7 +33,6 @@ export default function Profile() {
 
   function onSubmitProfile(data) {
     const { fullName, password } = data || [];
-    // console.log(data);
 
     if (fullName) updateUser({ fullName });
     reset();
@@ -46,12 +43,12 @@ export default function Profile() {
   }
 
   return (
-    <div className="flex w-full items-center justify-center h-full sm:text-xl bg-gray-100">
+    <div className="flex items-center justify-center h-dvh sm:text-xl bg-gray-100">
       <form
         onSubmit={handleSubmit(onSubmitProfile)}
-        className="border-2 rounded-3xl bg-white shadow-lg flex flex-col items-center p-8 w-2/5"
+        className="border-2 rounded-3xl bg-white shadow-lg flex flex-col items-center justify-center p-6 "
       >
-        <div className="text-6xl mb-4">
+        <div className="text-6xl">
           {profileImage === null ? (
             <CiUser className="text-gray-500" />
           ) : (
@@ -61,7 +58,7 @@ export default function Profile() {
         </div>
 
         {/* Profile Information */}
-        <div className="flex flex-col w-full gap-6 p-4 sm:p-8">
+        <div className="flex flex-col w-full gap-5 p-4 sm:p-8">
           <div className="flex flex-col gap-2">
             <p>Nombre completo</p>
             <Input type="text" id="name" {...register("fullName")} required />
@@ -85,7 +82,7 @@ export default function Profile() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex w-full justify-between items-center mt-6">
+        <div className="flex w-full flex-wrap justify-between items-center gap-2">
           <Button onClick={handleCancel}>Cancelar</Button>
           <Button variant="outline" disabled={isUpdating}>
             Guardar cambios

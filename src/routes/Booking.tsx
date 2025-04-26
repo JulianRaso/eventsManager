@@ -163,7 +163,7 @@ export default function Booking() {
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
           {/* Datos cliente */}
-          <div className="flex flex-col justify-between">
+          <div className="flex flex-col justify-between gap-4">
             <div className="flex flex-col gap-2">
               <p className="text-lg font-semibold flex items-center">
                 Datos cliente <p className="text-red-500">*</p>

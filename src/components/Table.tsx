@@ -9,14 +9,14 @@ export function Table({ children }: { children: React.ReactNode }) {
 export function TableBody({ children }: { children: React.ReactNode }) {
   return (
     <tbody>
-      <tr className="hover:bg-gray-50">{children}</tr>
+      <tr className="hover:bg-gray-50 ">{children}</tr>
     </tbody>
   );
 }
 
 export function TableRow({ children }: { children: React.ReactNode }) {
   return (
-    <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-600">
+    <th className="px-4 py-2 border-b text-center text-sm font-medium text-gray-600 ">
       {children}
     </th>
   );
@@ -24,7 +24,9 @@ export function TableRow({ children }: { children: React.ReactNode }) {
 
 export function TableData({ children }: { children: React.ReactNode }) {
   return (
-    <td className="px-4 py-2 border-b text-md text-gray-800">{children}</td>
+    <td className="px-4 py-2 border-b text-md text-gray-800 text-center">
+      {children}
+    </td>
   );
 }
 
