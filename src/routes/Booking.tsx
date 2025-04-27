@@ -13,10 +13,10 @@ import { checkClient } from "../services/client";
 
 export default function Booking() {
   const navigate = useNavigate();
-  const { register, reset, handleSubmit, setValue } = useForm();
+  const { register, reset, handleSubmit, setValue, resetField } = useForm();
   const { isAdding, addBooking } = useAddBooking();
   const { isUpdating, updateBooking } = useUpdateBooking();
-  const [dni, setDni] = useState("");
+  const [dni, setDni] = useState();
   const [existClient, setExistClient] = useState(false);
   const [client, setClient] = useState({
     dni: "",
@@ -87,22 +87,20 @@ export default function Booking() {
     if (dni === "") return;
     checkClient(dni)
       .then((res) => {
-        if (res.dni != "") {
-          setValue("name", res.name);
-          setValue("lastName", res.lastName);
-          setValue("phoneNumber", res.phoneNumber);
-          setValue("email", res.email);
-          setExistClient(true);
-        } else {
-          setClient({
-            dni: "",
-            name: "",
-            lastName: "",
-            phoneNumber: "",
-            email: "",
-          });
+        if (!res.data) {
           setExistClient(false);
+          resetField("name");
+          resetField("lastName");
+          resetField("phoneNumber");
+          resetField("email");
+          return;
         }
+        const { name, lastName, phoneNumber, email } = res.data;
+        setValue("name", name);
+        setValue("lastName", lastName);
+        setValue("phoneNumber", phoneNumber);
+        setValue("email", email);
+        setExistClient(true);
       })
       .catch(() => {
         toast.error("Error al verificar el cliente");
@@ -111,7 +109,7 @@ export default function Booking() {
 
   if (isLoadingBooking) return <Spinner />;
 
-  function handleCheckClient(dni: string) {
+  function handleCheckClient(dni: number) {
     if (Number(dni) > 999999 && Number(dni) < 99999999) {
       return setDni(dni);
     }
