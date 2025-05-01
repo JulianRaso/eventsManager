@@ -9,11 +9,11 @@ export default function Dashboard() {
   return (
     <CategoryLayout title="Dashboard">
       <SalesCompany />
-      <div className="flex flex-wrap justify-around">
+      <div className="flex flex-wrap gap-2 justify-between">
         <BookingsStatus />
+        <GainsChart />
         <MonthlySalesChart />
         <MostEquipments />
-        <GainsChart />
       </div>
     </CategoryLayout>
   );

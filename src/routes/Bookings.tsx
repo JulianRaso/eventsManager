@@ -4,7 +4,7 @@ import BookingRow from "../components/Bookings/BookingRow";
 import CategoryLayout from "../components/CategoryLayout";
 import Filter from "../components/Filter";
 import Spinner from "../components/Spinner";
-import { Table, TableData, TableHead } from "../components/Table";
+import { Table, TableBody, TableData, TableHead } from "../components/Table";
 import {
   Pagination,
   PaginationContent,
@@ -59,7 +59,7 @@ const filterByStatus = [
 ];
 
 export default function Bookings() {
-  const { data = [], isLoading } = useGetBookings();
+  const { data, isLoading } = useGetBookings();
   const [filterByName, setFilterByName] = useState("");
   const [value, setValue] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -85,47 +85,51 @@ export default function Bookings() {
         value={value}
         setValue={setValue}
       />
-      <Table>
-        <TableHead>
-          <TableData>
-            <AddButton navigateTo="/reservas/reserva/agendar" />
-          </TableData>
-          <TableData>Nombre</TableData>
-          <TableData>Apellido</TableData>
-          <TableData>Contacto</TableData>
-          <TableData>Organizacion</TableData>
-          <TableData>Fecha</TableData>
-          <TableData>Tipo</TableData>
-          <TableData>Ubicacion</TableData>
-          <TableData>Estado</TableData>
-          <TableData>Estado pago</TableData>
-          <TableData>Precio</TableData>
-          <TableData>Acciones</TableData>
-        </TableHead>
-        {currentPosts
-          ?.filter((item) => {
-            return filterByName.toLowerCase() === ""
-              ? item
-              : item.client?.name
-                  ?.toLowerCase()
-                  .includes(filterByName.toLowerCase());
-          })
-          .map((booking, index) =>
-            value ? (
-              booking.booking_status === value ? (
-                <BookingRow key={index} booking={booking} index={index} />
-              ) : booking.payment_status === value ? (
-                <BookingRow key={index} booking={booking} index={index} />
-              ) : booking.event_type === value ? (
-                <BookingRow key={index} booking={booking} index={index} />
-              ) : (
-                ""
-              )
-            ) : (
-              <BookingRow key={index} booking={booking} index={index} />
-            )
-          )}
-      </Table>
+      <div className="overflow-auto">
+        <Table>
+          <TableHead>
+            <TableData>
+              <AddButton navigateTo="/reservas/reserva/agendar" />
+            </TableData>
+            <TableData>Nombre</TableData>
+            <TableData>Apellido</TableData>
+            <TableData>Contacto</TableData>
+            <TableData>Organizacion</TableData>
+            <TableData>Fecha</TableData>
+            <TableData>Tipo</TableData>
+            <TableData>Ubicacion</TableData>
+            <TableData>Estado</TableData>
+            <TableData>Estado pago</TableData>
+            <TableData>Precio</TableData>
+            <TableData>Acciones</TableData>
+          </TableHead>
+          <TableBody>
+            {currentPosts
+              ?.filter((item) => {
+                return filterByName.toLowerCase() === ""
+                  ? item
+                  : item.client?.name
+                      ?.toLowerCase()
+                      .includes(filterByName.toLowerCase());
+              })
+              .map((booking, index) =>
+                value ? (
+                  booking.booking_status === value ? (
+                    <BookingRow key={index} booking={booking} index={index} />
+                  ) : booking.payment_status === value ? (
+                    <BookingRow key={index} booking={booking} index={index} />
+                  ) : booking.event_type === value ? (
+                    <BookingRow key={index} booking={booking} index={index} />
+                  ) : (
+                    ""
+                  )
+                ) : (
+                  <BookingRow key={index} booking={booking} index={index} />
+                )
+              )}
+          </TableBody>
+        </Table>
+      </div>
       {/* {Check if the data is empty and show a message} */}
       {data?.length === 0 && (
         <div className="text-2xl text-center mt-4">Agenda una Reserva!!</div>

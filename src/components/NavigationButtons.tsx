@@ -13,7 +13,9 @@ export default function NavigationButtons({
   const navigate = useNavigate();
   return (
     <div className="flex justify-between items-center mt-6 flex-wrap gap-8">
-      <Button onClick={() => navigate(navigateTo)}>Cancelar</Button>
+      <Button onClick={(e) => (e.preventDefault(), navigate(navigateTo))}>
+        Cancelar
+      </Button>
       <Button disabled={isAdding}>{addTitle}</Button>
     </div>
   );

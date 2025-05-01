@@ -1,39 +1,37 @@
 export function Table({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full border-collapse ">{children}</table>
-    </div>
-  );
-}
-
-export function TableBody({ children }: { children: React.ReactNode }) {
-  return (
-    <tbody>
-      <tr className="hover:bg-gray-50 ">{children}</tr>
-    </tbody>
-  );
-}
-
-export function TableRow({ children }: { children: React.ReactNode }) {
-  return (
-    <th className="px-4 py-2 border-b text-center text-sm font-medium text-gray-600 ">
-      {children}
-    </th>
-  );
-}
-
-export function TableData({ children }: { children: React.ReactNode }) {
-  return (
-    <td className="px-4 py-2 border-b text-md text-gray-800 text-center">
-      {children}
-    </td>
-  );
+  return <table className="min-w-full border-collapse">{children}</table>;
 }
 
 export function TableHead({ children }: { children: React.ReactNode }) {
   return (
     <thead className="bg-gray-100">
-      <tr>{children}</tr>
+      <tr className="w-full">{children}</tr>
     </thead>
+  );
+}
+
+export function TableBody({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return <tbody className={`${className} `}>{children}</tbody>;
+}
+
+export function TableRow({ children }: { children: React.ReactNode }) {
+  return (
+    <tr className="px-4 py-2 border-b text-center text-sm font-medium text-gray-600 hover:bg-gray-50">
+      {children}
+    </tr>
+  );
+}
+
+export function TableData({ children }: { children: React.ReactNode }) {
+  return (
+    <td className="px-4 py-2 border-b text-center text-md text-gray-800">
+      {children}
+    </td>
   );
 }

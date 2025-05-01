@@ -94,42 +94,44 @@ export default function Invetory() {
       />
       <Table>
         <TableHead>
-          <TableRow>
+          <TableData>
             <AddButton navigateTo="/inventario/agregar" />
-          </TableRow>
-          <TableRow>Nombre</TableRow>
-          <TableRow>Cantidad</TableRow>
-          <TableRow>Ubicacion</TableRow>
-          <TableRow>Precio</TableRow>
-          <TableRow>Modificado</TableRow>
-          <TableRow>Ultima actualizacion</TableRow>
-          <TableRow>Acciones</TableRow>
+          </TableData>
+          <TableData>Nombre</TableData>
+          <TableData>Cantidad</TableData>
+          <TableData>Ubicacion</TableData>
+          <TableData>Precio</TableData>
+          <TableData>Modificado</TableData>
+          <TableData>Ultima actualizacion</TableData>
+          <TableData>Acciones</TableData>
         </TableHead>
-        {currentPosts
-          ?.filter((item) => {
-            return filterByName.toLowerCase() === ""
-              ? item
-              : item.name?.toLowerCase().includes(filterByName.toLowerCase());
-          })
-          .map((type, index) => (
-            <TableBody key={index}>
-              <TableData>{index + 1}</TableData>
-              <TableData>{type.name}</TableData>
-              <TableData>{type.quantity}</TableData>
-              <TableData>{type.location}</TableData>
-              <TableData>{type.price}</TableData>
-              <TableData>{type.updated_by}</TableData>
-              <TableData>{formatDateTime(type.last_update)}</TableData>
-              <TableData>
-                <TableButtons
-                  id={type.id}
-                  route="/inventario/editar"
-                  isDeleting={isDelete}
-                  onDelete={deleteStock}
-                />
-              </TableData>
-            </TableBody>
-          ))}
+        <TableBody>
+          {currentPosts
+            ?.filter((item) => {
+              return filterByName.toLowerCase() === ""
+                ? item
+                : item.name?.toLowerCase().includes(filterByName.toLowerCase());
+            })
+            .map((type, index) => (
+              <TableRow key={index}>
+                <TableData>{index + 1}</TableData>
+                <TableData>{type.name}</TableData>
+                <TableData>{type.quantity}</TableData>
+                <TableData>{type.location}</TableData>
+                <TableData>{type.price}</TableData>
+                <TableData>{type.updated_by}</TableData>
+                <TableData>{formatDateTime(type.last_update)}</TableData>
+                <TableData>
+                  <TableButtons
+                    id={type.id}
+                    route="/inventario/editar"
+                    isDeleting={isDelete}
+                    onDelete={deleteStock}
+                  />
+                </TableData>
+              </TableRow>
+            ))}
+        </TableBody>
       </Table>
       {data?.length === 0 && (
         <div className="text-2xl text-center mt-4">

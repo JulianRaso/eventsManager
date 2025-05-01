@@ -47,6 +47,10 @@ function App() {
                 path="/reservas/reserva/:bookingId"
                 element={<Booking />}
               />
+              <Route
+                path="/reservas/reserva/:bookingId/client/:clientId"
+                element={<Booking />}
+              />
               <Route path="/reservas/reserva/agendar" element={<Booking />} />
             </Route>
           </Route>

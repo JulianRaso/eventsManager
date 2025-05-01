@@ -5,19 +5,41 @@ import { useNavigate, useParams } from "react-router-dom";
 import AddLayout from "../components/AddLayout";
 import NavigationButtons from "../components/NavigationButtons";
 import Spinner from "../components/Spinner";
+import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/Input";
 import { useAddBooking } from "../hooks/useAddBooking";
 import useUpdateBooking from "../hooks/useUpdateBooking";
 import { getCurrentBooking } from "../services/booking";
 import { checkClient } from "../services/client";
 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { DialogClose } from "@radix-ui/react-dialog";
+import {
+  Table,
+  TableBody,
+  TableData,
+  TableHead,
+  TableRow,
+} from "../components/Table";
+import { DialogFooter } from "../components/ui/dialog";
+import useGetData from "../hooks/useGetData";
+
 export default function Booking() {
   const navigate = useNavigate();
   const { register, reset, handleSubmit, setValue, resetField } = useForm();
   const { isAdding, addBooking } = useAddBooking();
   const { isUpdating, updateBooking } = useUpdateBooking();
-  const [dni, setDni] = useState();
+  const { data, isLoading } = useGetData({ category: "sound" });
+  const [dni, setDni] = useState(0);
   const [existClient, setExistClient] = useState(false);
+  const [equipment, setEquipment] = useState([]);
   const [client, setClient] = useState({
     dni: "",
     name: "",
@@ -63,8 +85,8 @@ export default function Booking() {
             setValue("revenue", revenue);
 
             checkClient(client_dni).then((res) => {
-              if (res.dni != "") {
-                const { dni, name, lastName, phoneNumber, email } = res;
+              if (res.data) {
+                const { dni, name, lastName, phoneNumber, email } = res.data;
                 setValue("dni", dni);
                 setValue("name", name);
                 setValue("lastName", lastName);
@@ -84,34 +106,35 @@ export default function Booking() {
           toast.error("Error al cargar la reserva");
         });
     }
-    if (dni === "") return;
-    checkClient(dni)
-      .then((res) => {
-        if (!res.data) {
-          setExistClient(false);
-          resetField("name");
-          resetField("lastName");
-          resetField("phoneNumber");
-          resetField("email");
-          return;
-        }
-        const { name, lastName, phoneNumber, email } = res.data;
-        setValue("name", name);
-        setValue("lastName", lastName);
-        setValue("phoneNumber", phoneNumber);
-        setValue("email", email);
-        setExistClient(true);
-      })
-      .catch(() => {
-        toast.error("Error al verificar el cliente");
-      });
+    if (dni !== 0) {
+      checkClient(dni)
+        .then((res) => {
+          if (!res.data) {
+            setExistClient(false);
+            resetField("name");
+            resetField("lastName");
+            resetField("phoneNumber");
+            resetField("email");
+            return;
+          }
+          const { name, lastName, phoneNumber, email } = res.data;
+          setValue("name", name);
+          setValue("lastName", lastName);
+          setValue("phoneNumber", phoneNumber);
+          setValue("email", email);
+          setExistClient(true);
+        })
+        .catch(() => {
+          toast.error("Error al verificar el cliente");
+        });
+    }
   });
 
   if (isLoadingBooking) return <Spinner />;
 
-  function handleCheckClient(dni: number) {
+  function handleCheckClient(dni: string) {
     if (Number(dni) > 999999 && Number(dni) < 99999999) {
-      return setDni(dni);
+      return setDni(Number(dni));
     }
   }
 
@@ -255,7 +278,11 @@ export default function Booking() {
                     type="date"
                     required
                     {...register("event_date")}
-                    min={new Date().toISOString().split("T")[0]}
+                    min={
+                      isEditingSession
+                        ? ""
+                        : new Date().toISOString().split("T")[0]
+                    }
                   />
                 </div>
               </div>
@@ -263,35 +290,142 @@ export default function Booking() {
           </div>
 
           {/* Presupuesto & Pagos */}
-          <div className="flex flex-col gap-6 col-span-2 ">
-            {/* Equipo */}
-            <div className="text-lg font-semibold">Equipo</div>
-            <div className="flex flex-wrap gap-6 items-center justify-between">
-              <div className="flex flex-col items-center">
-                <div className="font-medium">Sonido</div>
-                <div className="border rounded-2xl p-2">Potencia 2x400w</div>
+          <div className="flex flex-col gap-6 col-span-2 justify-between ">
+            <div className="flex flex-col items-strech h-full justify-between">
+              <div className="flex flex-col gap-1">
+                {/* Equipo */}
+                <div className="text-lg font-semibold flex justify-between">
+                  <p>Equipo</p>
+                  <Dialog>
+                    <DialogTrigger className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 h-9 px-4 py-2 has-[>svg]:px-3">
+                      +
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Equipo</DialogTitle>
+                        <DialogDescription>
+                          Seleccione el equipo y la cantidad deseada para
+                          generar el presupuesto del evento.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <Table>
+                        <TableHead>
+                          <TableData>Equipo</TableData>
+                          <TableData>Disponible</TableData>
+                          <TableData>Costo</TableData>
+                          <TableData>Solicitado</TableData>
+                          <TableData>Agregar</TableData>
+                        </TableHead>
+                        <TableBody className="max-h-100 ">
+                          {data?.map(
+                            (stock, index) =>
+                              index <= 5 && (
+                                <TableRow>
+                                  <TableData>{stock.name}</TableData>
+                                  <TableData>{stock.quantity}</TableData>
+                                  <TableData>{stock.price}</TableData>
+                                  <TableData>
+                                    <Input
+                                      type="number"
+                                      min={0}
+                                      max={stock.quantity}
+                                      disabled={equipment.find(
+                                        (e) =>
+                                          e.item === stock.name &&
+                                          e.quantity === stock.quantity
+                                      )}
+                                    />
+                                  </TableData>
+                                  <TableData>
+                                    <Button
+                                      variant="outline"
+                                      onClick={(e) => (
+                                        e.preventDefault(),
+                                        setEquipment([
+                                          ...equipment,
+                                          {
+                                            item: stock.name,
+                                            quantity: stock.quantity,
+                                            price: stock.price,
+                                          },
+                                        ])
+                                      )}
+                                      disabled={equipment.find(
+                                        (e) =>
+                                          e.item === stock.name &&
+                                          e.quantity === stock.quantity
+                                      )}
+                                    >
+                                      +
+                                    </Button>
+                                  </TableData>
+                                </TableRow>
+                              )
+                          )}
+                        </TableBody>
+                      </Table>
+                      <DialogFooter className="sm:justify-start">
+                        <DialogClose asChild>
+                          <Button type="button" variant="secondary">
+                            Cerrar
+                          </Button>
+                        </DialogClose>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+
+                {/* flex flex-wrap gap-1 items-start justify-between overflow-y-auto h-25 */}
+                <div className="">
+                  <Table>
+                    <TableHead>
+                      <th>Nombre</th>
+                      <th>Cantidad</th>
+                      <th>Precio</th>
+                      <th>Opcion</th>
+                    </TableHead>
+                    <TableBody>
+                      {equipment.map((data) => (
+                        <TableRow>
+                          <TableData>{data?.item}</TableData>
+                          <TableData>{data?.quantity}</TableData>
+                          <TableData>{data?.price}</TableData>
+                          <TableData>
+                            <Button
+                              variant="outline"
+                              onClick={(e) => (
+                                e.preventDefault(),
+                                setEquipment((element) =>
+                                  element.filter(
+                                    (item) => item.item != data?.item
+                                  )
+                                )
+                              )}
+                            >
+                              X
+                            </Button>
+                          </TableData>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
-              <div className="flex flex-col items-center">
-                <div className="font-medium">Iluminación</div>
-                <div className="border rounded-2xl p-2">Tacho RGB</div>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="font-medium">Ambientación</div>
-                <div className="border rounded-2xl p-2">Entelado 4mts</div>
+
+              {/* Comentarios adicionales */}
+              <div className="flex flex-col">
+                <p className="text-lg font-semibold">Información Adicional</p>
+                <textarea
+                  placeholder="Información adicional del evento..."
+                  className="w-full border-2 rounded-lg p-3 resize-none"
+                  maxLength={400}
+                  {...register("comments")}
+                ></textarea>
               </div>
             </div>
 
-            {/* Comentarios adicionales */}
-            <div className="text-lg font-semibold">Información Adicional</div>
-            <textarea
-              placeholder="Información adicional del evento..."
-              className="w-full border-2 rounded-lg p-3 resize-none"
-              maxLength={400}
-              {...register("comments")}
-            ></textarea>
-
             {/* Estado del evento, pagos e impuestos */}
-            <div className="flex flex-col gap-6 border-t-2 pt-4">
+            <div className="flex flex-col gap-6 border-t-2">
               <div className="flex justify-around items-center flex-wrap">
                 <div className="flex flex-col">
                   Estado Evento

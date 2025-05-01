@@ -7,6 +7,7 @@ import { GrConfigure } from "react-icons/gr";
 import { IoExitOutline, IoPerson } from "react-icons/io5";
 import { MdDashboard, MdEvent, MdOutlineInventory2 } from "react-icons/md";
 import companyLogo from "../assets/ShowRental.png";
+import { LiaMoneyBillWaveSolid } from "react-icons/lia";
 
 //UI
 import NavButton from "./ui/NavButton";
@@ -85,6 +86,11 @@ export default function Sidebar() {
             display={display}
             icon={<MdEvent />}
             description={"Reservas"}
+          />
+          <NavButton
+            display={display}
+            icon={<LiaMoneyBillWaveSolid />}
+            description={"Gastos"}
           />
           <NavButton
             display={display}

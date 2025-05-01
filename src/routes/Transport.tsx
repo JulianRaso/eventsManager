@@ -41,17 +41,6 @@ const filterByCategory = [
   { value: "maintenance", label: "En Mantenimiento" },
 ];
 
-interface vehicleProps {
-  id: number;
-  brand: string;
-  model: string;
-  year: number;
-  license_plate: string;
-  type: string;
-  last_service: string;
-  status: keyof typeof statusTypes;
-}
-
 export default function Transport() {
   const [value, setValue] = useState("");
   const [filterByName, setFilterByName] = useState("");
@@ -70,48 +59,50 @@ export default function Transport() {
       />
       <Table>
         <TableHead>
-          <TableRow>
+          <TableData>
             <AddButton navigateTo="/transporte/agregar" />
-          </TableRow>
-          <TableRow>Marca</TableRow>
-          <TableRow>Modelo</TableRow>
-          <TableRow>Año</TableRow>
-          <TableRow>Patente</TableRow>
-          <TableRow>Tipo</TableRow>
-          <TableRow>Service</TableRow>
-          <TableRow>Estado</TableRow>
-          <TableRow>Modificado</TableRow>
-          <TableRow>Acciones</TableRow>
+          </TableData>
+          <TableData>Marca</TableData>
+          <TableData>Modelo</TableData>
+          <TableData>Año</TableData>
+          <TableData>Patente</TableData>
+          <TableData>Tipo</TableData>
+          <TableData>Service</TableData>
+          <TableData>Estado</TableData>
+          <TableData>Modificado</TableData>
+          <TableData>Acciones</TableData>
         </TableHead>
-        {data
-          ?.filter((vehicle) => {
-            return filterByName.toLowerCase() === ""
-              ? vehicle
-              : vehicle.brand
-                  .toLowerCase()
-                  .includes(filterByName.toLowerCase());
-          })
-          .map((vehicle: vehicleProps, index) => (
-            <TableBody key={index}>
-              <TableData>{index + 1}</TableData>
-              <TableData>{vehicle.brand}</TableData>
-              <TableData>{vehicle.model}</TableData>
-              <TableData>{vehicle.year}</TableData>
-              <TableData>{vehicle.license_plate}</TableData>
-              <TableData>{vehicle.type}</TableData>
-              <TableData>{formatDate(vehicle.last_service)}</TableData>
-              <TableData>{statusTypes[vehicle.status].es}</TableData>
-              <TableData>{vehicle.updated_by}</TableData>
-              <TableData>
-                <TableButtons
-                  id={vehicle.id}
-                  route="/transporte/editar"
-                  isDeleting={false}
-                  onDelete={() => {}}
-                />
-              </TableData>
-            </TableBody>
-          ))}
+        <TableBody>
+          {data
+            ?.filter((vehicle) => {
+              return filterByName.toLowerCase() === ""
+                ? vehicle
+                : vehicle.brand
+                    .toLowerCase()
+                    .includes(filterByName.toLowerCase());
+            })
+            .map((vehicle, index) => (
+              <TableRow key={index}>
+                <TableData>{index + 1}</TableData>
+                <TableData>{vehicle.brand}</TableData>
+                <TableData>{vehicle.model}</TableData>
+                <TableData>{vehicle.year}</TableData>
+                <TableData>{vehicle.license_plate}</TableData>
+                <TableData>{vehicle.type}</TableData>
+                <TableData>{formatDate(vehicle.last_service)}</TableData>
+                <TableData>{statusTypes[vehicle.status].es}</TableData>
+                <TableData>{vehicle.updated_by}</TableData>
+                <TableData>
+                  <TableButtons
+                    id={vehicle.id}
+                    route="/transporte/editar"
+                    isDeleting={false}
+                    onDelete={() => {}}
+                  />
+                </TableData>
+              </TableRow>
+            ))}
+        </TableBody>
       </Table>
     </CategoryLayout>
   );

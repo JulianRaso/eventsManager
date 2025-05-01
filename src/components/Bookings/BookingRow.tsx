@@ -1,7 +1,8 @@
 import { useDeleteBooking } from "../../hooks/useDeleteBooking";
-import { TableBody, TableData } from "../Table";
+import { TableBody, TableData, TableRow } from "../Table";
 import TableButtons from "../TableButtons";
 import { formatDate } from "../formatDate";
+import { IoEyeSharp } from "react-icons/io5";
 
 interface Client {
   name: string;
@@ -63,7 +64,7 @@ export default function BookingRow({ booking, index }: bookingProps) {
   const { name, lastName, phoneNumber } = client;
 
   return (
-    <TableBody>
+    <TableRow key={index}>
       <TableData>{index + 1}</TableData>
       <TableData>{name}</TableData>
       <TableData>{lastName}</TableData>
@@ -105,6 +106,6 @@ export default function BookingRow({ booking, index }: bookingProps) {
           onDelete={deleteBooking}
         />
       </TableData>
-    </TableBody>
+    </TableRow>
   );
 }
