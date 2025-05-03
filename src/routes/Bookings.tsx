@@ -91,12 +91,11 @@ export default function Bookings() {
             <TableData>
               <AddButton navigateTo="/reservas/reserva/agendar" />
             </TableData>
-            <TableData>Nombre</TableData>
-            <TableData>Apellido</TableData>
+            <TableData>Cliente</TableData>
             <TableData>Contacto</TableData>
             <TableData>Organizacion</TableData>
             <TableData>Fecha</TableData>
-            <TableData>Tipo</TableData>
+            <TableData className="hidden lg:table-cell">Tipo</TableData>
             <TableData>Ubicacion</TableData>
             <TableData>Estado</TableData>
             <TableData>Estado pago</TableData>

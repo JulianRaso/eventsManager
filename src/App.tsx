@@ -15,6 +15,7 @@ import PageNotFound from "./routes/PageNotFound";
 import Profile from "./routes/Profile";
 import Transport from "./routes/Transport";
 import Vehicle from "./routes/Vehicle";
+import Bill from "./routes/Bill";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,7 +28,7 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ReactQueryDevtools initialIsOpen={false} />
+      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       <Routes>
         <Route
           path="/"
@@ -56,6 +57,7 @@ function App() {
           </Route>
 
           <Route path="/personal" element={<HumandResource />} />
+          <Route path="/gastos" element={<Bill />} />
 
           <Route path="/inventario">
             <Route index element={<Invetory />} />

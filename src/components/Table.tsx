@@ -4,7 +4,7 @@ export function Table({ children }: { children: React.ReactNode }) {
 
 export function TableHead({ children }: { children: React.ReactNode }) {
   return (
-    <thead className="bg-gray-100">
+    <thead className="bg-gray-100 w-full">
       <tr className="w-full">{children}</tr>
     </thead>
   );
@@ -28,9 +28,17 @@ export function TableRow({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function TableData({ children }: { children: React.ReactNode }) {
+export function TableData({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <td className="px-4 py-2 border-b text-center text-md text-gray-800">
+    <td
+      className={`px-4 py-2 border-b text-center text-md text-gray-800 ${className}`}
+    >
       {children}
     </td>
   );

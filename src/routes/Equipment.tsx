@@ -9,6 +9,7 @@ import { getCurrentStock } from "../services/stock";
 import useUpdateStock from "../hooks/useUpdateStock";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import Spinner from "../components/Spinner";
 
 export default function Equipment() {
   const [category, setCategory] = useState("");
@@ -18,6 +19,9 @@ export default function Equipment() {
   const { isUpdating, updateStock } = useUpdateStock({ category: "sound" });
   const stockId = useParams().stockId;
   const isEdittingSession = Boolean(stockId);
+  const [isLoadingEquipment, setLoadingEquipment] = useState(
+    Boolean(isEdittingSession)
+  );
 
   useEffect(() => {
     if (isEdittingSession) {
@@ -33,6 +37,7 @@ export default function Equipment() {
             setValue("price", price);
             setValue("category", category);
             setValue("updated_by", updated_by);
+            setLoadingEquipment(false);
           }
         })
         .catch(() => {
@@ -40,6 +45,8 @@ export default function Equipment() {
         });
     }
   }, [stockId, isEdittingSession, setValue]);
+
+  if (isLoadingEquipment) return <Spinner />;
 
   function onSubmit(data) {
     const updatedStock = {

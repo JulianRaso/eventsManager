@@ -31,15 +31,32 @@ import {
 import { DialogFooter } from "../components/ui/dialog";
 import useGetData from "../hooks/useGetData";
 
+function formatCurrency(currency) {
+  const number = typeof currency === "string" ? parseFloat(currency) : currency;
+
+  if (isNaN(number)) {
+    throw new Error("El valor ingresado no es un número válido.");
+  }
+
+  return number.toLocaleString("es-AR", {
+    style: "currency",
+    currency: "ARS",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
 export default function Booking() {
   const navigate = useNavigate();
-  const { register, reset, handleSubmit, setValue, resetField } = useForm();
+  const { register, reset, handleSubmit, setValue, resetField, getValues } =
+    useForm();
   const { isAdding, addBooking } = useAddBooking();
   const { isUpdating, updateBooking } = useUpdateBooking();
   const { data, isLoading } = useGetData({ category: "sound" });
   const [dni, setDni] = useState(0);
   const [existClient, setExistClient] = useState(false);
   const [equipment, setEquipment] = useState([]);
+  const [price, setPrice] = useState(0);
   const [client, setClient] = useState({
     dni: "",
     name: "",
@@ -182,13 +199,13 @@ export default function Booking() {
   return (
     <AddLayout>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-1.5">
           {/* Datos cliente */}
-          <div className="flex flex-col justify-between gap-4">
+          <div className="flex flex-col justify-between gap-2 col-span-1">
             <div className="flex flex-col gap-2">
-              <p className="text-lg font-semibold flex items-center">
+              <div className="text-lg font-semibold flex items-center">
                 Datos cliente <p className="text-red-500">*</p>
-              </p>
+              </div>
 
               <div className="flex flex-col gap-4">
                 <Input
@@ -238,13 +255,13 @@ export default function Booking() {
             {/* Información del evento */}
             <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-2">
-                <p className="text-lg font-semibold flex items-center">
+                <div className="text-lg font-semibold flex items-center">
                   Evento <p className="text-red-500">*</p>
-                </p>
+                </div>
 
                 <div className="flex flex-col gap-6">
                   <select
-                    className="border rounded-md h-9"
+                    className="border rounded-md h-9 p-1"
                     {...register("organization")}
                     required
                   >
@@ -255,7 +272,7 @@ export default function Booking() {
                     <option value="Show Rental">Show Rental</option>
                   </select>
                   <select
-                    className="border rounded-md h-9"
+                    className="border rounded-md h-9 p-1"
                     {...register("event_type")}
                     required
                   >
@@ -290,7 +307,7 @@ export default function Booking() {
           </div>
 
           {/* Presupuesto & Pagos */}
-          <div className="flex flex-col gap-6 col-span-2 justify-between ">
+          <div className="flex flex-col col-span-2 justify-between gap-2">
             <div className="flex flex-col items-strech h-full justify-between">
               <div className="flex flex-col gap-1">
                 {/* Equipo */}
@@ -308,62 +325,66 @@ export default function Booking() {
                           generar el presupuesto del evento.
                         </DialogDescription>
                       </DialogHeader>
-                      <Table>
-                        <TableHead>
-                          <TableData>Equipo</TableData>
-                          <TableData>Disponible</TableData>
-                          <TableData>Costo</TableData>
-                          <TableData>Solicitado</TableData>
-                          <TableData>Agregar</TableData>
-                        </TableHead>
-                        <TableBody className="max-h-100 ">
-                          {data?.map(
-                            (stock, index) =>
-                              index <= 5 && (
-                                <TableRow>
-                                  <TableData>{stock.name}</TableData>
-                                  <TableData>{stock.quantity}</TableData>
-                                  <TableData>{stock.price}</TableData>
-                                  <TableData>
-                                    <Input
-                                      type="number"
-                                      min={0}
-                                      max={stock.quantity}
-                                      disabled={equipment.find(
-                                        (e) =>
-                                          e.item === stock.name &&
-                                          e.quantity === stock.quantity
-                                      )}
-                                    />
-                                  </TableData>
-                                  <TableData>
-                                    <Button
-                                      variant="outline"
-                                      onClick={(e) => (
-                                        e.preventDefault(),
-                                        setEquipment([
-                                          ...equipment,
-                                          {
-                                            item: stock.name,
-                                            quantity: stock.quantity,
-                                            price: stock.price,
-                                          },
-                                        ])
-                                      )}
-                                      disabled={equipment.find(
-                                        (e) =>
-                                          e.item === stock.name &&
-                                          e.quantity === stock.quantity
-                                      )}
-                                    >
-                                      +
-                                    </Button>
-                                  </TableData>
-                                </TableRow>
-                              )
-                          )}
-                        </TableBody>
-                      </Table>
+                      <div className="overflow-y-auto h-80 text-sm">
+                        <Table>
+                          <TableHead>
+                            <TableData>Equipo</TableData>
+                            <TableData>Disponible</TableData>
+                            <TableData>Costo</TableData>
+                            <TableData>Solicitado</TableData>
+                            <TableData>Agregar</TableData>
+                          </TableHead>
+                          <TableBody className="">
+                            {data?.map((stock, index) => (
+                              <TableRow key={index}>
+                                <TableData>{stock.name}</TableData>
+                                <TableData>{stock.quantity}</TableData>
+                                <TableData>{stock.price}</TableData>
+                                <TableData>
+                                  <Input
+                                    type="number"
+                                    min={0}
+                                    max={stock.quantity}
+                                    disabled={equipment.find(
+                                      (e) =>
+                                        e.item === stock.name &&
+                                        e.quantity === stock.quantity
+                                    )}
+                                  />
+                                </TableData>
+                                <TableData>
+                                  <Button
+                                    variant="outline"
+                                    onClick={(e) => (
+                                      e.preventDefault(),
+                                      setEquipment([
+                                        ...equipment,
+                                        {
+                                          item: stock.name,
+                                          quantity: stock.quantity,
+                                          price: stock.price,
+                                        },
+                                      ]),
+                                      setPrice(
+                                        (previous) =>
+                                          previous +
+                                          stock.quantity * (stock.price || 0)
+                                      )
+                                    )}
+                                    disabled={equipment.find(
+                                      (e) =>
+                                        e.item === stock.name &&
+                                        e.quantity === stock.quantity
+                                    )}
+                                  >
+                                    +
+                                  </Button>
+                                </TableData>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
                       <DialogFooter className="sm:justify-start">
                         <DialogClose asChild>
                           <Button type="button" variant="secondary">
@@ -375,19 +396,20 @@ export default function Booking() {
                   </Dialog>
                 </div>
 
-                {/* flex flex-wrap gap-1 items-start justify-between overflow-y-auto h-25 */}
-                <div className="">
+                <div className="w-full h-25 overflow-y-auto">
                   <Table>
                     <TableHead>
-                      <th>Nombre</th>
-                      <th>Cantidad</th>
-                      <th>Precio</th>
-                      <th>Opcion</th>
+                      <TableData>Nombre</TableData>
+                      <TableData>Cantidad</TableData>
+                      <TableData>Precio</TableData>
+                      <TableData>{null}</TableData>
                     </TableHead>
                     <TableBody>
-                      {equipment.map((data) => (
-                        <TableRow>
-                          <TableData>{data?.item}</TableData>
+                      {equipment.map((data, index) => (
+                        <TableRow key={index}>
+                          <TableData className="text-xs">
+                            {data?.item}
+                          </TableData>
                           <TableData>{data?.quantity}</TableData>
                           <TableData>{data?.price}</TableData>
                           <TableData>
@@ -399,6 +421,9 @@ export default function Booking() {
                                   element.filter(
                                     (item) => item.item != data?.item
                                   )
+                                ),
+                                setPrice(
+                                  (curr) => curr - data?.price * data?.quantity
                                 )
                               )}
                             >
@@ -425,7 +450,7 @@ export default function Booking() {
             </div>
 
             {/* Estado del evento, pagos e impuestos */}
-            <div className="flex flex-col gap-6 border-t-2">
+            <div className="flex flex-col gap-6">
               <div className="flex justify-around items-center flex-wrap">
                 <div className="flex flex-col">
                   Estado Evento
@@ -477,9 +502,29 @@ export default function Booking() {
                 </div>
               </div>
 
-              <div className="border-2 rounded-xl p-4 bg-gray-100 flex justify-around items-center md:text-xl font-semibold mt-4 flex-wrap gap-8">
-                <p>Precio sin IVA ${0}</p>
-                <p>Precio final ${0}</p>
+              <div className="border-2 rounded-xl p-2 bg-gray-100 flex justify-around items-center text-sm md:text-lg font-semibold mt-4 flex-wrap gap-2">
+                <p>
+                  Precio sin IVA
+                  {formatCurrency(
+                    price === 0
+                      ? 0
+                      : (price + (price / 100) * getValues("revenue")).toFixed(
+                          2
+                        )
+                  )}
+                </p>
+                <p>
+                  Precio final
+                  {formatCurrency(
+                    price === 0
+                      ? 0
+                      : (
+                          ((price + (price / 100) * getValues("revenue")) /
+                            100) *
+                          (100 + getValues("tax"))
+                        ).toFixed(2)
+                  )}
+                </p>
               </div>
             </div>
           </div>

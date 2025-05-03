@@ -66,12 +66,13 @@ export default function BookingRow({ booking, index }: bookingProps) {
   return (
     <TableRow key={index}>
       <TableData>{index + 1}</TableData>
-      <TableData>{name}</TableData>
-      <TableData>{lastName}</TableData>
+      <TableData>{name + " " + lastName}</TableData>
       <TableData>{phoneNumber}</TableData>
       <TableData>{organization}</TableData>
       <TableData>{formatDate(event_date)}</TableData>
-      <TableData>{eventTypes[event_type]?.es}</TableData>
+      <TableData className="hidden lg:table-cell">
+        {eventTypes[event_type]?.es}
+      </TableData>
       <TableData>{place}</TableData>
       <TableData>
         <p
