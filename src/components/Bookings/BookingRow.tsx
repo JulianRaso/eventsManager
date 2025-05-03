@@ -1,8 +1,7 @@
 import { useDeleteBooking } from "../../hooks/useDeleteBooking";
-import { TableBody, TableData, TableRow } from "../Table";
+import { TableData, TableRow } from "../Table";
 import TableButtons from "../TableButtons";
 import { formatDate } from "../formatDate";
-import { IoEyeSharp } from "react-icons/io5";
 
 interface Client {
   name: string;

@@ -31,11 +31,11 @@ import {
 import { DialogFooter } from "../components/ui/dialog";
 import useGetData from "../hooks/useGetData";
 
-function formatCurrency(currency) {
+function formatCurrency(currency: string) {
   const number = typeof currency === "string" ? parseFloat(currency) : currency;
 
   if (isNaN(number)) {
-    throw new Error("El valor ingresado no es un número válido.");
+    return 0;
   }
 
   return number.toLocaleString("es-AR", {
@@ -52,7 +52,7 @@ export default function Booking() {
     useForm();
   const { isAdding, addBooking } = useAddBooking();
   const { isUpdating, updateBooking } = useUpdateBooking();
-  const { data, isLoading } = useGetData({ category: "sound" });
+  const { data, isLoading } = useGetData();
   const [dni, setDni] = useState(0);
   const [existClient, setExistClient] = useState(false);
   const [equipment, setEquipment] = useState([]);
@@ -199,333 +199,325 @@ export default function Booking() {
   return (
     <AddLayout>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-1.5">
+        <div className="grid grid-cols-1 grid-row-4 md:grid-cols-3 md:grid-rows-2 gap-1.5">
           {/* Datos cliente */}
-          <div className="flex flex-col justify-between gap-2 col-span-1">
+          <div className="flex flex-col gap-2 col-span-1">
+            <div className="text-lg font-semibold flex items-center">
+              Datos cliente <p className="text-red-500">*</p>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <Input
+                type="dni"
+                placeholder="Dni del Cliente"
+                required
+                minLength={7}
+                maxLength={8}
+                {...register("dni")}
+                disabled={isEditingSession}
+                onBlur={(e) => handleCheckClient(e.currentTarget.value)}
+              />
+              <Input
+                type="name"
+                placeholder="Nombre del Cliente"
+                required
+                defaultValue={client.name}
+                {...register("name")}
+                disabled={existClient}
+              />
+              <Input
+                type="lastName"
+                placeholder="Apellido del Cliente"
+                required
+                defaultValue={client.lastName}
+                {...register("lastName")}
+                disabled={existClient}
+              />
+              <Input
+                type="phone"
+                placeholder="Teléfono del Cliente"
+                required
+                defaultValue={client.phoneNumber}
+                {...register("phoneNumber")}
+                disabled={existClient}
+              />
+              <Input
+                type="email"
+                placeholder="Email del Cliente"
+                defaultValue={client.email}
+                {...register("email")}
+                disabled={existClient}
+              />
+            </div>
+          </div>
+
+          {/* Información del evento */}
+          <div className="flex flex-col gap-6 col-span-1 row-start-2">
             <div className="flex flex-col gap-2">
               <div className="text-lg font-semibold flex items-center">
-                Datos cliente <p className="text-red-500">*</p>
+                Evento <p className="text-red-500">*</p>
               </div>
 
               <div className="flex flex-col gap-4">
-                <Input
-                  type="dni"
-                  placeholder="Dni del Cliente"
+                <select
+                  className="border rounded-md h-9 p-1"
+                  {...register("organization")}
                   required
-                  minLength={7}
-                  maxLength={8}
-                  {...register("dni")}
-                  disabled={isEditingSession}
-                  onBlur={(e) => handleCheckClient(e.currentTarget.value)}
-                />
-                <Input
-                  type="name"
-                  placeholder="Nombre del Cliente"
+                >
+                  <option disabled selected>
+                    Seleccione una organizacion
+                  </option>
+                  <option value="Muzek">Muzek</option>
+                  <option value="Show Rental">Show Rental</option>
+                </select>
+                <select
+                  className="border rounded-md h-9 p-1"
+                  {...register("event_type")}
                   required
-                  defaultValue={client.name}
-                  {...register("name")}
-                  disabled={existClient}
-                />
+                >
+                  <option disabled selected>
+                    Seleccione el tipo de evento
+                  </option>
+                  <option value="corporate">Corporativo</option>
+                  <option value="birthday">Cumpleaños</option>
+                  <option value="fifteen_party">XV años</option>
+                  <option value="marriage">Casamiento</option>
+                  <option value="other">Otro</option>
+                </select>
                 <Input
-                  type="lastName"
-                  placeholder="Apellido del Cliente"
+                  type="place"
+                  placeholder="Ubicación del Evento"
                   required
-                  defaultValue={client.lastName}
-                  {...register("lastName")}
-                  disabled={existClient}
+                  {...register("place")}
                 />
                 <Input
-                  type="phone"
-                  placeholder="Teléfono del Cliente"
+                  type="date"
                   required
-                  defaultValue={client.phoneNumber}
-                  {...register("phoneNumber")}
-                  disabled={existClient}
+                  {...register("event_date")}
+                  min={
+                    isEditingSession
+                      ? ""
+                      : new Date().toISOString().split("T")[0]
+                  }
                 />
-                <Input
-                  type="email"
-                  placeholder="Email del Cliente"
-                  defaultValue={client.email}
-                  {...register("email")}
-                  disabled={existClient}
-                />
-              </div>
-            </div>
-
-            {/* Información del evento */}
-            <div className="flex flex-col gap-6">
-              <div className="flex flex-col gap-2">
-                <div className="text-lg font-semibold flex items-center">
-                  Evento <p className="text-red-500">*</p>
-                </div>
-
-                <div className="flex flex-col gap-6">
-                  <select
-                    className="border rounded-md h-9 p-1"
-                    {...register("organization")}
-                    required
-                  >
-                    <option disabled selected>
-                      Seleccione una organizacion
-                    </option>
-                    <option value="Muzek">Muzek</option>
-                    <option value="Show Rental">Show Rental</option>
-                  </select>
-                  <select
-                    className="border rounded-md h-9 p-1"
-                    {...register("event_type")}
-                    required
-                  >
-                    <option disabled selected>
-                      Seleccione el tipo de evento
-                    </option>
-                    <option value="corporate">Corporativo</option>
-                    <option value="birthday">Cumpleaños</option>
-                    <option value="fifteen_party">XV años</option>
-                    <option value="marriage">Casamiento</option>
-                    <option value="other">Otro</option>
-                  </select>
-                  <Input
-                    type="place"
-                    placeholder="Ubicación del Evento"
-                    required
-                    {...register("place")}
-                  />
-                  <Input
-                    type="date"
-                    required
-                    {...register("event_date")}
-                    min={
-                      isEditingSession
-                        ? ""
-                        : new Date().toISOString().split("T")[0]
-                    }
-                  />
-                </div>
               </div>
             </div>
           </div>
 
           {/* Presupuesto & Pagos */}
-          <div className="flex flex-col col-span-2 justify-between gap-2">
-            <div className="flex flex-col items-strech h-full justify-between">
-              <div className="flex flex-col gap-1">
-                {/* Equipo */}
-                <div className="text-lg font-semibold flex justify-between">
-                  <p>Equipo</p>
-                  <Dialog>
-                    <DialogTrigger className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 h-9 px-4 py-2 has-[>svg]:px-3">
-                      +
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Equipo</DialogTitle>
-                        <DialogDescription>
-                          Seleccione el equipo y la cantidad deseada para
-                          generar el presupuesto del evento.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="overflow-y-auto h-80 text-sm">
-                        <Table>
-                          <TableHead>
-                            <TableData>Equipo</TableData>
-                            <TableData>Disponible</TableData>
-                            <TableData>Costo</TableData>
-                            <TableData>Solicitado</TableData>
-                            <TableData>Agregar</TableData>
-                          </TableHead>
-                          <TableBody className="">
-                            {data?.map((stock, index) => (
-                              <TableRow key={index}>
-                                <TableData>{stock.name}</TableData>
-                                <TableData>{stock.quantity}</TableData>
-                                <TableData>{stock.price}</TableData>
-                                <TableData>
-                                  <Input
-                                    type="number"
-                                    min={0}
-                                    max={stock.quantity}
-                                    disabled={equipment.find(
-                                      (e) =>
-                                        e.item === stock.name &&
-                                        e.quantity === stock.quantity
-                                    )}
-                                  />
-                                </TableData>
-                                <TableData>
-                                  <Button
-                                    variant="outline"
-                                    onClick={(e) => (
-                                      e.preventDefault(),
-                                      setEquipment([
-                                        ...equipment,
-                                        {
-                                          item: stock.name,
-                                          quantity: stock.quantity,
-                                          price: stock.price,
-                                        },
-                                      ]),
-                                      setPrice(
-                                        (previous) =>
-                                          previous +
-                                          stock.quantity * (stock.price || 0)
-                                      )
-                                    )}
-                                    disabled={equipment.find(
-                                      (e) =>
-                                        e.item === stock.name &&
-                                        e.quantity === stock.quantity
-                                    )}
-                                  >
-                                    +
-                                  </Button>
-                                </TableData>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                      <DialogFooter className="sm:justify-start">
-                        <DialogClose asChild>
-                          <Button type="button" variant="secondary">
-                            Cerrar
-                          </Button>
-                        </DialogClose>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-
-                <div className="w-full h-25 overflow-y-auto">
-                  <Table>
-                    <TableHead>
-                      <TableData>Nombre</TableData>
-                      <TableData>Cantidad</TableData>
-                      <TableData>Precio</TableData>
-                      <TableData>{null}</TableData>
-                    </TableHead>
-                    <TableBody>
-                      {equipment.map((data, index) => (
-                        <TableRow key={index}>
-                          <TableData className="text-xs">
-                            {data?.item}
-                          </TableData>
-                          <TableData>{data?.quantity}</TableData>
-                          <TableData>{data?.price}</TableData>
-                          <TableData>
-                            <Button
-                              variant="outline"
-                              onClick={(e) => (
-                                e.preventDefault(),
-                                setEquipment((element) =>
-                                  element.filter(
-                                    (item) => item.item != data?.item
-                                  )
-                                ),
-                                setPrice(
-                                  (curr) => curr - data?.price * data?.quantity
-                                )
-                              )}
-                            >
-                              X
-                            </Button>
-                          </TableData>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+          <div className="flex flex-col items-strech h-full justify-between row-start-3 md:col-span-2 md:col-start-2 md:row-start-1">
+            <div className="flex flex-col gap-1">
+              {/* Equipo */}
+              <div className="text-lg font-semibold flex justify-between">
+                <p>Equipo</p>
+                <Dialog>
+                  <DialogTrigger className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 h-9 px-4 py-2 has-[>svg]:px-3">
+                    +
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Equipo</DialogTitle>
+                      <DialogDescription>
+                        Seleccione el equipo y la cantidad deseada para generar
+                        el presupuesto del evento.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="overflow-y-auto h-80 text-sm">
+                      <Table>
+                        <TableHead>
+                          <TableData>Equipo</TableData>
+                          <TableData>Disponible</TableData>
+                          <TableData>Costo</TableData>
+                          <TableData>Solicitado</TableData>
+                          <TableData>Agregar</TableData>
+                        </TableHead>
+                        <TableBody className="">
+                          {data?.map((stock, index) => (
+                            <TableRow key={index}>
+                              <TableData>{stock.name}</TableData>
+                              <TableData>{stock.quantity}</TableData>
+                              <TableData>{stock.price}</TableData>
+                              <TableData>
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  max={stock.quantity}
+                                  disabled={equipment.find(
+                                    (e) =>
+                                      e.item === stock.name &&
+                                      e.quantity === stock.quantity
+                                  )}
+                                  onChange={(e) => e.target.value}
+                                />
+                              </TableData>
+                              <TableData>
+                                <Button
+                                  variant="outline"
+                                  onClick={(e) => (
+                                    e.preventDefault(),
+                                    setEquipment([
+                                      ...equipment,
+                                      {
+                                        item: stock.name,
+                                        quantity: stock.quantity,
+                                        price: stock.price,
+                                      },
+                                    ]),
+                                    setPrice(
+                                      (previous) =>
+                                        previous +
+                                        stock.quantity * (stock.price || 0)
+                                    )
+                                  )}
+                                  disabled={equipment.find(
+                                    (e) =>
+                                      e.item === stock.name &&
+                                      e.quantity === stock.quantity
+                                  )}
+                                >
+                                  +
+                                </Button>
+                              </TableData>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                    <DialogFooter className="sm:justify-start">
+                      <DialogClose asChild>
+                        <Button type="button" variant="secondary">
+                          Cerrar
+                        </Button>
+                      </DialogClose>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
 
-              {/* Comentarios adicionales */}
-              <div className="flex flex-col">
-                <p className="text-lg font-semibold">Información Adicional</p>
-                <textarea
-                  placeholder="Información adicional del evento..."
-                  className="w-full border-2 rounded-lg p-3 resize-none"
-                  maxLength={400}
-                  {...register("comments")}
-                ></textarea>
+              <div className="w-full h-30 overflow-y-auto">
+                <Table>
+                  <TableHead>
+                    <TableData>Nombre</TableData>
+                    <TableData>Cantidad</TableData>
+                    <TableData>Precio</TableData>
+                    <TableData>{null}</TableData>
+                  </TableHead>
+                  <TableBody>
+                    {equipment.map((data, index) => (
+                      <TableRow key={index}>
+                        <TableData className="text-xs">{data?.item}</TableData>
+                        <TableData>{data?.quantity}</TableData>
+                        <TableData>{data?.price}</TableData>
+                        <TableData>
+                          <Button
+                            variant="outline"
+                            onClick={(e) => (
+                              e.preventDefault(),
+                              setEquipment((element) =>
+                                element.filter(
+                                  (item) => item.item != data?.item
+                                )
+                              ),
+                              setPrice(
+                                (curr) => curr - data?.price * data?.quantity
+                              )
+                            )}
+                          >
+                            X
+                          </Button>
+                        </TableData>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             </div>
 
-            {/* Estado del evento, pagos e impuestos */}
-            <div className="flex flex-col gap-6">
-              <div className="flex justify-around items-center flex-wrap">
-                <div className="flex flex-col">
-                  Estado Evento
-                  <select
-                    className="mt-1 border-2 rounded-xl p-2"
-                    {...register("booking_status")}
-                  >
-                    <option value="confirm">Confirmado</option>
-                    <option value="pending">Pendiente</option>
-                    {isEditingSession && (
-                      <option value="cancel">Cancelado</option>
-                    )}
-                  </select>
-                </div>
+            {/* Comentarios adicionales */}
+            <div className="flex flex-col">
+              <p className="text-lg font-semibold">Información Adicional</p>
+              <textarea
+                placeholder="Información adicional del evento..."
+                className="w-full border-2 rounded-lg p-3 resize-none"
+                maxLength={400}
+                {...register("comments")}
+              ></textarea>
+            </div>
+          </div>
 
-                <div className="flex flex-col">
-                  Estado Pago
-                  <select
-                    className="mt-1 border-2 rounded-xl p-2"
-                    {...register("payment_status")}
-                  >
-                    <option value="paid">Abonado</option>
-                    <option value="partially_paid">Seña</option>
-                    <option value="pending">Pendiente</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-around flex-wrap">
-                <div className="flex flex-col items-center">
-                  <p>IVA</p>
-                  <Input
-                    type="number"
-                    {...register("tax")}
-                    min={0}
-                    defaultValue={0}
-                    placeholder="Ingrese el IVA"
-                  />
-                </div>
-                <div className="flex flex-col items-center">
-                  <p>Ganancia %</p>
-                  <Input
-                    type="number"
-                    placeholder="Porcentage de ganancia"
-                    {...register("revenue")}
-                    min={0}
-                    defaultValue={0}
-                  />
-                </div>
-              </div>
-
-              <div className="border-2 rounded-xl p-2 bg-gray-100 flex justify-around items-center text-sm md:text-lg font-semibold mt-4 flex-wrap gap-2">
-                <p>
-                  Precio sin IVA
-                  {formatCurrency(
-                    price === 0
-                      ? 0
-                      : (price + (price / 100) * getValues("revenue")).toFixed(
-                          2
-                        )
+          {/* Estado del evento, pagos e impuestos */}
+          <div className="flex flex-col gap-6 col-span-2 md:col-start-2 md:row-start-2">
+            <div className="flex justify-around items-center flex-wrap">
+              <div className="flex flex-col">
+                Estado Evento
+                <select
+                  className="mt-1 border-2 rounded-xl p-2"
+                  {...register("booking_status")}
+                >
+                  <option value="confirm">Confirmado</option>
+                  <option value="pending">Pendiente</option>
+                  {isEditingSession && (
+                    <option value="cancel">Cancelado</option>
                   )}
-                </p>
-                <p>
-                  Precio final
-                  {formatCurrency(
-                    price === 0
-                      ? 0
-                      : (
-                          ((price + (price / 100) * getValues("revenue")) /
-                            100) *
-                          (100 + getValues("tax"))
-                        ).toFixed(2)
-                  )}
-                </p>
+                </select>
               </div>
+
+              <div className="flex flex-col">
+                Estado Pago
+                <select
+                  className="mt-1 border-2 rounded-xl p-2"
+                  {...register("payment_status")}
+                >
+                  <option value="paid">Abonado</option>
+                  <option value="partially_paid">Seña</option>
+                  <option value="pending">Pendiente</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-around flex-wrap">
+              <div className="flex flex-col items-center">
+                <p>IVA</p>
+                <Input
+                  type="number"
+                  {...register("tax")}
+                  min={0}
+                  defaultValue={0}
+                  placeholder="Ingrese el IVA"
+                />
+              </div>
+              <div className="flex flex-col items-center">
+                <p>Ganancia %</p>
+                <Input
+                  type="number"
+                  placeholder="Porcentage de ganancia"
+                  {...register("revenue")}
+                  min={0}
+                  defaultValue={0}
+                />
+              </div>
+            </div>
+
+            <div className="border-2 rounded-xl p-2 bg-gray-100 flex justify-around items-center text-sm md:text-lg font-semibold mt-4 flex-wrap gap-2">
+              <p>
+                Precio sin IVA
+                {formatCurrency(
+                  price === 0
+                    ? 0
+                    : (price + (price / 100) * getValues("revenue")).toFixed(2)
+                )}
+              </p>
+              <p>
+                Precio final
+                {formatCurrency(
+                  price === 0
+                    ? 0
+                    : (
+                        ((price + (price / 100) * getValues("revenue")) / 100) *
+                        (100 + getValues("tax"))
+                      ).toFixed(2)
+                )}
+              </p>
             </div>
           </div>
         </div>

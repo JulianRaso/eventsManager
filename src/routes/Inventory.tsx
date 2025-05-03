@@ -63,7 +63,7 @@ export default function Invetory() {
   const defaultCategory = "sound";
   const [filterByName, setFilterByName] = useState("");
   const [value, setValue] = useState("sound");
-  const { data = [], isLoading } = useGetData({ category: value });
+  const { data = [], isLoading } = useGetData(value);
   const { isDelete, deleteStock } = useDeleteStock();
   const [currentPage, setCurrentPage] = useState(1);
   const limit = 10;

@@ -72,7 +72,11 @@ export default function Bookings() {
 
   const lastPostIndex = currentPage * limit;
   const firstPostIndex = lastPostIndex - limit;
-  const currentPosts = data?.slice(firstPostIndex, lastPostIndex);
+  const currentPosts = data
+    ?.sort((a, b) =>
+      a.event_date < b.event_date ? 1 : a.event_date > b.event_date ? -1 : 0
+    )
+    .slice(firstPostIndex, lastPostIndex);
 
   if (isLoading) return <Spinner />;
 
@@ -103,7 +107,7 @@ export default function Bookings() {
             <TableData>Acciones</TableData>
           </TableHead>
           <TableBody>
-            {currentPosts
+            {(filterByName ? data : currentPosts)
               ?.filter((item) => {
                 return filterByName.toLowerCase() === ""
                   ? item

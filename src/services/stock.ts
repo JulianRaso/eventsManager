@@ -11,14 +11,23 @@ interface StockProps {
   updated_by: string;
 }
 
-export async function getStock({ category }: { category: string }) {
-  const { data, error } = await supabase
-    .from("inventory")
-    .select("*")
-    .eq("category", category);
+export async function getStock(category?: string) {
+  if (category) {
+    const { data, error } = await supabase
+      .from("inventory")
+      .select("*")
+      .eq("category", category);
+
+    if (error) {
+      throw new Error(`There was an error while loading ${category}`);
+    }
+    return data;
+  }
+
+  const { data, error } = await supabase.from("inventory").select("*");
 
   if (error) {
-    throw new Error(`There was an error while loading ${category}`);
+    throw new Error(`There was an error while loading equipment`);
   }
   return data;
 }
