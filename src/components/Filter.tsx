@@ -19,6 +19,7 @@ import { cn } from "../lib/utils";
 interface FilterProps {
   filterByStatus: Array<{ value: string; label: string }>;
   value: string;
+  className?: string;
   filterByName: string;
   setValue: (value: string) => void;
   setFilterByName: (value: string) => void;
@@ -30,11 +31,12 @@ export default function Filter({
   setValue,
   filterByName,
   setFilterByName,
+  className,
 }: FilterProps) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="flex justify-end">
+    <div className={`flex justify-end ${className}`}>
       <div className="flex gap-1 items-center overflow-x-auto">
         <input
           type="text"

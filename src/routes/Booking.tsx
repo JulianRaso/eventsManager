@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
 import AddLayout from "../components/AddLayout";
@@ -30,6 +30,9 @@ import {
 } from "../components/Table";
 import { DialogFooter } from "../components/ui/dialog";
 import useGetData from "../hooks/useGetData";
+import MiniSpinner from "../components/MiniSpinner";
+import Filter from "../components/Filter";
+import useAddItems from "../hooks/useAddItems";
 
 function formatCurrency(currency: string) {
   const number = typeof currency === "string" ? parseFloat(currency) : currency;
@@ -39,31 +42,66 @@ function formatCurrency(currency: string) {
   }
 
   return number.toLocaleString("es-AR", {
-    style: "currency",
-    currency: "ARS",
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
 }
 
+const filterByCategory = [
+  {
+    value: "sound",
+    label: "Sonido",
+  },
+  {
+    value: "lights",
+    label: "Iluminacion",
+  },
+  { value: "ambientation", label: "Ambientacion" },
+  {
+    value: "structure",
+    label: "Estructuras",
+  },
+  {
+    value: "cables",
+    label: "Cables",
+  },
+  {
+    value: "screen",
+    label: "Pantalla",
+  },
+  {
+    value: "furniture",
+    label: "Muebles",
+  },
+  {
+    value: "tools",
+    label: "Herramientas",
+  },
+  {
+    value: "others",
+    label: "Otros",
+  },
+];
+
 export default function Booking() {
   const navigate = useNavigate();
   const { register, reset, handleSubmit, setValue, resetField, getValues } =
     useForm();
+  const defaultCategory = "sound";
+  const [filterByName, setFilterByName] = useState("");
   const { isAdding, addBooking } = useAddBooking();
   const { isUpdating, updateBooking } = useUpdateBooking();
-  const { data, isLoading } = useGetData();
+  const { isPending, addEquipment } = useAddItems();
+  const [category, setCategory] = useState(defaultCategory);
+  const { data, isLoading } = useGetData(category);
   const [dni, setDni] = useState(0);
   const [existClient, setExistClient] = useState(false);
   const [equipment, setEquipment] = useState([]);
   const [price, setPrice] = useState(0);
-  const [client, setClient] = useState({
-    dni: "",
-    name: "",
-    lastName: "",
-    phoneNumber: "",
-    email: "",
-  });
+
+  if (category === "") {
+    setCategory(defaultCategory);
+  }
 
   //Editing Session
   const bookingId = useParams().bookingId;
@@ -153,6 +191,9 @@ export default function Booking() {
     if (Number(dni) > 999999 && Number(dni) < 99999999) {
       return setDni(Number(dni));
     }
+    if (dni === "") {
+      reset();
+    }
   }
 
   function onSubmit(data) {
@@ -175,6 +216,10 @@ export default function Booking() {
       place: data.place,
       tax: data.tax,
       revenue: data.revenue,
+      price: (
+        ((price + (price / 100) * getValues("revenue")) / 100) *
+        (100 + getValues("tax"))
+      ).toFixed(2),
     };
 
     if (isEditingSession)
@@ -190,15 +235,23 @@ export default function Booking() {
         place: data.place,
         tax: data.tax,
         revenue: data.revenue,
+        price: (
+          ((price + (price / 100) * getValues("revenue")) / 100) *
+          (100 + getValues("tax"))
+        ).toFixed(2),
       });
+    if (equipment.length > 0) addEquipment(equipment);
+
     if (!isEditingSession)
       addBooking({ client: clientData, booking: bookingData });
     reset();
   }
 
+  console.log(price);
+
   return (
     <AddLayout>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-2">
         <div className="grid grid-cols-1 grid-row-4 md:grid-cols-3 md:grid-rows-2 gap-1.5">
           {/* Datos cliente */}
           <div className="flex flex-col gap-2 col-span-1">
@@ -221,7 +274,7 @@ export default function Booking() {
                 type="name"
                 placeholder="Nombre del Cliente"
                 required
-                defaultValue={client.name}
+                defaultValue={""}
                 {...register("name")}
                 disabled={existClient}
               />
@@ -229,7 +282,7 @@ export default function Booking() {
                 type="lastName"
                 placeholder="Apellido del Cliente"
                 required
-                defaultValue={client.lastName}
+                defaultValue={""}
                 {...register("lastName")}
                 disabled={existClient}
               />
@@ -237,14 +290,14 @@ export default function Booking() {
                 type="phone"
                 placeholder="Teléfono del Cliente"
                 required
-                defaultValue={client.phoneNumber}
+                defaultValue={""}
                 {...register("phoneNumber")}
                 disabled={existClient}
               />
               <Input
                 type="email"
                 placeholder="Email del Cliente"
-                defaultValue={client.email}
+                defaultValue={""}
                 {...register("email")}
                 disabled={existClient}
               />
@@ -252,55 +305,51 @@ export default function Booking() {
           </div>
 
           {/* Información del evento */}
-          <div className="flex flex-col gap-6 col-span-1 row-start-2">
-            <div className="flex flex-col gap-2">
-              <div className="text-lg font-semibold flex items-center">
-                Evento <p className="text-red-500">*</p>
-              </div>
+          <div className="flex flex-col gap-2 col-span-1 row-start-2">
+            <div className="text-lg font-semibold flex items-center">
+              Evento <p className="text-red-500">*</p>
+            </div>
 
-              <div className="flex flex-col gap-4">
-                <select
-                  className="border rounded-md h-9 p-1"
-                  {...register("organization")}
-                  required
-                >
-                  <option disabled selected>
-                    Seleccione una organizacion
-                  </option>
-                  <option value="Muzek">Muzek</option>
-                  <option value="Show Rental">Show Rental</option>
-                </select>
-                <select
-                  className="border rounded-md h-9 p-1"
-                  {...register("event_type")}
-                  required
-                >
-                  <option disabled selected>
-                    Seleccione el tipo de evento
-                  </option>
-                  <option value="corporate">Corporativo</option>
-                  <option value="birthday">Cumpleaños</option>
-                  <option value="fifteen_party">XV años</option>
-                  <option value="marriage">Casamiento</option>
-                  <option value="other">Otro</option>
-                </select>
-                <Input
-                  type="place"
-                  placeholder="Ubicación del Evento"
-                  required
-                  {...register("place")}
-                />
-                <Input
-                  type="date"
-                  required
-                  {...register("event_date")}
-                  min={
-                    isEditingSession
-                      ? ""
-                      : new Date().toISOString().split("T")[0]
-                  }
-                />
-              </div>
+            <div className="flex flex-col gap-5">
+              <select
+                className="border rounded-md h-9 p-1"
+                {...register("organization")}
+                required
+              >
+                <option disabled selected>
+                  Seleccione una organizacion
+                </option>
+                <option value="Muzek">Muzek</option>
+                <option value="Show Rental">Show Rental</option>
+              </select>
+              <select
+                className="border rounded-md h-9 p-1"
+                {...register("event_type")}
+                required
+              >
+                <option disabled selected>
+                  Seleccione el tipo de evento
+                </option>
+                <option value="corporate">Corporativo</option>
+                <option value="birthday">Cumpleaños</option>
+                <option value="fifteen_party">XV años</option>
+                <option value="marriage">Casamiento</option>
+                <option value="other">Otro</option>
+              </select>
+              <Input
+                type="place"
+                placeholder="Ubicación del Evento"
+                required
+                {...register("place")}
+              />
+              <Input
+                type="date"
+                required
+                {...register("event_date")}
+                min={
+                  isEditingSession ? "" : new Date().toISOString().split("T")[0]
+                }
+              />
             </div>
           </div>
 
@@ -322,66 +371,87 @@ export default function Booking() {
                         el presupuesto del evento.
                       </DialogDescription>
                     </DialogHeader>
+                    <Filter
+                      filterByName={filterByName}
+                      filterByStatus={filterByCategory}
+                      setFilterByName={setFilterByName}
+                      value={category}
+                      setValue={setCategory}
+                    />
                     <div className="overflow-y-auto h-80 text-sm">
-                      <Table>
-                        <TableHead>
-                          <TableData>Equipo</TableData>
-                          <TableData>Disponible</TableData>
-                          <TableData>Costo</TableData>
-                          <TableData>Solicitado</TableData>
-                          <TableData>Agregar</TableData>
-                        </TableHead>
-                        <TableBody className="">
-                          {data?.map((stock, index) => (
-                            <TableRow key={index}>
-                              <TableData>{stock.name}</TableData>
-                              <TableData>{stock.quantity}</TableData>
-                              <TableData>{stock.price}</TableData>
-                              <TableData>
-                                <Input
-                                  type="number"
-                                  min={0}
-                                  max={stock.quantity}
-                                  disabled={equipment.find(
-                                    (e) =>
-                                      e.item === stock.name &&
-                                      e.quantity === stock.quantity
-                                  )}
-                                  onChange={(e) => e.target.value}
-                                />
-                              </TableData>
-                              <TableData>
-                                <Button
-                                  variant="outline"
-                                  onClick={(e) => (
-                                    e.preventDefault(),
-                                    setEquipment([
-                                      ...equipment,
-                                      {
-                                        item: stock.name,
-                                        quantity: stock.quantity,
-                                        price: stock.price,
-                                      },
-                                    ]),
-                                    setPrice(
-                                      (previous) =>
-                                        previous +
-                                        stock.quantity * (stock.price || 0)
-                                    )
-                                  )}
-                                  disabled={equipment.find(
-                                    (e) =>
-                                      e.item === stock.name &&
-                                      e.quantity === stock.quantity
-                                  )}
-                                >
-                                  +
-                                </Button>
-                              </TableData>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
+                      {isLoading ? (
+                        <MiniSpinner />
+                      ) : (
+                        <Table>
+                          <TableHead>
+                            <TableData>Equipo</TableData>
+                            <TableData>Disponible</TableData>
+                            <TableData>Costo</TableData>
+                            <TableData>Solicitado</TableData>
+                            <TableData>Agregar</TableData>
+                          </TableHead>
+                          <TableBody className="">
+                            {data
+                              ?.filter((item) => {
+                                return filterByName.toLowerCase() === ""
+                                  ? item
+                                  : item.name
+                                      ?.toLowerCase()
+                                      .includes(filterByName.toLowerCase());
+                              })
+                              .map((stock, index) => (
+                                <TableRow key={index}>
+                                  <TableData>{stock.name}</TableData>
+                                  <TableData>{stock.quantity}</TableData>
+                                  <TableData>{stock.price}</TableData>
+                                  <TableData>
+                                    <Input
+                                      type="number"
+                                      min={0}
+                                      max={stock.quantity}
+                                      disabled={equipment.find(
+                                        (e) =>
+                                          e.name === stock.name &&
+                                          e.quantity === stock.quantity
+                                      )}
+                                      onChange={(e) => e.target.value}
+                                    />
+                                  </TableData>
+                                  <TableData>
+                                    <Button
+                                      variant="outline"
+                                      onClick={(e) => (
+                                        e.preventDefault(),
+                                        setEquipment([
+                                          ...equipment,
+                                          {
+                                            booking_id: bookingId,
+                                            equipment_id: stock.id,
+                                            name: stock.name,
+                                            quantity: stock.quantity,
+                                            price: stock.price,
+                                          },
+                                        ]),
+                                        setPrice(
+                                          (previous) =>
+                                            previous +
+                                            stock.quantity * (stock.price || 0)
+                                        )
+                                      )}
+                                      disabled={equipment.find(
+                                        (e) =>
+                                          e.name === stock.name &&
+                                          e.quantity === stock.quantity
+                                      )}
+                                    >
+                                      +
+                                    </Button>
+                                  </TableData>
+                                </TableRow>
+                              ))}
+                          </TableBody>
+                        </Table>
+                      )}
                     </div>
                     <DialogFooter className="sm:justify-start">
                       <DialogClose asChild>
@@ -405,7 +475,7 @@ export default function Booking() {
                   <TableBody>
                     {equipment.map((data, index) => (
                       <TableRow key={index}>
-                        <TableData className="text-xs">{data?.item}</TableData>
+                        <TableData className="text-xs">{data?.name}</TableData>
                         <TableData>{data?.quantity}</TableData>
                         <TableData>{data?.price}</TableData>
                         <TableData>
@@ -415,7 +485,7 @@ export default function Booking() {
                               e.preventDefault(),
                               setEquipment((element) =>
                                 element.filter(
-                                  (item) => item.item != data?.item
+                                  (item) => item.name != data?.name
                                 )
                               ),
                               setPrice(
@@ -500,7 +570,7 @@ export default function Booking() {
 
             <div className="border-2 rounded-xl p-2 bg-gray-100 flex justify-around items-center text-sm md:text-lg font-semibold mt-4 flex-wrap gap-2">
               <p>
-                Precio sin IVA
+                Precio sin IVA $
                 {formatCurrency(
                   price === 0
                     ? 0
@@ -508,7 +578,7 @@ export default function Booking() {
                 )}
               </p>
               <p>
-                Precio final
+                Precio final $
                 {formatCurrency(
                   price === 0
                     ? 0

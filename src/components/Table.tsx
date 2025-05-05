@@ -22,7 +22,7 @@ export function TableBody({
 
 export function TableRow({ children }: { children: React.ReactNode }) {
   return (
-    <tr className="px-4 py-2 border-b text-center text-sm font-medium text-gray-600 hover:bg-gray-50">
+    <tr className="px-4 py-2 border-b text-sm font-medium text-gray-600 hover:bg-gray-50">
       {children}
     </tr>
   );
@@ -37,7 +37,7 @@ export function TableData({
 }) {
   return (
     <td
-      className={`px-4 py-2 border-b text-center text-md text-gray-800 ${className}`}
+      className={`px-2 py-1 border-b text-center text-md text-gray-800 ${className}`}
     >
       {children}
     </td>

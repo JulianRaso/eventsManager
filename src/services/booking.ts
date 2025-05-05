@@ -22,6 +22,7 @@ interface bookingProps {
   place: string;
   tax: string;
   revenue: string;
+  price: number;
 }
 
 //Get data from database
@@ -85,8 +86,6 @@ export async function createBooking(
 }
 
 export async function updateBooking(booking: bookingProps) {
-  console.log(booking);
-
   const { data, error } = await supabase
     .from("booking")
     .update({ ...booking })

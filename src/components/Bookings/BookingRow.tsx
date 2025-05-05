@@ -59,6 +59,7 @@ export default function BookingRow({ booking, index }: bookingProps) {
     payment_status,
     place,
     event_type,
+    price,
   } = booking;
   const { name, lastName, phoneNumber } = client;
 
@@ -97,7 +98,7 @@ export default function BookingRow({ booking, index }: bookingProps) {
           ? "Señado"
           : "Abonado"}
       </TableData>
-      <TableData>${0}</TableData>
+      <TableData>${price}</TableData>
       <TableData>
         <TableButtons
           id={id}
