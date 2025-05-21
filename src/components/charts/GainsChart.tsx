@@ -15,6 +15,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "../ui/chart";
+
 const chartData = [
   { month: "January", desktop: 186 },
   { month: "February", desktop: 305 },

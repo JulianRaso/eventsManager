@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
 import AddLayout from "../components/AddLayout";
@@ -21,6 +21,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { DialogClose } from "@radix-ui/react-dialog";
+import Filter from "../components/Filter";
+import MiniSpinner from "../components/MiniSpinner";
 import {
   Table,
   TableBody,
@@ -29,10 +31,10 @@ import {
   TableRow,
 } from "../components/Table";
 import { DialogFooter } from "../components/ui/dialog";
-import useGetData from "../hooks/useGetData";
-import MiniSpinner from "../components/MiniSpinner";
-import Filter from "../components/Filter";
 import useAddItems from "../hooks/useAddItems";
+import useDeleteItems from "../hooks/useDeleteItems";
+import useGetData from "../hooks/useGetData";
+import useGetItems from "../hooks/useGetItems";
 
 function formatCurrency(currency: string) {
   const number = typeof currency === "string" ? parseFloat(currency) : currency;
@@ -94,6 +96,7 @@ export default function Booking() {
   const { isPending, addEquipment } = useAddItems();
   const [category, setCategory] = useState(defaultCategory);
   const { data, isLoading } = useGetData(category);
+  const { isDeleting, deleteItem } = useDeleteItems();
   const [dni, setDni] = useState(0);
   const [existClient, setExistClient] = useState(false);
   const [equipment, setEquipment] = useState([]);
@@ -106,6 +109,9 @@ export default function Booking() {
   //Editing Session
   const bookingId = useParams().bookingId;
   const isEditingSession = Boolean(bookingId);
+  const { isPending: isLoadingItems, getBookedEquipment } = useGetItems(
+    Number(bookingId)
+  );
   const [isLoadingBooking, setIsLoadingBooking] = useState(
     bookingId ? true : false
   );
@@ -126,6 +132,7 @@ export default function Booking() {
               comments,
               tax,
               revenue,
+              price,
             } = res[0];
 
             setValue("client_dni", client_dni);
@@ -151,6 +158,14 @@ export default function Booking() {
                 setIsLoadingBooking(false);
               }
             });
+            if (getBookedEquipment?.length > 0) {
+              setEquipment(getBookedEquipment);
+              setPrice(
+                getBookedEquipment?.reduce((acc, item) => {
+                  return acc + item.price * item.quantity;
+                }, 0)
+              );
+            }
           }
           if (res?.length === 0) {
             toast.error("No se ha encontrado la reserva que busca");
@@ -183,7 +198,15 @@ export default function Booking() {
           toast.error("Error al verificar el cliente");
         });
     }
-  });
+  }, [
+    isEditingSession,
+    dni,
+    setValue,
+    navigate,
+    bookingId,
+    resetField,
+    getBookedEquipment,
+  ]);
 
   if (isLoadingBooking) return <Spinner />;
 
@@ -246,8 +269,6 @@ export default function Booking() {
       addBooking({ client: clientData, booking: bookingData });
     reset();
   }
-
-  console.log(price);
 
   return (
     <AddLayout>
@@ -487,6 +508,11 @@ export default function Booking() {
                                 element.filter(
                                   (item) => item.name != data?.name
                                 )
+                              ),
+                              deleteItem(
+                                getBookedEquipment?.filter(
+                                  (item) => item.name === data?.name
+                                )[0]?.id
                               ),
                               setPrice(
                                 (curr) => curr - data?.price * data?.quantity
