@@ -18,6 +18,7 @@ interface Booking {
   payment_status: string;
   place: string;
   event_type: keyof typeof eventTypes;
+  price: number;
 }
 
 interface bookingProps {

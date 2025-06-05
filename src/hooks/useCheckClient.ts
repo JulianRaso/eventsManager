@@ -14,8 +14,10 @@ export default function useCheckClient(dni: string) {
 
   useEffect(() => {
     if (dni != "") {
-      checkClient(dni)
+      checkClient(Number(dni))
         .then((res) => {
+          if (res) {
+          }
           if (res.dni != "") {
             setClient({
               dni: res.dni,

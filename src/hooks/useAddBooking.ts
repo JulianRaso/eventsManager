@@ -22,6 +22,7 @@ interface bookingProps {
   place: string;
   tax: string;
   revenue: string;
+  price: number;
 }
 
 export function useAddBooking() {

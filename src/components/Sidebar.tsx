@@ -17,12 +17,14 @@ import { Button } from "./ui/button";
 
 export default function Sidebar() {
   const companyName = "Show Rental";
-  const { user, isLoading } = useUser();
+  const { user } = useUser();
   const [display, setDisplay] = useState(true);
   const { isLoginOut, logOut } = useLogOut();
 
-  const { email, user_metadata } = user;
-  const { fullName, avatar } = user_metadata;
+  const email = user?.email ?? "";
+  const user_metadata = user?.user_metadata ?? {};
+  const fullName = user_metadata.fullName ?? "";
+  const avatar = user_metadata.avatar ?? "";
 
   function handleLogOut() {
     logOut();

@@ -8,11 +8,15 @@ import useInviteUser from "../hooks/useInviteUser";
 import { Button } from "./ui/button";
 import { Input } from "./ui/Input";
 
+type FormData = {
+  email: string;
+};
+
 export default function AddUser() {
-  const { handleSubmit, reset, register, getValues } = useForm();
+  const { handleSubmit, reset, register } = useForm<FormData>();
   const { isInviting, inviteUser } = useInviteUser();
 
-  function onSubmit(data) {
+  function onSubmit(data: FormData) {
     const { email } = data;
 
     inviteUser(email);
