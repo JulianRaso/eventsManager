@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { set, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
 import AddLayout from "../components/AddLayout";
@@ -35,6 +35,7 @@ import useAddItems from "../hooks/useAddItems";
 import useDeleteItems from "../hooks/useDeleteItems";
 import useGetData from "../hooks/useGetData";
 import useGetItems from "../hooks/useGetItems";
+import { getItems } from "../services/bookingItems";
 
 function formatCurrency(currency: string) {
   const number = typeof currency === "string" ? parseFloat(currency) : currency;
@@ -101,6 +102,7 @@ export default function Booking() {
   const [existClient, setExistClient] = useState(false);
   const [equipment, setEquipment] = useState([]);
   const [price, setPrice] = useState(0);
+  const [quantity, setQuantity] = useState(0);
 
   if (category === "") {
     setCategory(defaultCategory);
@@ -158,14 +160,20 @@ export default function Booking() {
                 setIsLoadingBooking(false);
               }
             });
-            if (getBookedEquipment?.length > 0) {
-              setEquipment(getBookedEquipment);
-              setPrice(
-                getBookedEquipment?.reduce((acc, item) => {
-                  return acc + item.price * item.quantity;
-                }, 0)
-              );
-            }
+            getItems(Number(bookingId))
+              .then((res) => {
+                if (res) {
+                  setEquipment(res);
+                  setPrice(
+                    res?.reduce((acc, item) => {
+                      return acc + item.price * item.quantity;
+                    }, 0)
+                  );
+                }
+              })
+              .catch(() => {
+                toast.error("Error al cargar el equipo");
+              });
           }
           if (res?.length === 0) {
             toast.error("No se ha encontrado la reserva que busca");
@@ -435,7 +443,9 @@ export default function Booking() {
                                           e.name === stock.name &&
                                           e.quantity === stock.quantity
                                       )}
-                                      onChange={(e) => e.target.value}
+                                      onChange={(e) =>
+                                        setQuantity(Number(e.target.value))
+                                      }
                                     />
                                   </TableData>
                                   <TableData>
@@ -443,27 +453,41 @@ export default function Booking() {
                                       variant="outline"
                                       onClick={(e) => (
                                         e.preventDefault(),
-                                        setEquipment([
-                                          ...equipment,
-                                          {
-                                            booking_id: bookingId,
-                                            equipment_id: stock.id,
-                                            name: stock.name,
-                                            quantity: stock.quantity,
-                                            price: stock.price,
-                                          },
-                                        ]),
+                                        quantity === 0
+                                          ? toast.error(
+                                              "Debe ingresar una cantidad"
+                                            )
+                                          : quantity > stock.quantity
+                                          ? toast.error(
+                                              "Cantidad no disponible"
+                                            )
+                                          : quantity < 0
+                                          ? toast.error(
+                                              "Cantidad no disponible"
+                                            )
+                                          : setEquipment([
+                                              ...equipment,
+                                              {
+                                                booking_id: bookingId,
+                                                equipment_id: stock.id,
+                                                name: stock.name,
+                                                quantity: quantity,
+                                                price: stock.price,
+                                              },
+                                            ]),
                                         setPrice(
                                           (previous) =>
                                             previous +
                                             stock.quantity * (stock.price || 0)
                                         )
                                       )}
-                                      disabled={equipment.find(
-                                        (e) =>
-                                          e.name === stock.name &&
-                                          e.quantity === stock.quantity
-                                      )}
+                                      disabled={
+                                        equipment.find(
+                                          (e) =>
+                                            e.name === stock.name &&
+                                            e.quantity === stock.quantity
+                                        ) || true
+                                      }
                                     >
                                       +
                                     </Button>
@@ -502,6 +526,7 @@ export default function Booking() {
                         <TableData>
                           <Button
                             variant="outline"
+                            disabled={isDeleting}
                             onClick={(e) => (
                               e.preventDefault(),
                               setEquipment((element) =>

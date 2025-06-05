@@ -17,7 +17,7 @@ export default function useLogin() {
     onSuccess: (user) => {
       queryClient.setQueryData(["user"], user.user);
       toast.success(`Bienvenido de regreso!`);
-      navigate("/dashboard");
+      navigate("/reservas");
     },
     onError: (err) => {
       toast.error(err.message);
