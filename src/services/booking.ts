@@ -3,7 +3,7 @@ import { checkClient, createClient } from "./client";
 import { supabase } from "./supabase";
 
 interface clientProps {
-  dni: string;
+  dni: number;
   name: string;
   lastName: string;
   phoneNumber: string;
@@ -11,18 +11,22 @@ interface clientProps {
 }
 
 interface bookingProps {
-  id?: number;
-  client_dni: string;
-  booking_status: string;
+  client_dni: number;
+  booking_status: "pending" | "cancel" | "confirm";
   comments: string;
-  organization: string;
+  organization: "Muzek" | "Show Rental";
   event_date: string;
-  event_type: string;
-  payment_status: string;
+  event_type: "birthday" | "marriage" | "corporate" | "fifteen_party" | "other";
+  payment_status: "pending" | "partially_paid" | "paid";
   place: string;
   tax: string;
   revenue: string;
   price: number;
+}
+
+interface bookedProps {
+  id: number;
+  bookingProps: bookingProps;
 }
 
 //Get data from database
@@ -75,17 +79,22 @@ export async function createBooking(
   client: clientProps,
   booking: bookingProps
 ) {
-  const confirmClient = await checkClient(client.dni);
-  if (confirmClient.dni === "") {
+  const confirmClientResponse = await checkClient(client.dni);
+  const confirmClient = confirmClientResponse.data;
+  if (
+    !confirmClient ||
+    (Array.isArray(confirmClient) && confirmClient.length === 0)
+  ) {
     const data = await createClient(client);
     if (data) {
       addBooking(booking);
     }
+    return addBooking(booking);
   }
   return addBooking(booking);
 }
 
-export async function updateBooking(booking: bookingProps) {
+export async function updateBooking(booking: bookedProps) {
   const { data, error } = await supabase
     .from("booking")
     .update({ ...booking })

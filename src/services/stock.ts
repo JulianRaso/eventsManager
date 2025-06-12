@@ -2,16 +2,31 @@ import toast from "react-hot-toast";
 import { supabase } from "./supabase";
 
 interface StockProps {
-  id?: number;
   name: string;
   location: string;
   price: number;
   quantity: number;
-  category: string;
+  category: CategoryType;
   updated_by: string;
 }
 
-export async function getStock(category?: string) {
+interface StockedProps {
+  id: number;
+  StockProps: StockProps;
+}
+
+type CategoryType =
+  | "lights"
+  | "ambientation"
+  | "sound"
+  | "structure"
+  | "tools"
+  | "cables"
+  | "others"
+  | "furniture"
+  | "screen";
+
+export async function getStock(category?: CategoryType) {
   if (category) {
     const { data, error } = await supabase
       .from("inventory")
@@ -32,7 +47,7 @@ export async function getStock(category?: string) {
   return data;
 }
 
-export async function updateStock(stock: StockProps) {
+export async function updateStock(stock: StockedProps) {
   const { data, error } = await supabase
     .from("inventory")
     .update({ ...stock })
@@ -65,7 +80,7 @@ export async function addStock(stockData: StockProps) {
   return data;
 }
 
-export async function getCurrentStock(id: string) {
+export async function getCurrentStock(id: number) {
   const { data, error } = await supabase
     .from("inventory")
     .select("*")

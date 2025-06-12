@@ -1,17 +1,3 @@
-import { useEffect, useState } from "react";
-import { set, useForm } from "react-hook-form";
-import toast from "react-hot-toast";
-import { useNavigate, useParams } from "react-router-dom";
-import AddLayout from "../components/AddLayout";
-import NavigationButtons from "../components/NavigationButtons";
-import Spinner from "../components/Spinner";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/Input";
-import { useAddBooking } from "../hooks/useAddBooking";
-import useUpdateBooking from "../hooks/useUpdateBooking";
-import { getCurrentBooking } from "../services/booking";
-import { checkClient } from "../services/client";
-
 import {
   Dialog,
   DialogContent,
@@ -21,8 +7,15 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { DialogClose } from "@radix-ui/react-dialog";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
+import { useNavigate, useParams } from "react-router-dom";
+import AddLayout from "../components/AddLayout";
 import Filter from "../components/Filter";
 import MiniSpinner from "../components/MiniSpinner";
+import NavigationButtons from "../components/NavigationButtons";
+import Spinner from "../components/Spinner";
 import {
   Table,
   TableBody,
@@ -30,12 +23,18 @@ import {
   TableHead,
   TableRow,
 } from "../components/Table";
+import { Button } from "../components/ui/button";
 import { DialogFooter } from "../components/ui/dialog";
+import { Input } from "../components/ui/Input";
+import { useAddBooking } from "../hooks/useAddBooking";
 import useAddItems from "../hooks/useAddItems";
 import useDeleteItems from "../hooks/useDeleteItems";
 import useGetData from "../hooks/useGetData";
 import useGetItems from "../hooks/useGetItems";
+import useUpdateBooking from "../hooks/useUpdateBooking";
+import { getCurrentBooking } from "../services/booking";
 import { getItems } from "../services/bookingItems";
+import { checkClient } from "../services/client";
 
 function formatCurrency(currency: string) {
   const number = typeof currency === "string" ? parseFloat(currency) : currency;
@@ -111,9 +110,7 @@ export default function Booking() {
   //Editing Session
   const bookingId = useParams().bookingId;
   const isEditingSession = Boolean(bookingId);
-  const { isPending: isLoadingItems, getBookedEquipment } = useGetItems(
-    Number(bookingId)
-  );
+  const { getBookedEquipment } = useGetItems(Number(bookingId));
   const [isLoadingBooking, setIsLoadingBooking] = useState(
     bookingId ? true : false
   );
@@ -134,7 +131,6 @@ export default function Booking() {
               comments,
               tax,
               revenue,
-              price,
             } = res[0];
 
             setValue("client_dni", client_dni);
@@ -166,7 +162,10 @@ export default function Booking() {
                   setEquipment(res);
                   setPrice(
                     res?.reduce((acc, item) => {
-                      return acc + item.price * item.quantity;
+                      return (
+                        acc +
+                        (item.price != null ? item.price : 0) * item.quantity
+                      );
                     }, 0)
                   );
                 }

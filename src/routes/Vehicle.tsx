@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
@@ -8,10 +9,14 @@ import { Input } from "../components/ui/Input";
 import useAddVehicle from "../hooks/useAddVehicle";
 import useUpdateVehicle from "../hooks/useUpdateVehicle";
 import { getCurrentTransport } from "../services/transport";
-import { useQueryClient } from "@tanstack/react-query";
 
 export default function Vehicle() {
-  const { email, user_metadata } = useQueryClient().getQueryData(["user"]);
+  type UserData = { email: string; user_metadata: { fullName: string } };
+  const userData = useQueryClient().getQueryData(["user"]) as UserData;
+  const { email, user_metadata } = userData || {
+    email: "",
+    user_metadata: { fullName: "" },
+  };
   const navigate = useNavigate();
   const [status, setStatus] = useState("");
   const { register, reset, handleSubmit, setValue } = useForm();
@@ -22,7 +27,7 @@ export default function Vehicle() {
 
   useEffect(() => {
     if (isEdittingSession) {
-      getCurrentTransport(String(vehicle))
+      getCurrentTransport(Number(vehicle))
         .then((res = []) => {
           if (res?.length != 0) {
             const {

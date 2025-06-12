@@ -27,6 +27,10 @@ const statusTypes = {
     es: "Mantenimiento",
     en: "Maintenance",
   },
+  null: {
+    es: "Sin estado",
+    en: "No status",
+  },
 };
 
 const filterByCategory = [
@@ -78,7 +82,7 @@ export default function Transport() {
               return filterByName.toLowerCase() === ""
                 ? vehicle
                 : vehicle.brand
-                    .toLowerCase()
+                    ?.toLowerCase()
                     .includes(filterByName.toLowerCase());
             })
             .map((vehicle, index) => (
@@ -89,8 +93,18 @@ export default function Transport() {
                 <TableData>{vehicle.year}</TableData>
                 <TableData>{vehicle.license_plate}</TableData>
                 <TableData>{vehicle.type}</TableData>
-                <TableData>{formatDate(vehicle.last_service)}</TableData>
-                <TableData>{statusTypes[vehicle.status].es}</TableData>
+                <TableData>
+                  {vehicle.last_service
+                    ? formatDate(vehicle.last_service)
+                    : "No hay registro"}
+                </TableData>
+                <TableData>
+                  {
+                    statusTypes[
+                      vehicle.status != null ? vehicle.status : "null"
+                    ].es
+                  }
+                </TableData>
                 <TableData>{vehicle.updated_by}</TableData>
                 <TableData>
                   <TableButtons

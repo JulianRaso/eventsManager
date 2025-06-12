@@ -2,12 +2,12 @@ import toast from "react-hot-toast";
 import { supabase } from "./supabase";
 
 interface vehicleProps {
-  id?: string;
+  id?: number;
   brand: string;
   model: string;
   year: number;
   type: string;
-  status: string;
+  status: "available" | "inUse" | "maintenance";
   last_service: string;
   notes?: string;
   license_plate: string;
@@ -23,7 +23,7 @@ export async function getTransport() {
   return vehicles;
 }
 
-export async function deleteTransport(id: string) {
+export async function deleteTransport(id: number) {
   const { error } = await supabase.from("vehicles").delete().eq("id", id);
 
   if (error) {
@@ -41,7 +41,7 @@ export async function addVehicle(vehicle: vehicleProps) {
   return data;
 }
 
-export async function getCurrentTransport(id: string) {
+export async function getCurrentTransport(id: number) {
   const { data: vehicles, error } = await supabase
     .from("vehicles")
     .select("*")
@@ -54,6 +54,9 @@ export async function getCurrentTransport(id: string) {
 }
 
 export async function updateTransport(vehicle: vehicleProps) {
+  if (vehicle.id === undefined) {
+    throw new Error("El ID del vehículo es requerido para actualizar");
+  }
   const { data, error } = await supabase
     .from("vehicles")
     .update({ ...vehicle })

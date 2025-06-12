@@ -16,8 +16,6 @@ export default function useCheckClient(dni: string) {
     if (dni != "") {
       checkClient(Number(dni))
         .then((res) => {
-          if (res) {
-          }
           if (res.dni != "") {
             setClient({
               dni: res.dni,

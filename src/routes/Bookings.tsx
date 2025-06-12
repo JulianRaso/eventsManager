@@ -63,7 +63,7 @@ export default function Bookings() {
   const [filterByName, setFilterByName] = useState("");
   const [value, setValue] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil(data?.length / 5);
+  const totalPages = Math.ceil((data?.length ?? 0) / 5);
   const limit = 5;
   const pages = [];
   for (let i = 1; i <= totalPages; i++) {
@@ -138,7 +138,7 @@ export default function Bookings() {
         <div className="text-2xl text-center mt-4">Agenda una Reserva!!</div>
       )}
       {/* Check if the data is more than the limit and show pagination */}
-      {data?.length > limit && (
+      {(data?.length ?? 0) > limit && (
         <Pagination className="w-full flex items-center mt-2">
           <PaginationContent>
             <PaginationItem>
@@ -163,8 +163,7 @@ export default function Bookings() {
             <PaginationItem>
               <PaginationNext
                 onClick={() => {
-                  if (currentPage < Math.ceil(data?.length / limit))
-                    setCurrentPage(currentPage + 1);
+                  if (currentPage < totalPages) setCurrentPage(currentPage + 1);
                 }}
                 size={"lg"}
               />

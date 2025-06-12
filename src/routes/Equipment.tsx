@@ -12,8 +12,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import Spinner from "../components/Spinner";
 
 export default function Equipment() {
+  type UserData = { email: string; user_metadata: { fullName: string } };
+  const userData = useQueryClient().getQueryData(["user"]) as UserData;
+  const { email, user_metadata } = userData || {
+    email: "",
+    user_metadata: { fullName: "" },
+  };
   const [category, setCategory] = useState("");
-  const { email, user_metadata } = useQueryClient().getQueryData(["user"]);
   const { register, reset, handleSubmit, setValue } = useForm();
   const { isAdding, addStock } = useAddStock();
   const { isUpdating, updateStock } = useUpdateStock({ category: "sound" });
