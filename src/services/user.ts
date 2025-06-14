@@ -49,7 +49,7 @@ async function updateCurrentUser({
 }: {
   fullName?: string;
   password?: string;
-  avatar?: string;
+  avatar?: File | null;
 }) {
   let updateData = {};
   if (password) updateData = { password };
@@ -59,7 +59,7 @@ async function updateCurrentUser({
 
   if (error) {
     throw new Error(
-      "There was an error trying to Update the account. Please try again!"
+      "Hubo un error al intentar actualizar la cuenta. Intente de nuevo!"
     );
   }
 
@@ -73,7 +73,7 @@ async function updateCurrentUser({
 
   if (storageError) {
     throw new Error(
-      "There was an error trying to upload the avatar. Please try again!"
+      "Hubo un error al intentar subir el avatar. Intente de nuevo!"
     );
   }
 
@@ -85,7 +85,7 @@ async function updateCurrentUser({
 
   if (error2) {
     throw new Error(
-      "There was an error trying to Update the account. Please try again!"
+      "Hubo un error al intentar actualizar la cuenta. Intente de nuevo!"
     );
   }
   return updatedUser;

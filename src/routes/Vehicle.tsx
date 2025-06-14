@@ -10,6 +10,19 @@ import useAddVehicle from "../hooks/useAddVehicle";
 import useUpdateVehicle from "../hooks/useUpdateVehicle";
 import { getCurrentTransport } from "../services/transport";
 
+type vehicleProps = {
+  id?: number;
+  brand: string;
+  model: string;
+  year: number;
+  type: string;
+  status: "available" | "inUse" | "maintenance";
+  last_service: string;
+  notes?: string;
+  license_plate: string;
+  updated_by: string;
+};
+
 export default function Vehicle() {
   type UserData = { email: string; user_metadata: { fullName: string } };
   const userData = useQueryClient().getQueryData(["user"]) as UserData;
@@ -19,17 +32,17 @@ export default function Vehicle() {
   };
   const navigate = useNavigate();
   const [status, setStatus] = useState("");
-  const { register, reset, handleSubmit, setValue } = useForm();
+  const { register, reset, handleSubmit, setValue } = useForm<vehicleProps>();
   const { isPending, addVehicle } = useAddVehicle();
   const { isUpdating, updateVehicle } = useUpdateVehicle();
-  const vehicle = useParams().vehicleId;
+  const vehicle = Number(useParams().vehicleId);
   const isEdittingSession = Boolean(vehicle);
 
   useEffect(() => {
     if (isEdittingSession) {
       getCurrentTransport(Number(vehicle))
         .then((res = []) => {
-          if (res?.length != 0) {
+          if (res && res?.length != 0) {
             const {
               brand,
               last_service,
@@ -43,11 +56,11 @@ export default function Vehicle() {
             } = res[0];
 
             setValue("brand", brand);
-            setValue("last_service", last_service);
+            if (last_service) setValue("last_service", last_service);
             setValue("model", model);
             setValue("license_plate", license_plate);
             setValue("status", status);
-            setValue("notes", notes);
+            if (notes) setValue("notes", notes);
             setValue("type", type);
             setValue("updated_by", updated_by);
             setValue("year", year);
@@ -60,7 +73,7 @@ export default function Vehicle() {
     }
   }, [vehicle, isEdittingSession, setValue, navigate]);
 
-  function onSubmit(data) {
+  function onSubmit(data: vehicleProps) {
     const updateVehicleProps = {
       id: vehicle,
       brand: data.brand,

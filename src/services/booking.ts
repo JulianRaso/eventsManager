@@ -19,14 +19,24 @@ interface bookingProps {
   event_type: "birthday" | "marriage" | "corporate" | "fifteen_party" | "other";
   payment_status: "pending" | "partially_paid" | "paid";
   place: string;
-  tax: string;
-  revenue: string;
+  tax: number;
+  revenue: number;
   price: number;
 }
 
 interface bookedProps {
   id: number;
-  bookingProps: bookingProps;
+  client_dni: number;
+  booking_status: "pending" | "cancel" | "confirm";
+  comments: string;
+  organization: "Muzek" | "Show Rental";
+  event_date: string;
+  event_type: "birthday" | "marriage" | "corporate" | "fifteen_party" | "other";
+  payment_status: "pending" | "partially_paid" | "paid";
+  place: string;
+  tax: number;
+  revenue: number;
+  price: number;
 }
 
 //Get data from database

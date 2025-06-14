@@ -4,10 +4,13 @@ import { Input } from "../components/ui/Input";
 import useLogin from "../hooks/useLogin";
 
 export default function Login() {
-  const { register, reset, handleSubmit } = useForm();
+  const { register, reset, handleSubmit } = useForm<{
+    email: string;
+    password: string;
+  }>();
   const { login, isPending } = useLogin();
 
-  function onSubmit(data) {
+  function onSubmit(data: { email: string; password: string }) {
     if (!data.email || !data.password) return;
     login(data);
   }

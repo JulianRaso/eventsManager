@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 interface clientProps {
-  dni: string;
+  dni: number;
   name: string;
   lastName: string;
   phoneNumber: string;
@@ -12,16 +12,16 @@ interface clientProps {
 }
 
 interface bookingProps {
-  client_dni: string;
-  booking_status: string;
+  client_dni: number;
+  booking_status: "pending" | "cancel" | "confirm";
   comments: string;
-  organization: string;
+  organization: "Muzek" | "Show Rental";
   event_date: string;
-  event_type: string;
-  payment_status: string;
+  event_type: "birthday" | "marriage" | "corporate" | "fifteen_party" | "other";
+  payment_status: "pending" | "partially_paid" | "paid";
   place: string;
-  tax: string;
-  revenue: string;
+  tax: number;
+  revenue: number;
   price: number;
 }
 

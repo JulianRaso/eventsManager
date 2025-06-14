@@ -13,7 +13,7 @@ export default function useUpdateUser() {
       queryClient.invalidateQueries({
         queryKey: ["user"],
       });
-      navigate("/dashboard");
+      navigate("/reservas");
     },
     onError: (err) => {
       toast.error(err.message);

@@ -4,12 +4,12 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 interface vehicleProps {
-  id?: string;
+  id?: number;
   brand: string;
   model: string;
   year: number;
   type: string;
-  status: string;
+  status: "available" | "inUse" | "maintenance";
   last_service: string;
   notes?: string;
   license_plate: string;

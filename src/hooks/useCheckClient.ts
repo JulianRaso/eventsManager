@@ -16,15 +16,25 @@ export default function useCheckClient(dni: string) {
     if (dni != "") {
       checkClient(Number(dni))
         .then((res) => {
-          if (res.dni != "") {
+          if (res.data) {
             setClient({
-              dni: res.dni,
-              name: res.name,
-              lastName: res.lastName,
-              phoneNumber: res.phoneNumber,
-              email: res.email,
+              dni: res.data.dni.toString(),
+              name: res.data.name,
+              lastName: res.data.lastName,
+              phoneNumber: res.data.phoneNumber,
+              email: res.data.email || "",
             });
             setExistClient(true);
+          }
+          if (!res.data) {
+            setExistClient(false);
+            setClient({
+              dni: "",
+              name: "",
+              lastName: "",
+              phoneNumber: "",
+              email: "",
+            });
           }
         })
         .catch(() => {

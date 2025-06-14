@@ -6,11 +6,19 @@ import { Input } from "../components/ui/Input";
 import useUpdateUser from "../hooks/useUpdateUser";
 import { useUser } from "../hooks/useUser";
 
+type ProfileForm = {
+  fullName: string;
+  password: string;
+  picture: FileList;
+  passwordConfirm: string;
+};
+
 export default function Profile() {
   const navigate = useNavigate();
   const { user, isLoading } = useUser();
   let email = "";
-  const { register, reset, handleSubmit, setValue, getValues } = useForm();
+  const { register, reset, handleSubmit, setValue, getValues } =
+    useForm<ProfileForm>();
   const { isUpdating, updateUser } = useUpdateUser();
 
   if (user) {
@@ -22,7 +30,7 @@ export default function Profile() {
 
   if (isLoading) return <Spinner />;
 
-  function onSubmitProfile(data) {
+  function onSubmitProfile(data: ProfileForm) {
     const { fullName, password, picture } = data || [];
     const avatar = picture[0];
 
@@ -32,7 +40,7 @@ export default function Profile() {
   }
 
   function handleCancel() {
-    navigate("/dashboard");
+    navigate("/reservas");
     reset();
   }
 

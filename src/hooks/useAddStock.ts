@@ -8,7 +8,16 @@ interface StockProps {
   location: string;
   price: number;
   quantity: number;
-  category: string;
+  category:
+    | "lights"
+    | "ambientation"
+    | "sound"
+    | "structure"
+    | "tools"
+    | "cables"
+    | "others"
+    | "furniture"
+    | "screen";
   updated_by: string;
 }
 

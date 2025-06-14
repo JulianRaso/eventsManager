@@ -32,19 +32,17 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export default function MonthlySalesChart() {
-  const month = new Date().getMonth();
-  const { data, isLoading } = useGetBookings();
-  const [sells, setSells] = useState(0);
+  // const month = new Date().getMonth();
+  const { /*data,*/ isLoading } = useGetBookings();
+  const [sells] = useState(0);
 
-  const [chartData, setChartData] = useState([
+  const [chartData] = useState([
     {
       browser: "safari",
       visitors: sells,
       fill: "grey",
     },
   ]);
-
-  console.log(sells);
 
   return (
     <Card className="flex flex-col">

@@ -6,13 +6,36 @@ interface StockProps {
   location: string;
   price: number;
   quantity: number;
-  category: CategoryType;
+  category:
+    | "lights"
+    | "ambientation"
+    | "sound"
+    | "structure"
+    | "tools"
+    | "cables"
+    | "others"
+    | "furniture"
+    | "screen";
   updated_by: string;
 }
 
 interface StockedProps {
   id: number;
-  StockProps: StockProps;
+  name: string;
+  location: string;
+  price: number;
+  quantity: number;
+  category:
+    | "lights"
+    | "ambientation"
+    | "sound"
+    | "structure"
+    | "tools"
+    | "cables"
+    | "others"
+    | "furniture"
+    | "screen";
+  updated_by: string;
 }
 
 type CategoryType =

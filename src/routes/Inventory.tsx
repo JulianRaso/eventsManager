@@ -59,11 +59,22 @@ const filterByCategory = [
   },
 ];
 
+type CategoryType =
+  | "lights"
+  | "ambientation"
+  | "sound"
+  | "structure"
+  | "tools"
+  | "cables"
+  | "others"
+  | "furniture"
+  | "screen";
+
 export default function Invetory() {
   const defaultCategory = "sound";
   const [filterByName, setFilterByName] = useState("");
   const [value, setValue] = useState(defaultCategory);
-  const { data = [], isLoading } = useGetData(value);
+  const { data = [], isLoading } = useGetData(value as CategoryType);
   const { isDelete, deleteStock } = useDeleteStock();
   const [currentPage, setCurrentPage] = useState(1);
   const limit = 10;

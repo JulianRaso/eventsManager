@@ -4,11 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { addVehicle as addVehicleAPI } from "../services/transport";
 
 interface vehicleProps {
+  id?: number;
   brand: string;
   model: string;
   year: number;
   type: string;
-  status: string;
+  status: "available" | "inUse" | "maintenance";
   last_service: string;
   notes?: string;
   license_plate: string;

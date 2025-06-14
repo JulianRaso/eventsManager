@@ -36,7 +36,7 @@ import { getCurrentBooking } from "../services/booking";
 import { getItems } from "../services/bookingItems";
 import { checkClient } from "../services/client";
 
-function formatCurrency(currency: string) {
+function formatCurrency(currency: number) {
   const number = typeof currency === "string" ? parseFloat(currency) : currency;
 
   if (isNaN(number)) {
@@ -85,21 +85,58 @@ const filterByCategory = [
   },
 ];
 
+type eventData = {
+  dni: number;
+  name: string;
+  lastName: string;
+  phoneNumber: string;
+  email: string;
+  organization: "Muzek" | "Show Rental";
+  event_type: "birthday" | "marriage" | "corporate" | "fifteen_party" | "other";
+  place: string;
+  event_date: string;
+  booking_status: "pending" | "cancel" | "confirm";
+  payment_status: "pending" | "partially_paid" | "paid";
+  comments: string;
+  tax: number;
+  revenue: number;
+};
+
+type CategoryType =
+  | "lights"
+  | "ambientation"
+  | "sound"
+  | "structure"
+  | "tools"
+  | "cables"
+  | "others"
+  | "furniture"
+  | "screen";
+
 export default function Booking() {
   const navigate = useNavigate();
   const { register, reset, handleSubmit, setValue, resetField, getValues } =
-    useForm();
+    useForm<eventData>();
   const defaultCategory = "sound";
   const [filterByName, setFilterByName] = useState("");
   const { isAdding, addBooking } = useAddBooking();
   const { isUpdating, updateBooking } = useUpdateBooking();
-  const { isPending, addEquipment } = useAddItems();
+  const { addEquipment } = useAddItems();
   const [category, setCategory] = useState(defaultCategory);
-  const { data, isLoading } = useGetData(category);
-  const { isDeleting, deleteItem } = useDeleteItems();
+  const { data, isLoading } = useGetData(category as CategoryType);
+  const { isDeleting /*deleteItem*/ } = useDeleteItems();
   const [dni, setDni] = useState(0);
   const [existClient, setExistClient] = useState(false);
-  const [equipment, setEquipment] = useState([]);
+
+  type EquipmentItem = {
+    item_id?: number;
+    booking_id: number;
+    equipment_id: number;
+    name: string;
+    quantity: number;
+    price: number;
+  };
+  const [equipment, setEquipment] = useState<EquipmentItem[]>([]);
   const [price, setPrice] = useState(0);
   const [quantity, setQuantity] = useState(0);
 
@@ -108,7 +145,7 @@ export default function Booking() {
   }
 
   //Editing Session
-  const bookingId = useParams().bookingId;
+  const bookingId = Number(useParams().bookingId);
   const isEditingSession = Boolean(bookingId);
   const { getBookedEquipment } = useGetItems(Number(bookingId));
   const [isLoadingBooking, setIsLoadingBooking] = useState(
@@ -133,13 +170,13 @@ export default function Booking() {
               revenue,
             } = res[0];
 
-            setValue("client_dni", client_dni);
+            setValue("dni", client_dni);
             setValue("event_date", event_date);
             setValue("place", place);
             setValue("organization", organization);
             setValue("booking_status", booking_status);
             setValue("payment_status", payment_status);
-            setValue("comments", comments);
+            if (comments) setValue("comments", comments);
             setValue("event_type", event_type);
             setValue("tax", tax);
             setValue("revenue", revenue);
@@ -151,7 +188,7 @@ export default function Booking() {
                 setValue("name", name);
                 setValue("lastName", lastName);
                 setValue("phoneNumber", phoneNumber);
-                setValue("email", email);
+                if (email) setValue("email", email);
                 setExistClient(true);
                 setIsLoadingBooking(false);
               }
@@ -159,7 +196,16 @@ export default function Booking() {
             getItems(Number(bookingId))
               .then((res) => {
                 if (res) {
-                  setEquipment(res);
+                  setEquipment(
+                    res.map((item) => ({
+                      booking_id: item.booking_id,
+                      equipment_id: item.equipment_id,
+                      item_id: item.id,
+                      name: item.name,
+                      quantity: item.quantity,
+                      price: item.price ?? 0,
+                    }))
+                  );
                   setPrice(
                     res?.reduce((acc, item) => {
                       return (
@@ -198,7 +244,7 @@ export default function Booking() {
           setValue("name", name);
           setValue("lastName", lastName);
           setValue("phoneNumber", phoneNumber);
-          setValue("email", email);
+          if (email) setValue("email", email);
           setExistClient(true);
         })
         .catch(() => {
@@ -226,7 +272,7 @@ export default function Booking() {
     }
   }
 
-  function onSubmit(data) {
+  function onSubmit(data: eventData) {
     const clientData = {
       dni: data.dni,
       name: data.name,
@@ -246,10 +292,12 @@ export default function Booking() {
       place: data.place,
       tax: data.tax,
       revenue: data.revenue,
-      price: (
-        ((price + (price / 100) * getValues("revenue")) / 100) *
-        (100 + getValues("tax"))
-      ).toFixed(2),
+      price: Number(
+        (
+          ((price + (price / 100) * getValues("revenue")) / 100) *
+          (100 + getValues("tax"))
+        ).toFixed(2)
+      ),
     };
 
     if (isEditingSession)
@@ -265,10 +313,12 @@ export default function Booking() {
         place: data.place,
         tax: data.tax,
         revenue: data.revenue,
-        price: (
-          ((price + (price / 100) * getValues("revenue")) / 100) *
-          (100 + getValues("tax"))
-        ).toFixed(2),
+        price: Number(
+          (
+            ((price + (price / 100) * getValues("revenue")) / 100) *
+            (100 + getValues("tax"))
+          ).toFixed(2)
+        ),
       });
     if (equipment.length > 0) addEquipment(equipment);
 
@@ -437,10 +487,12 @@ export default function Booking() {
                                       type="number"
                                       min={0}
                                       max={stock.quantity}
-                                      disabled={equipment.find(
-                                        (e) =>
-                                          e.name === stock.name &&
-                                          e.quantity === stock.quantity
+                                      disabled={Boolean(
+                                        equipment.find(
+                                          (e) =>
+                                            e.name === stock.name &&
+                                            e.quantity === stock.quantity
+                                        )
                                       )}
                                       onChange={(e) =>
                                         setQuantity(Number(e.target.value))
@@ -481,10 +533,12 @@ export default function Booking() {
                                         )
                                       )}
                                       disabled={
-                                        equipment.find(
-                                          (e) =>
-                                            e.name === stock.name &&
-                                            e.quantity === stock.quantity
+                                        Boolean(
+                                          equipment.find(
+                                            (e) =>
+                                              e.name === stock.name &&
+                                              e.quantity === stock.quantity
+                                          )
                                         ) || true
                                       }
                                     >
@@ -517,37 +571,45 @@ export default function Booking() {
                     <TableData>{null}</TableData>
                   </TableHead>
                   <TableBody>
-                    {equipment.map((data, index) => (
-                      <TableRow key={index}>
-                        <TableData className="text-xs">{data?.name}</TableData>
-                        <TableData>{data?.quantity}</TableData>
-                        <TableData>{data?.price}</TableData>
-                        <TableData>
-                          <Button
-                            variant="outline"
-                            disabled={isDeleting}
-                            onClick={(e) => (
-                              e.preventDefault(),
-                              setEquipment((element) =>
-                                element.filter(
-                                  (item) => item.name != data?.name
+                    {equipment.map(
+                      (
+                        data: { name: string; quantity: number; price: number },
+                        index
+                      ) => (
+                        <TableRow key={index}>
+                          <TableData className="text-xs">
+                            {data?.name}
+                          </TableData>
+                          <TableData>{data?.quantity}</TableData>
+                          <TableData>{data?.price}</TableData>
+                          <TableData>
+                            <Button
+                              variant="outline"
+                              disabled={isDeleting}
+                              onClick={(e) => (
+                                e.preventDefault(),
+                                setEquipment((element) =>
+                                  element.filter(
+                                    (item: { name: string }) =>
+                                      item.name != data?.name
+                                  )
+                                ),
+                                // deleteItem(
+                                //   getBookedEquipment?.filter(
+                                //     (item) => item.name === data?.name
+                                //   )[0]?.id
+                                // ),
+                                setPrice(
+                                  (curr) => curr - data?.price * data?.quantity
                                 )
-                              ),
-                              deleteItem(
-                                getBookedEquipment?.filter(
-                                  (item) => item.name === data?.name
-                                )[0]?.id
-                              ),
-                              setPrice(
-                                (curr) => curr - data?.price * data?.quantity
-                              )
-                            )}
-                          >
-                            X
-                          </Button>
-                        </TableData>
-                      </TableRow>
-                    ))}
+                              )}
+                            >
+                              X
+                            </Button>
+                          </TableData>
+                        </TableRow>
+                      )
+                    )}
                   </TableBody>
                 </Table>
               </div>
@@ -624,7 +686,11 @@ export default function Booking() {
                 {formatCurrency(
                   price === 0
                     ? 0
-                    : (price + (price / 100) * getValues("revenue")).toFixed(2)
+                    : Number(
+                        (price + (price / 100) * getValues("revenue")).toFixed(
+                          2
+                        )
+                      )
                 )}
               </p>
               <p>
@@ -632,10 +698,8 @@ export default function Booking() {
                 {formatCurrency(
                   price === 0
                     ? 0
-                    : (
-                        ((price + (price / 100) * getValues("revenue")) / 100) *
-                        (100 + getValues("tax"))
-                      ).toFixed(2)
+                    : ((price + (price / 100) * getValues("revenue")) / 100) *
+                        Number((100 + getValues("tax")).toFixed(2))
                 )}
               </p>
             </div>

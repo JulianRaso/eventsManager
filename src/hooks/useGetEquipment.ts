@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { getCurrentStock } from "../services/stock";
 
-export default function useGetEquipment(id: string) {
-  const { isPending, getEquipment } = useQuery({
+export default function useGetEquipment(id: number) {
+  const { isPending, data: equipment } = useQuery({
     queryKey: ["sound"],
-    queryFn: (id) => getCurrentStock(id),
+    queryFn: () => getCurrentStock(id),
   });
 
-  return { isPending, getEquipment };
+  return { isPending, equipment };
 }

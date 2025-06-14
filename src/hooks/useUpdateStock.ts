@@ -4,12 +4,21 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 interface stockProps {
-  id: string;
+  id: number;
   name: string;
   location: string;
   price: number;
   quantity: number;
-  category: string;
+  category:
+    | "lights"
+    | "ambientation"
+    | "sound"
+    | "structure"
+    | "tools"
+    | "cables"
+    | "others"
+    | "furniture"
+    | "screen";
   updated_by: string;
 }
 

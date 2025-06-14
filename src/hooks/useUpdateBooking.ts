@@ -5,16 +5,16 @@ import { updateBooking as updateBookingAPI } from "../services/booking";
 
 interface bookingProps {
   id: number;
-  client_dni: string;
-  booking_status: string;
+  client_dni: number;
+  booking_status: "pending" | "cancel" | "confirm";
   comments: string;
-  organization: string;
+  organization: "Muzek" | "Show Rental";
   event_date: string;
-  event_type: string;
-  payment_status: string;
+  event_type: "birthday" | "marriage" | "corporate" | "fifteen_party" | "other";
+  payment_status: "pending" | "partially_paid" | "paid";
   place: string;
-  tax: string;
-  revenue: string;
+  tax: number;
+  revenue: number;
   price: number;
 }
 

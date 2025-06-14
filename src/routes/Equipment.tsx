@@ -11,6 +11,25 @@ import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import Spinner from "../components/Spinner";
 
+type equipmentProps = {
+  id: number;
+  name: string;
+  location: string;
+  price: number;
+  quantity: number;
+  category:
+    | "lights"
+    | "ambientation"
+    | "sound"
+    | "structure"
+    | "tools"
+    | "cables"
+    | "others"
+    | "furniture"
+    | "screen";
+  updated_by: string;
+};
+
 export default function Equipment() {
   type UserData = { email: string; user_metadata: { fullName: string } };
   const userData = useQueryClient().getQueryData(["user"]) as UserData;
@@ -19,10 +38,10 @@ export default function Equipment() {
     user_metadata: { fullName: "" },
   };
   const [category, setCategory] = useState("");
-  const { register, reset, handleSubmit, setValue } = useForm();
+  const { register, reset, handleSubmit, setValue } = useForm<equipmentProps>();
   const { isAdding, addStock } = useAddStock();
   const { isUpdating, updateStock } = useUpdateStock({ category: "sound" });
-  const stockId = useParams().stockId;
+  const stockId = Number(useParams().stockId);
   const isEdittingSession = Boolean(stockId);
   const [isLoadingEquipment, setLoadingEquipment] = useState(
     Boolean(isEdittingSession)
@@ -32,7 +51,7 @@ export default function Equipment() {
     if (isEdittingSession) {
       getCurrentStock(stockId)
         .then((res = []) => {
-          if (res?.length != 0) {
+          if (res && res.length !== 0) {
             const { name, location, price, quantity, category, updated_by } =
               res[0];
 
@@ -53,7 +72,7 @@ export default function Equipment() {
 
   if (isLoadingEquipment) return <Spinner />;
 
-  function onSubmit(data) {
+  function onSubmit(data: equipmentProps) {
     const updatedStock = {
       id: stockId,
       name: data.name,

@@ -1,6 +1,15 @@
 import { supabase } from "./supabase";
 
-export async function addItems(items) {
+type BookingItem = {
+  item_id?: number;
+  booking_id: number;
+  equipment_id: number;
+  name: string;
+  quantity: number;
+  price: number;
+};
+
+export async function addItems(items: BookingItem[]) {
   const { data, error } = await supabase
     .from("booking_items")
     .insert([...items])
