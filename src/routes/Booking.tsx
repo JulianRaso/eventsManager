@@ -125,8 +125,15 @@ type EquipmentItem = {
 
 export default function Booking() {
   const navigate = useNavigate();
-  const { register, reset, handleSubmit, setValue, resetField, getValues } =
-    useForm<eventData>();
+  const {
+    register,
+    reset,
+    handleSubmit,
+    setValue,
+    resetField,
+    getValues,
+    watch,
+  } = useForm<eventData>();
   const defaultCategory = "sound";
   const [filterByName, setFilterByName] = useState("");
   const { isAdding, addBooking } = useAddBooking();
@@ -618,6 +625,7 @@ export default function Booking() {
                   min={0}
                   defaultValue={0}
                   placeholder="Ingrese el IVA"
+                  value={watch("tax") < 0 ? 0 : watch("tax")}
                 />
               </div>
               <div className="flex flex-col items-center">
@@ -626,6 +634,7 @@ export default function Booking() {
                   type="number"
                   placeholder="Porcentage de ganancia"
                   {...register("revenue")}
+                  value={watch("revenue") < 0 ? 0 : watch("revenue")}
                   min={0}
                   defaultValue={0}
                 />
@@ -639,9 +648,7 @@ export default function Booking() {
                   price === 0
                     ? 0
                     : Number(
-                        (price + (price / 100) * getValues("revenue")).toFixed(
-                          2
-                        )
+                        price + (price / 100) * Number(watch("revenue") ?? 0)
                       )
                 )}
               </p>
@@ -650,8 +657,10 @@ export default function Booking() {
                 {formatCurrency(
                   price === 0
                     ? 0
-                    : ((price + (price / 100) * getValues("revenue")) / 100) *
-                        Number((100 + getValues("tax")).toFixed(2))
+                    : ((price + (price / 100) * Number(watch("revenue"))) /
+                        100) *
+                        watch("tax") +
+                        (price + (price / 100) * Number(watch("revenue")))
                 )}
               </p>
             </div>
