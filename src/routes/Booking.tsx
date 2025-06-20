@@ -1,3 +1,4 @@
+import EquipmentItem from "@/components/Booking/EquipmentItem";
 import {
   Dialog,
   DialogContent,
@@ -113,6 +114,15 @@ type CategoryType =
   | "furniture"
   | "screen";
 
+type EquipmentItem = {
+  id?: number;
+  booking_id: number;
+  equipment_id: number;
+  name: string;
+  quantity: number;
+  price: number;
+};
+
 export default function Booking() {
   const navigate = useNavigate();
   const { register, reset, handleSubmit, setValue, resetField, getValues } =
@@ -124,21 +134,13 @@ export default function Booking() {
   const { addEquipment } = useAddItems();
   const [category, setCategory] = useState(defaultCategory);
   const { data, isLoading } = useGetData(category as CategoryType);
-  const { isDeleting /*deleteItem*/ } = useDeleteItems();
+  const { isDeleting, deleteItem } = useDeleteItems();
   const [dni, setDni] = useState(0);
   const [existClient, setExistClient] = useState(false);
 
-  type EquipmentItem = {
-    item_id?: number;
-    booking_id: number;
-    equipment_id: number;
-    name: string;
-    quantity: number;
-    price: number;
-  };
   const [equipment, setEquipment] = useState<EquipmentItem[]>([]);
+  const [toDelete, setToDelete] = useState<number[]>([]);
   const [price, setPrice] = useState(0);
-  const [quantity, setQuantity] = useState(0);
 
   if (category === "") {
     setCategory(defaultCategory);
@@ -198,9 +200,9 @@ export default function Booking() {
                 if (res) {
                   setEquipment(
                     res.map((item) => ({
+                      id: item.id,
                       booking_id: item.booking_id,
                       equipment_id: item.equipment_id,
-                      item_id: item.id,
                       name: item.name,
                       quantity: item.quantity,
                       price: item.price ?? 0,
@@ -321,6 +323,11 @@ export default function Booking() {
         ),
       });
     if (equipment.length > 0) addEquipment(equipment);
+
+    if (toDelete.length > 0) {
+      deleteItem(toDelete);
+      setToDelete([]);
+    }
 
     if (!isEditingSession)
       addBooking({ client: clientData, booking: bookingData });
@@ -478,74 +485,14 @@ export default function Booking() {
                                       .includes(filterByName.toLowerCase());
                               })
                               .map((stock, index) => (
-                                <TableRow key={index}>
-                                  <TableData>{stock.name}</TableData>
-                                  <TableData>{stock.quantity}</TableData>
-                                  <TableData>{stock.price}</TableData>
-                                  <TableData>
-                                    <Input
-                                      type="number"
-                                      min={0}
-                                      max={stock.quantity}
-                                      disabled={Boolean(
-                                        equipment.find(
-                                          (e) =>
-                                            e.name === stock.name &&
-                                            e.quantity === stock.quantity
-                                        )
-                                      )}
-                                      onChange={(e) =>
-                                        setQuantity(Number(e.target.value))
-                                      }
-                                    />
-                                  </TableData>
-                                  <TableData>
-                                    <Button
-                                      variant="outline"
-                                      onClick={(e) => (
-                                        e.preventDefault(),
-                                        quantity === 0
-                                          ? toast.error(
-                                              "Debe ingresar una cantidad"
-                                            )
-                                          : quantity > stock.quantity
-                                          ? toast.error(
-                                              "Cantidad no disponible"
-                                            )
-                                          : quantity < 0
-                                          ? toast.error(
-                                              "Cantidad no disponible"
-                                            )
-                                          : setEquipment([
-                                              ...equipment,
-                                              {
-                                                booking_id: bookingId,
-                                                equipment_id: stock.id,
-                                                name: stock.name,
-                                                quantity: quantity,
-                                                price: stock.price,
-                                              },
-                                            ]),
-                                        setPrice(
-                                          (previous) =>
-                                            previous +
-                                            stock.quantity * (stock.price || 0)
-                                        )
-                                      )}
-                                      disabled={
-                                        Boolean(
-                                          equipment.find(
-                                            (e) =>
-                                              e.name === stock.name &&
-                                              e.quantity === stock.quantity
-                                          )
-                                        ) || true
-                                      }
-                                    >
-                                      +
-                                    </Button>
-                                  </TableData>
-                                </TableRow>
+                                <EquipmentItem
+                                  key={index}
+                                  stock={stock}
+                                  bookingId={bookingId}
+                                  equipment={equipment}
+                                  setEquipment={setEquipment}
+                                  setPrice={setPrice}
+                                />
                               ))}
                           </TableBody>
                         </Table>
@@ -573,7 +520,12 @@ export default function Booking() {
                   <TableBody>
                     {equipment.map(
                       (
-                        data: { name: string; quantity: number; price: number },
+                        data: {
+                          name: string;
+                          quantity: number;
+                          price: number;
+                          id?: number;
+                        },
                         index
                       ) => (
                         <TableRow key={index}>
@@ -590,15 +542,15 @@ export default function Booking() {
                                 e.preventDefault(),
                                 setEquipment((element) =>
                                   element.filter(
-                                    (item: { name: string }) =>
-                                      item.name != data?.name
+                                    (item: { name: string; price: number }) =>
+                                      item.name != data?.name ||
+                                      item.price !== data?.price
                                   )
                                 ),
-                                // deleteItem(
-                                //   getBookedEquipment?.filter(
-                                //     (item) => item.name === data?.name
-                                //   )[0]?.id
-                                // ),
+                                setToDelete((prev) => [
+                                  ...prev,
+                                  data?.id as number,
+                                ]),
                                 setPrice(
                                   (curr) => curr - data?.price * data?.quantity
                                 )

@@ -5,9 +5,8 @@ import { deleteItems as deleteItemsAPI } from "../services/bookingItems";
 export default function useDeleteItems() {
   const queryClient = useQueryClient();
   const { isPending: isDeleting, mutate: deleteItem } = useMutation({
-    mutationFn: (id: number) => deleteItemsAPI(id),
+    mutationFn: (id: number[]) => deleteItemsAPI(id),
     onSuccess: () => {
-      toast.success("El equipo fue eliminado con exito!");
       queryClient.invalidateQueries({
         queryKey: ["booking_items"],
       });

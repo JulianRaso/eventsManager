@@ -13,6 +13,7 @@ import {
 } from "../components/Table";
 import TableButtons from "../components/TableButtons";
 import { useGetTransport } from "../hooks/useGetTransport";
+import useDeleteTransport from "@/hooks/useDeleteTransport";
 
 const statusTypes = {
   available: {
@@ -49,6 +50,7 @@ export default function Transport() {
   const [value, setValue] = useState("");
   const [filterByName, setFilterByName] = useState("");
   const { data, isLoading } = useGetTransport();
+  const { deleteTransport, isPending } = useDeleteTransport();
 
   if (isLoading) return <Spinner />;
 
@@ -110,8 +112,10 @@ export default function Transport() {
                   <TableButtons
                     id={vehicle.id}
                     route="/transporte/editar"
-                    isDeleting={false}
-                    onDelete={() => {}}
+                    isDeleting={isPending}
+                    onDelete={() => {
+                      deleteTransport(vehicle.id);
+                    }}
                   />
                 </TableData>
               </TableRow>
