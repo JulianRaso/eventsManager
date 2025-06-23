@@ -3,19 +3,20 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
 import { Route, Routes } from "react-router-dom";
 import Authentication from "./routes/Authentication";
+import Bill from "./routes/Bill";
 import Booking from "./routes/Booking";
 import Bookings from "./routes/Bookings";
 import Dashboard from "./routes/Dashboard";
 import Equipment from "./routes/Equipment";
 import HumandResource from "./routes/HumandResource";
-import Invetory from "./routes/Inventory";
+import Inventory from "./routes/Inventory";
 import Layout from "./routes/Layout";
 import Login from "./routes/Login";
 import PageNotFound from "./routes/PageNotFound";
 import Profile from "./routes/Profile";
 import Transport from "./routes/Transport";
 import Vehicle from "./routes/Vehicle";
-import Bill from "./routes/Bill";
+import Invoice from "./routes/Invoice";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -57,13 +58,21 @@ function App() {
           </Route>
 
           <Route path="/personal" element={<HumandResource />} />
+
           <Route path="/gastos" element={<Bill />} />
 
+          <Route path="/gastos">
+            <Route index element={<Bill />} />
+            <Route path="/gastos/agregar" element={<Invoice />} />
+            <Route path="/gastos/editar/:billId" element={<Invoice />} />
+          </Route>
+
           <Route path="/inventario">
-            <Route index element={<Invetory />} />
+            <Route index element={<Inventory />} />
             <Route path="/inventario/agregar" element={<Equipment />} />
             <Route path="/inventario/editar/:stockId" element={<Equipment />} />
           </Route>
+
           <Route path="/transporte">
             <Route index element={<Transport />} />
             <Route path="/transporte/agregar" element={<Vehicle />} />

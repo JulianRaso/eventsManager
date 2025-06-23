@@ -29,9 +29,9 @@ type equipmentProps = {
     | "screen";
   updated_by: string;
 };
+type UserData = { email: string; user_metadata: { fullName: string } };
 
 export default function Equipment() {
-  type UserData = { email: string; user_metadata: { fullName: string } };
   const userData = useQueryClient().getQueryData(["user"]) as UserData;
   const { email, user_metadata } = userData || {
     email: "",
@@ -42,13 +42,13 @@ export default function Equipment() {
   const { isAdding, addStock } = useAddStock();
   const { isUpdating, updateStock } = useUpdateStock({ category: "sound" });
   const stockId = Number(useParams().stockId);
-  const isEdittingSession = Boolean(stockId);
+  const isEditingSession = Boolean(stockId);
   const [isLoadingEquipment, setLoadingEquipment] = useState(
-    Boolean(isEdittingSession)
+    Boolean(isEditingSession)
   );
 
   useEffect(() => {
-    if (isEdittingSession) {
+    if (isEditingSession) {
       getCurrentStock(stockId)
         .then((res = []) => {
           if (res && res.length !== 0) {
@@ -68,7 +68,7 @@ export default function Equipment() {
           toast.error("Error al actualizar el stock");
         });
     }
-  }, [stockId, isEdittingSession, setValue]);
+  }, [stockId, isEditingSession, setValue]);
 
   if (isLoadingEquipment) return <Spinner />;
 
@@ -83,15 +83,15 @@ export default function Equipment() {
       updated_by: user_metadata.fullName != "" ? user_metadata.fullName : email,
     };
 
-    if (isEdittingSession) updateStock(updatedStock);
-    if (!isEdittingSession) addStock(data);
+    if (isEditingSession) updateStock(updatedStock);
+    if (!isEditingSession) addStock(data);
     reset();
   }
 
   return (
     <AddLayout>
       <h1 className="text-2xl font-bold mb-4">
-        {isEdittingSession ? "Modificar equipo" : "Agregar equipo"}
+        {isEditingSession ? "Modificar equipo" : "Agregar equipo"}
       </h1>
       <form className="flex flex-col gap-10" onSubmit={handleSubmit(onSubmit)}>
         <div className="grid grid-cols-2 gap-4">
@@ -103,7 +103,7 @@ export default function Equipment() {
               type="text"
               id="name"
               {...register("name")}
-              disabled={isEdittingSession}
+              disabled={isEditingSession}
             />
           </div>
           <div>
@@ -160,7 +160,7 @@ export default function Equipment() {
         <NavigationButtons
           isAdding={isAdding || isUpdating}
           navigateTo="/inventario"
-          addTitle={isEdittingSession ? "Actualizar" : "Agregar"}
+          addTitle={isEditingSession ? "Actualizar" : "Agregar"}
         />
       </form>
     </AddLayout>

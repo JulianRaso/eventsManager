@@ -70,7 +70,7 @@ type CategoryType =
   | "furniture"
   | "screen";
 
-export default function Invetory() {
+export default function Inventory() {
   const defaultCategory = "sound";
   const [filterByName, setFilterByName] = useState("");
   const [value, setValue] = useState(defaultCategory);
