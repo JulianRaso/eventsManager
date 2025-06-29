@@ -91,7 +91,6 @@ export default function Sidebar() {
             description={"Reservas"}
           />
           <NavButton
-            className="hidden"
             display={display}
             icon={<LiaMoneyBillWaveSolid />}
             description={"Gastos"}

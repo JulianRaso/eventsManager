@@ -4,7 +4,13 @@ import BookingRow from "../components/Bookings/BookingRow";
 import CategoryLayout from "../components/CategoryLayout";
 import Filter from "../components/Filter";
 import Spinner from "../components/Spinner";
-import { Table, TableBody, TableData, TableHead } from "../components/Table";
+import {
+  Table,
+  TableBody,
+  TableContainer,
+  TableData,
+  TableHead,
+} from "../components/Table";
 import {
   Pagination,
   PaginationContent,
@@ -89,7 +95,7 @@ export default function Bookings() {
         value={value}
         setValue={setValue}
       />
-      <div className="overflow-auto">
+      <TableContainer>
         <Table>
           <TableHead>
             <TableData>
@@ -132,7 +138,7 @@ export default function Bookings() {
               )}
           </TableBody>
         </Table>
-      </div>
+      </TableContainer>
       {/* {Check if the data is empty and show a message} */}
       {data?.length === 0 && (
         <div className="text-2xl text-center mt-4">Agenda una Reserva!!</div>

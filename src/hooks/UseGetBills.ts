@@ -3,7 +3,7 @@ import { getInvoices } from "../services/bill";
 
 export default function useGetBills() {
   const { data, isLoading } = useQuery({
-    queryKey: ["bills"],
+    queryKey: ["invoices"],
     queryFn: () => getInvoices(),
   });
 

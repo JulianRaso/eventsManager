@@ -43,3 +43,15 @@ export function TableData({
     </td>
   );
 }
+
+export function TableContainer({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="overflow-x-auto">
+      <div className="inline-block min-w-full align-middle">
+        <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}

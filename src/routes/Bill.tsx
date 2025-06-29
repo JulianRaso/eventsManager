@@ -5,6 +5,7 @@ import Spinner from "@/components/Spinner";
 import {
   Table,
   TableBody,
+  TableContainer,
   TableData,
   TableHead,
   TableRow,
@@ -43,7 +44,7 @@ export default function Bill() {
   return (
     <div className="w-full h-full flex items-center justify-center">
       <CategoryLayout title="Gastos">
-        <div className="overflow-auto border-2 border-gray-200 rounded-lg shadow-md">
+        <TableContainer>
           <Table>
             <TableHead>
               <TableData>
@@ -89,7 +90,7 @@ export default function Bill() {
               Comenza a cargar tus gastos...
             </div>
           )}
-        </div>
+        </TableContainer>
       </CategoryLayout>
     </div>
   );

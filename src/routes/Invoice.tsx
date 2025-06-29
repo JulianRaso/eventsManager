@@ -34,10 +34,10 @@ export default function Invoice() {
     user_metadata: { fullName: "" },
   };
 
-  const { register, reset, handleSubmit, setValue } = useForm<billType>();
+  const { register, reset, handleSubmit, setValue, watch } =
+    useForm<billType>();
   const billID = Number(useParams().billId);
   const isEditingSession = Boolean(billID);
-  const [paid_by, setPaid_by] = useState("");
   const [isLoadingEquipment, setLoadingEquipment] = useState(
     Boolean(isEditingSession)
   );
@@ -89,8 +89,8 @@ export default function Invoice() {
     const updatedBill = {
       id: billID,
       name: data.name,
-      quantity: data.quantity,
-      amount: Number(data.amount),
+      quantity: Number(data.quantity),
+      amount: data.amount,
       paid_by: data.paid_by,
       paid_to: data.paid_to,
       paid_with: data.paid_with,
@@ -100,8 +100,8 @@ export default function Invoice() {
 
     const billData = {
       name: data.name,
-      quantity: data.quantity,
-      amount: Number(data.amount),
+      quantity: Number(data.quantity),
+      amount: data.amount,
       paid_by: data.paid_by,
       paid_to: data.paid_to,
       paid_with: data.paid_with,
@@ -134,19 +134,29 @@ export default function Invoice() {
               id="name"
               {...register("name")}
               disabled={isEditingSession}
+              required
             />
           </div>
           <div>
             <label htmlFor="quantity" className="block mb-2">
               Cantidad
             </label>
-            <Input type="number" id="quantity" {...register("quantity")} />
+            <Input
+              type="number"
+              id="quantity"
+              placeholder="Cantidad de productos"
+              min={1}
+              {...register("quantity")}
+              value={watch("quantity") < 0 ? 0 : watch("quantity")}
+              defaultValue={1}
+              required
+            />
           </div>
           <div>
             <label htmlFor="amount" className="block mb-2">
               Precio
             </label>
-            <Input type="number" id="amount" {...register("amount")} />
+            <Input type="number" id="amount" {...register("amount")} required />
           </div>
           <div>
             <label htmlFor="paid_by" className="block mb-2">
@@ -157,6 +167,7 @@ export default function Invoice() {
               id="paid_by"
               {...register("paid_by")}
               placeholder="Nombre y apellido"
+              required
             />
           </div>
           <div>
@@ -168,6 +179,7 @@ export default function Invoice() {
               id="paid_to"
               {...register("paid_to")}
               placeholder="Nombre y apellido"
+              required
             />
           </div>
           <div>
@@ -175,10 +187,7 @@ export default function Invoice() {
             <select
               className="border rounded-md h-9 w-full"
               {...register("paid_with")}
-              onBlur={(e) => {
-                setPaid_by(e.target.value);
-              }}
-              defaultValue={paid_by}
+              defaultValue={"cash"}
               required
             >
               <option value="cash">Efectivo</option>
@@ -195,7 +204,8 @@ export default function Invoice() {
               type="number"
               id="cbu"
               {...register("cbu")}
-              disabled={paid_by === "transfer" ? false : true}
+              disabled={watch("paid_with") === "transfer" ? false : true}
+              required={watch("paid_with") === "transfer" ? true : false}
             />
           </div>
           <div>
@@ -208,6 +218,7 @@ export default function Invoice() {
               }
               {...register("updated_by")}
               disabled
+              required
             />
           </div>
         </div>

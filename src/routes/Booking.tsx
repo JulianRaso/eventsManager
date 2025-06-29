@@ -343,6 +343,11 @@ export default function Booking() {
 
   return (
     <AddLayout>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold">
+          {isEditingSession ? `Reserva: ${bookingId} ` : "Agendar reserva"}
+        </h1>
+      </div>
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-2">
         <div className="grid grid-cols-1 grid-row-4 md:grid-cols-3 md:grid-rows-2 gap-1.5">
           {/* Datos cliente */}
