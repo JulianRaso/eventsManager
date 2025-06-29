@@ -124,7 +124,7 @@ export default function Invoice() {
         {isEditingSession ? "Modificar gasto" : "Agregar gasto"}
       </h1>
       <form className="flex flex-col gap-10" onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="name" className="block mb-2">
               Nombre
