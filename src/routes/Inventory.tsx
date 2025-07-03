@@ -76,7 +76,7 @@ export default function Inventory() {
   const [filterByName, setFilterByName] = useState("");
   const [value, setValue] = useState(defaultCategory);
   const { data = [], isLoading } = useGetData(value as CategoryType);
-  const { isDelete, deleteStock } = useDeleteStock();
+  const { isDelete, deleteStock } = useDeleteStock(value);
   const [currentPage, setCurrentPage] = useState(1);
   const limit = 10;
   const totalPages = Math.ceil(data?.length / limit);

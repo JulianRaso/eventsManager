@@ -58,7 +58,10 @@ export async function updateInvoice(invoice: billType) {
   }
   const { data, error } = await supabase
     .from("bill")
-    .update({ ...invoice })
+    .update({
+      ...invoice,
+      amount: invoice.amount !== undefined ? String(invoice.amount) : undefined,
+    })
     .eq("id", invoice.id);
 
   if (error) {
