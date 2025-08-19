@@ -11,6 +11,7 @@ import { DialogClose } from "@radix-ui/react-dialog";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
+import { FaRegFilePdf } from "react-icons/fa6";
 import { useNavigate, useParams } from "react-router-dom";
 import AddLayout from "../components/AddLayout";
 import Filter from "../components/Filter";
@@ -347,6 +348,11 @@ export default function Booking() {
         <h1 className="text-2xl font-bold">
           {isEditingSession ? `Reserva: ${bookingId} ` : "Agendar reserva"}
         </h1>
+        {isEditingSession && (
+          <Button onClick={() => navigate("/recibo/" + bookingId)}>
+            <FaRegFilePdf />
+          </Button>
+        )}
       </div>
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-2">
         <div className="grid grid-cols-1 grid-row-4 md:grid-cols-3 md:grid-rows-2 gap-1.5">

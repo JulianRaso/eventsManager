@@ -17,6 +17,7 @@ import Profile from "./routes/Profile";
 import Transport from "./routes/Transport";
 import Vehicle from "./routes/Vehicle";
 import Invoice from "./routes/Invoice";
+import ClientInvoice from "./routes/ClientInvoice";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -49,6 +50,7 @@ function App() {
                 path="/reservas/reserva/:bookingId"
                 element={<Booking />}
               />
+
               <Route
                 path="/reservas/reserva/:bookingId/client/:clientId"
                 element={<Booking />}
@@ -56,6 +58,8 @@ function App() {
               <Route path="/reservas/reserva/agendar" element={<Booking />} />
             </Route>
           </Route>
+
+          <Route path="/recibo/:invoiceID" element={<ClientInvoice />} />
 
           <Route path="/personal" element={<HumandResource />} />
 
