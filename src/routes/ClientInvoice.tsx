@@ -109,10 +109,10 @@ export default function ClientInvoice() {
               const { dni, name, lastName, phoneNumber, email } = res.data;
               setClientData({
                 dni: dni || 0,
-                name: name || "....",
-                lastName: lastName || "....",
-                phoneNumber: phoneNumber || "....",
-                email: email || "....",
+                name: name || "",
+                lastName: lastName || "",
+                phoneNumber: phoneNumber || "",
+                email: email || "",
               });
             }
           });
