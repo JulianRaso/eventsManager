@@ -149,6 +149,7 @@ export default function Booking() {
   const [equipment, setEquipment] = useState<EquipmentItem[]>([]);
   const [toDelete, setToDelete] = useState<number[]>([]);
   const [price, setPrice] = useState(0);
+  const [billingTable, setBillingTable] = useState(true);
 
   if (category === "") {
     setCategory(defaultCategory);
@@ -461,14 +462,56 @@ export default function Booking() {
             <div className="flex flex-col gap-1">
               {/* Equipo */}
               <div className="text-lg font-semibold flex justify-between">
-                <p>Equipo</p>
+                <div className="flex items-center">
+                  <button
+                    type="button"
+                    onClick={() => setBillingTable(true)}
+                    className={`${
+                      billingTable ? "bg-gray-300" : "bg-white"
+                    } w-full border-l border-t border-b text-base font-medium rounded-l-md text-black hover:bg-gray-100 px-4 py-2`}
+                  >
+                    Equipo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBillingTable(false)}
+                    className={`${
+                      billingTable ? "bg-white" : "bg-gray-300"
+                    } w-full border-t border-b border-r text-base font-medium rounded-r-md text-black hover:bg-gray-100 px-4 py-2`}
+                  >
+                    Gasto
+                  </button>
+                </div>
                 <Dialog>
                   <DialogTrigger className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 h-9 px-4 py-2 has-[>svg]:px-3">
                     +
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Equipo</DialogTitle>
+                      <DialogTitle className="flex items-center justify-start">
+                        <div className="flex items-center">
+                          <button
+                            type="button"
+                            onClick={() => setBillingTable(true)}
+                            className={`${
+                              billingTable ? "bg-gray-300" : "bg-white"
+                            } w-full border-l border-t border-b text-base font-medium rounded-l-md text-black hover:bg-gray-100 px-4 py-2`}
+                          >
+                            Equipo
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => (
+                              setBillingTable(false), console.log(billingTable)
+                            )}
+                            className={`${
+                              billingTable ? "bg-white" : "bg-gray-300"
+                            } w-full border-t border-b border-r text-base font-medium rounded-r-md text-black hover:bg-gray-100 px-4 py-2`}
+                          >
+                            Gasto
+                          </button>
+                        </div>
+                      </DialogTitle>
                       <DialogDescription>
                         Seleccione el equipo y la cantidad deseada para generar
                         el presupuesto del evento.

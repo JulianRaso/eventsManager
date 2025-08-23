@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+import useGetMonthlySales from "@/hooks/useGetMonthlySales";
 import { TrendingUp } from "lucide-react";
 import {
   Label,
@@ -7,7 +7,7 @@ import {
   RadialBar,
   RadialBarChart,
 } from "recharts";
-
+import MiniSpinner from "../MiniSpinner";
 import {
   Card,
   CardContent,
@@ -17,9 +17,6 @@ import {
   CardTitle,
 } from "../ui/card";
 import { ChartConfig, ChartContainer } from "../ui/chart";
-import useGetBookings from "../../hooks/useGetBookings";
-import MiniSpinner from "../MiniSpinner";
-import { useState } from "react";
 
 const chartConfig = {
   visitors: {
@@ -31,86 +28,116 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export default function MonthlySalesChart() {
-  // const month = new Date().getMonth();
-  const { /*data,*/ isLoading } = useGetBookings();
-  const [sells] = useState(0);
+function salesGrowth(currMonthSales: number, prevMonthSales: number) {
+  if (prevMonthSales === 0) {
+    return currMonthSales > 0 ? 100 : 0;
+  }
+  return ((currMonthSales - prevMonthSales) / prevMonthSales) * 100;
+}
 
-  const [chartData] = useState([
+function formatDate(yearMonth: string) {
+  const [yearStr, monthStr] = yearMonth.split("-");
+  const year = Number(yearStr);
+  const month = Number(monthStr);
+  const fecha = new Date(year, month - 1);
+  let mes = fecha.toLocaleString("es-ES", { month: "long" });
+  mes = mes.charAt(0).toUpperCase() + mes.slice(1);
+  return `${mes} del ${year}`;
+}
+
+export default function MonthlySalesChart() {
+  const currMonth = `${new Date().getFullYear()}-${new Date().getMonth() + 1}`;
+  const prevMonth = `${new Date().getFullYear()}-${new Date().getMonth() - 1}`;
+
+  const { data: currMonthSales, isLoading: currLoading } =
+    useGetMonthlySales(currMonth);
+  const { data: prevMonthSales, isLoading: prevLoading } =
+    useGetMonthlySales(prevMonth);
+
+  if (currLoading || prevLoading) return <MiniSpinner />;
+
+  const prevMonthSells =
+    prevMonthSales?.reduce(
+      (acc, sale) => (sale.booking_status === "confirm" ? acc + 1 : acc),
+      0
+    ) || 0;
+  const currMonthSells =
+    currMonthSales?.reduce(
+      (acc, sale) => (sale.booking_status === "confirm" ? acc + 1 : acc),
+      0
+    ) || 0;
+  const chartData = [
     {
-      browser: "safari",
-      visitors: sells,
+      browser: "sells",
+      visitors: currMonthSells || 0,
       fill: "grey",
     },
-  ]);
+  ];
 
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
         <CardTitle>Ventas</CardTitle>
-        <CardDescription>Abril</CardDescription>
+        <CardDescription>{formatDate(currMonth)}</CardDescription>
       </CardHeader>
-      {isLoading ? (
-        <MiniSpinner />
-      ) : (
-        <CardContent className="flex-1 pb-0">
-          <ChartContainer
-            config={chartConfig}
-            className="mx-auto aspect-square max-h-[250px]"
+      <CardContent className="flex-1 pb-0">
+        <ChartContainer
+          config={chartConfig}
+          className="mx-auto aspect-square max-h-[250px]"
+        >
+          <RadialBarChart
+            data={chartData}
+            startAngle={0}
+            endAngle={250}
+            innerRadius={80}
+            outerRadius={110}
           >
-            <RadialBarChart
-              data={chartData}
-              startAngle={0}
-              endAngle={250}
-              innerRadius={80}
-              outerRadius={110}
-            >
-              <PolarGrid
-                gridType="circle"
-                radialLines={false}
-                stroke="none"
-                className="first:fill-muted last:fill-background"
-                polarRadius={[86, 74]}
-              />
-              <RadialBar dataKey="visitors" background cornerRadius={10} />
-              <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
-                <Label
-                  content={({ viewBox }) => {
-                    if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                      return (
-                        <text
+            <PolarGrid
+              gridType="circle"
+              radialLines={false}
+              stroke="none"
+              className="first:fill-muted last:fill-background"
+              polarRadius={[86, 74]}
+            />
+            <RadialBar dataKey="visitors" background cornerRadius={10} />
+            <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
+              <Label
+                content={({ viewBox }) => {
+                  if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                    return (
+                      <text
+                        x={viewBox.cx}
+                        y={viewBox.cy}
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                      >
+                        <tspan
                           x={viewBox.cx}
                           y={viewBox.cy}
-                          textAnchor="middle"
-                          dominantBaseline="middle"
+                          className="fill-foreground text-4xl font-bold"
                         >
-                          <tspan
-                            x={viewBox.cx}
-                            y={viewBox.cy}
-                            className="fill-foreground text-4xl font-bold"
-                          >
-                            {chartData[0].visitors.toLocaleString()}
-                          </tspan>
-                          <tspan
-                            x={viewBox.cx}
-                            y={(viewBox.cy || 0) + 24}
-                            className="fill-muted-foreground"
-                          >
-                            Ventas
-                          </tspan>
-                        </text>
-                      );
-                    }
-                  }}
-                />
-              </PolarRadiusAxis>
-            </RadialBarChart>
-          </ChartContainer>
-        </CardContent>
-      )}
+                          {chartData[0].visitors.toLocaleString()}
+                        </tspan>
+                        <tspan
+                          x={viewBox.cx}
+                          y={(viewBox.cy || 0) + 24}
+                          className="fill-muted-foreground"
+                        >
+                          Ventas
+                        </tspan>
+                      </text>
+                    );
+                  }
+                }}
+              />
+            </PolarRadiusAxis>
+          </RadialBarChart>
+        </ChartContainer>
+      </CardContent>
       <CardFooter className="flex-col gap-2 text-sm">
         <div className="flex items-center gap-2 font-medium leading-none">
-          Aumento del 20% respecto del mes anterior
+          Aumento del {salesGrowth(currMonthSells, prevMonthSells)}% respecto
+          del mes anterior
           <TrendingUp className="h-4 w-4" />
         </div>
         <div className="leading-none text-muted-foreground">
