@@ -1,6 +1,8 @@
 import { TrendingUp } from "lucide-react";
 import { Pie, PieChart } from "recharts";
 
+import useGetMostUsedEquipment from "@/hooks/useGetMostUsedEquipment";
+import MiniSpinner from "../MiniSpinner";
 import {
   Card,
   CardContent,
@@ -15,46 +17,44 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "../ui/chart";
-const chartData = [
-  { browser: "chrome", visitors: 275, fill: "var(--color-chrome)" },
-  { browser: "safari", visitors: 200, fill: "var(--color-safari)" },
-  { browser: "firefox", visitors: 187, fill: "var(--color-firefox)" },
-  { browser: "edge", visitors: 173, fill: "var(--color-edge)" },
-  { browser: "other", visitors: 90, fill: "var(--color-other)" },
-];
-
-const chartConfig = {
-  visitors: {
-    label: "Visitors",
-  },
-  chrome: {
-    label: "Chrome",
-    color: "blue",
-  },
-  safari: {
-    label: "Safari",
-    color: "red",
-  },
-  firefox: {
-    label: "Firefox",
-    color: "yellow",
-  },
-  edge: {
-    label: "Edge",
-    color: "green",
-  },
-  other: {
-    label: "Other",
-    color: "grey",
-  },
-} satisfies ChartConfig;
 
 export function MostEquipments() {
+  const { data = [{ name: "", total: 0 }], isLoading } =
+    useGetMostUsedEquipment();
+
+  if (isLoading) return <MiniSpinner />;
+
+  const colors = [
+    "#4E79A7",
+    "#F28E2B",
+    "#E15759",
+    "#76B7B2",
+    "#59A14F",
+    "#EDC948",
+    "#B07AA1",
+    "#FF9DA7",
+    "#9C755F",
+    "#BAB0AC",
+  ];
+  const chartData = data?.map((item, index) => ({
+    equipment: item.name,
+    quantity: item.total,
+    fill: colors[index],
+  }));
+
+  const chartConfig: ChartConfig = data?.reduce((acc, item, index) => {
+    acc[item.name] = {
+      label: item.name,
+      color: colors[index],
+    };
+    return acc;
+  }, {} as ChartConfig);
+
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
         <CardTitle>Equipos mas solicitados</CardTitle>
-        <CardDescription>January - June 2025</CardDescription>
+        <CardDescription>Enero - Agosto 2025</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
         <ChartContainer
@@ -63,7 +63,12 @@ export function MostEquipments() {
         >
           <PieChart>
             <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-            <Pie data={chartData} dataKey="visitors" label nameKey="browser" />
+            <Pie
+              data={chartData}
+              dataKey="quantity"
+              label
+              nameKey="equipment"
+            />
           </PieChart>
         </ChartContainer>
       </CardContent>

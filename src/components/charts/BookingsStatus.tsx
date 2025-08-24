@@ -1,6 +1,8 @@
-import * as React from "react";
 import { Label, Pie, PieChart } from "recharts";
 
+import useGetMonthlyEventsStatus from "@/hooks/useGetMonthlyEventsStatus";
+import MiniSpinner from "../MiniSpinner";
+import { formatDateCharts } from "../formatDate";
 import {
   Card,
   CardContent,
@@ -15,15 +17,11 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "../ui/chart";
-const chartData = [
-  { browser: "Confirmados", visitors: 275, fill: "green" },
-  { browser: "Pendientes", visitors: 200, fill: "yellow" },
-  { browser: "Cancelados", visitors: 287, fill: "red" },
-];
 
 const chartConfig = {
   confirm: {
     label: "Confirmados",
+    color: "#4CAF50",
   },
   pending: {
     label: "Pendientes",
@@ -36,15 +34,35 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export default function BookingsStatus() {
-  const totalVisitors = React.useMemo(() => {
-    return chartData.reduce((acc, curr) => acc + curr.visitors, 0);
-  }, []);
+  const currMonth = `${new Date().getFullYear()}-${new Date().getMonth() + 1}`;
+  const { data = [{ booking_status: "", total: 0 }], isLoading } =
+    useGetMonthlyEventsStatus();
+
+  if (isLoading) return <MiniSpinner />;
+
+  const chartData = data?.map((item) => ({
+    eventStatus:
+      item.booking_status === "confirm"
+        ? "Confirmados"
+        : item.booking_status === "pending"
+        ? "Pendientes"
+        : "Cancelados",
+    quantity: item.total,
+    fill:
+      item.booking_status === "confirm"
+        ? "#4CAF50"
+        : item.booking_status === "pending"
+        ? "#FFEB3B"
+        : "#F44336",
+  }));
+
+  const totalVisitors = chartData.reduce((acc, curr) => acc + curr.quantity, 0);
 
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
         <CardTitle>Estado Eventos - Muzek & Show Rental</CardTitle>
-        <CardDescription>Abril 2025</CardDescription>
+        <CardDescription>{formatDateCharts(currMonth)}</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
         <ChartContainer
@@ -58,9 +76,9 @@ export default function BookingsStatus() {
             />
             <Pie
               data={chartData}
-              dataKey="visitors"
-              nameKey="browser"
-              innerRadius={60}
+              dataKey="quantity"
+              nameKey="eventStatus"
+              innerRadius={45}
               strokeWidth={5}
             >
               <Label
@@ -98,7 +116,7 @@ export default function BookingsStatus() {
       </CardContent>
       <CardFooter className="flex-col gap-2 text-sm">
         <div className="leading-none text-muted-foreground">
-          Showing total visitors for the last 6 months
+          Estado de los eventos de ambas compañias
         </div>
       </CardFooter>
     </Card>

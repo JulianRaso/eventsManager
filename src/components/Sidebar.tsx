@@ -81,7 +81,6 @@ export default function Sidebar() {
         >
           <NavButton
             display={display}
-            className="hidden"
             icon={<MdDashboard />}
             description={"Dashboard"}
           />

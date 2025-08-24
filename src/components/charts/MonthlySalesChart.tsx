@@ -17,59 +17,26 @@ import {
   CardTitle,
 } from "../ui/card";
 import { ChartConfig, ChartContainer } from "../ui/chart";
+import { formatDateCharts } from "../formatDate";
 
 const chartConfig = {
-  visitors: {
-    label: "Visitors",
-  },
-  safari: {
-    label: "Safari",
+  sells: {
+    label: "Ventas",
     color: "hsl(var(--chart-2))",
   },
 } satisfies ChartConfig;
 
-function salesGrowth(currMonthSales: number, prevMonthSales: number) {
-  if (prevMonthSales === 0) {
-    return currMonthSales > 0 ? 100 : 0;
-  }
-  return ((currMonthSales - prevMonthSales) / prevMonthSales) * 100;
-}
-
-function formatDate(yearMonth: string) {
-  const [yearStr, monthStr] = yearMonth.split("-");
-  const year = Number(yearStr);
-  const month = Number(monthStr);
-  const fecha = new Date(year, month - 1);
-  let mes = fecha.toLocaleString("es-ES", { month: "long" });
-  mes = mes.charAt(0).toUpperCase() + mes.slice(1);
-  return `${mes} del ${year}`;
-}
-
 export default function MonthlySalesChart() {
   const currMonth = `${new Date().getFullYear()}-${new Date().getMonth() + 1}`;
-  const prevMonth = `${new Date().getFullYear()}-${new Date().getMonth() - 1}`;
 
-  const { data: currMonthSales, isLoading: currLoading } =
-    useGetMonthlySales(currMonth);
-  const { data: prevMonthSales, isLoading: prevLoading } =
-    useGetMonthlySales(prevMonth);
+  const { data, isLoading } = useGetMonthlySales();
 
-  if (currLoading || prevLoading) return <MiniSpinner />;
+  if (isLoading) return <MiniSpinner />;
 
-  const prevMonthSells =
-    prevMonthSales?.reduce(
-      (acc, sale) => (sale.booking_status === "confirm" ? acc + 1 : acc),
-      0
-    ) || 0;
-  const currMonthSells =
-    currMonthSales?.reduce(
-      (acc, sale) => (sale.booking_status === "confirm" ? acc + 1 : acc),
-      0
-    ) || 0;
   const chartData = [
     {
       browser: "sells",
-      visitors: currMonthSells || 0,
+      visitors: data || 0,
       fill: "grey",
     },
   ];
@@ -78,7 +45,7 @@ export default function MonthlySalesChart() {
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
         <CardTitle>Ventas</CardTitle>
-        <CardDescription>{formatDate(currMonth)}</CardDescription>
+        <CardDescription>{formatDateCharts(currMonth)}</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
         <ChartContainer
@@ -136,8 +103,7 @@ export default function MonthlySalesChart() {
       </CardContent>
       <CardFooter className="flex-col gap-2 text-sm">
         <div className="flex items-center gap-2 font-medium leading-none">
-          Aumento del {salesGrowth(currMonthSells, prevMonthSells)}% respecto
-          del mes anterior
+          Aumento del {2}% respecto del mes anterior
           <TrendingUp className="h-4 w-4" />
         </div>
         <div className="leading-none text-muted-foreground">
