@@ -17,8 +17,10 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "../ui/chart";
+import { formatDateCharts } from "../formatDate";
 
 export function MostEquipments() {
+  const currMonth = `${new Date().getFullYear()}-${new Date().getMonth() + 1}`;
   const { data = [{ name: "", total: 0 }], isLoading } =
     useGetMostUsedEquipment();
 
@@ -54,7 +56,7 @@ export function MostEquipments() {
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
         <CardTitle>Equipos mas solicitados</CardTitle>
-        <CardDescription>Enero - Agosto 2025</CardDescription>
+        <CardDescription>Enero - {formatDateCharts(currMonth)}</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
         <ChartContainer

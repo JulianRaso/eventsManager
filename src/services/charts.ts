@@ -1,21 +1,18 @@
 import { supabase } from "./supabase";
 
 export async function getMonthlySales() {
-  // @ts-expect-error: "monthly_sales" is a valid RPC function in the database
   const { data, error } = await supabase.rpc("monthly_sales");
   if (error) throw new Error("Error fetching monthly sales data.");
   return data;
 }
 
 export async function getMonthlyEvents() {
-  // @ts-expect-error: "monthly_events" is a valid RPC function in the database
   const { data, error } = await supabase.rpc("monthly_events");
   if (error) throw new Error("Error fetching monthly events data.");
   return data;
 }
 
 export async function getMostEquipmentUsed() {
-  // @ts-expect-error: "most_used_items" is a valid RPC function in the database
   const { data, error } = await supabase.rpc("most_used_items");
 
   if (error) {
@@ -24,8 +21,7 @@ export async function getMostEquipmentUsed() {
   return data;
 }
 
-export async function getYearlySales(year: string) {
-  // @ts-expect-error: "yearly_sales" is a valid RPC function in the database
+export async function getYearlySales(year: number) {
   const { data, error } = await supabase.rpc("monthly_events_by_company", {
     year_input: year,
   });
@@ -35,4 +31,15 @@ export async function getYearlySales(year: string) {
 
   return data;
 }
-getYearlySales("2025");
+
+export async function getEventsPerCompany() {
+  const { data, error } = await supabase.rpc("events_per_month_per_company");
+  if (error) throw new Error("Error fetching events by company data.");
+  return data;
+}
+
+export async function getIncomePerMonth() {
+  const { data, error } = await supabase.rpc("incomes_per_month");
+  if (error) throw new Error("Error fetching income per month data.");
+  return data;
+}

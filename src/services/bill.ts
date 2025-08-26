@@ -60,7 +60,7 @@ export async function updateInvoice(invoice: billType) {
     .from("bill")
     .update({
       ...invoice,
-      amount: invoice.amount !== undefined ? String(invoice.amount) : undefined,
+      amount: invoice.amount !== undefined ? invoice.amount : undefined,
     })
     .eq("id", invoice.id);
 

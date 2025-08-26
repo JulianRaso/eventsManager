@@ -1,6 +1,8 @@
-import { TrendingUp } from "lucide-react";
 import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
 
+import useGetIncomesPerMonth from "@/hooks/useGetIncomesPerMonth";
+import { formatDateCharts } from "../formatDate";
+import MiniSpinner from "../MiniSpinner";
 import {
   Card,
   CardContent,
@@ -16,28 +18,30 @@ import {
   ChartTooltipContent,
 } from "../ui/chart";
 
-const chartData = [
-  { month: "January", desktop: 186 },
-  { month: "February", desktop: 305 },
-  { month: "March", desktop: 237 },
-  { month: "April", desktop: 73 },
-  { month: "May", desktop: 209 },
-  { month: "June", desktop: 214 },
-];
-
 const chartConfig = {
-  desktop: {
-    label: "Desktop",
+  income: {
+    label: "Recaudaciones: $",
     color: "blue",
   },
 } satisfies ChartConfig;
 
 export default function GainsChart() {
+  const currMonth = `${new Date().getFullYear()}-${new Date().getMonth() + 1}`;
+  const { data = [{ month: "", income: 0 }], isLoading } =
+    useGetIncomesPerMonth();
+  if (isLoading) return <MiniSpinner />;
+  const chartData = [
+    {
+      month: "Enero",
+      income: 100,
+    },
+    ...data,
+  ];
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Ganancias - Linear</CardTitle>
-        <CardDescription>Enero - Junio 2025</CardDescription>
+        <CardTitle>Recaudaciones - Muzek & Show Rental</CardTitle>
+        <CardDescription>Enero - {formatDateCharts(currMonth)}</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
@@ -62,9 +66,9 @@ export default function GainsChart() {
               content={<ChartTooltipContent hideLabel />}
             />
             <Line
-              dataKey="desktop"
+              dataKey="income"
               type="linear"
-              stroke="var(--color-desktop)"
+              stroke="blue"
               strokeWidth={2}
               dot={false}
             />
@@ -73,10 +77,10 @@ export default function GainsChart() {
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm">
         <div className="flex gap-2 font-medium leading-none">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+          {/* Trending up by 5.2% this month <TrendingUp className="h-4 w-4" /> */}
         </div>
         <div className="leading-none text-muted-foreground">
-          Showing total visitors for the last 6 months
+          Recaudaciones de ambas compañias a lo largo del año
         </div>
       </CardFooter>
     </Card>
