@@ -94,7 +94,7 @@ export default function Invoice() {
       paid_by: data.paid_by,
       paid_to: data.paid_to,
       paid_with: data.paid_with,
-      updated_by: user_metadata.fullName != "" ? user_metadata.fullName : email,
+      updated_by: user_metadata.fullName != null ? user_metadata.fullName : email,
       cbu: data.cbu ? data.cbu : undefined,
     };
 
@@ -105,7 +105,7 @@ export default function Invoice() {
       paid_by: data.paid_by,
       paid_to: data.paid_to,
       paid_with: data.paid_with,
-      updated_by: user_metadata.fullName != "" ? user_metadata.fullName : email,
+      updated_by: user_metadata.fullName != null ? user_metadata.fullName : email,
       cbu: data.cbu ? data.cbu : undefined,
     };
 
