@@ -18,4 +18,6 @@ export default function Authentication({
   if (isLoading) return <Spinner />;
 
   if (authenticated) return children;
+
+  return null;
 }

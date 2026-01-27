@@ -1,4 +1,4 @@
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, Search, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../components/ui/button";
 import {
@@ -9,6 +9,7 @@ import {
   CommandItem,
   CommandList,
 } from "../components/ui/command";
+import { Input } from "./ui/Input";
 import {
   Popover,
   PopoverContent,
@@ -34,67 +35,77 @@ export default function Filter({
   className,
 }: FilterProps) {
   const [open, setOpen] = useState(false);
+  const hasFilters = Boolean(filterByName || value);
 
   return (
-    <div className={`flex justify-end ${className}`}>
-      <div className="flex gap-1 items-center overflow-x-auto">
-        <input
+    <div className={cn("flex flex-wrap items-center gap-2", className)}>
+      <div className="relative flex-1 min-w-[160px] max-w-[220px]">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
           type="text"
-          placeholder="Buscar por Nombre"
+          placeholder="Buscar por nombre..."
           value={filterByName}
-          className="border rounded-lg p-1.5 bg-gray-50"
-          onChange={(event) => setFilterByName(event.currentTarget.value)}
+          onChange={(e) => setFilterByName(e.target.value)}
+          className="pl-9"
         />
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={open}
-              className="w-[200px] justify-between"
-            >
-              {value
-                ? filterByStatus.find((status) => status.value === value)?.label
-                : "Seleccionar filtro..."}
-              <ChevronsUpDown className="opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-[200px] h-[190px] p-0">
-            <Command>
-              <CommandInput placeholder="Buscar filtro" className="h-9" />
-              <CommandList>
-                <CommandEmpty>No fue encontrado.</CommandEmpty>
-                <CommandGroup>
-                  {filterByStatus.map((status) => (
-                    <CommandItem
-                      key={status.value}
-                      value={status.value}
-                      onSelect={(currentValue) => {
-                        setValue(currentValue === value ? "" : currentValue);
-                        setOpen(false);
-                      }}
-                    >
-                      {status.label}
-                      <Check
-                        className={cn(
-                          "ml-auto",
-                          value === status.value ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-        <Button
-          variant="outline"
-          onClick={() => (setValue(""), setFilterByName(""))}
-        >
-          X
-        </Button>
       </div>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-[200px] justify-between"
+          >
+            {value
+              ? filterByStatus.find((s) => s.value === value)?.label
+              : "Filtrar por estado..."}
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[200px] p-0" align="start">
+          <Command>
+            <CommandInput placeholder="Buscar filtro..." className="h-9" />
+            <CommandList>
+              <CommandEmpty>No encontrado.</CommandEmpty>
+              <CommandGroup>
+                {filterByStatus.map((status) => (
+                  <CommandItem
+                    key={status.value}
+                    value={status.value}
+                    onSelect={(currentValue) => {
+                      setValue(currentValue === value ? "" : currentValue);
+                      setOpen(false);
+                    }}
+                  >
+                    {status.label}
+                    <Check
+                      className={cn(
+                        "ml-auto h-4 w-4",
+                        value === status.value ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+      {hasFilters && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            setValue("");
+            setFilterByName("");
+          }}
+          className="text-muted-foreground hover:text-foreground"
+        >
+          <X className="mr-1 h-4 w-4" />
+          Limpiar
+        </Button>
+      )}
     </div>
   );
 }

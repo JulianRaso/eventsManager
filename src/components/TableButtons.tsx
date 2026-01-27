@@ -1,3 +1,4 @@
+import { Pencil, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 
@@ -15,20 +16,27 @@ export default function TableButtons({
 }: TableButtonsProps) {
   const navigate = useNavigate();
   return (
-    <div className="flex gap-1 flex-wrap justify-center items-center">
+    <div className="flex flex-wrap items-center justify-center gap-2">
       <Button
+        type="button"
         variant="outline"
-        className="hover:bg-gray-300 w-full lg:w-fit"
+        size="sm"
+        className="w-full sm:w-auto"
         disabled={isDeleting}
         onClick={() => navigate(`${route}/${id}`)}
       >
+        <Pencil className="mr-1 h-3.5 w-3.5" />
         Editar
       </Button>
       <Button
+        type="button"
         variant="outline"
-        className="hover:bg-red-500 w-full lg:w-fit"
+        size="sm"
+        className="w-full sm:w-auto text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30"
+        disabled={isDeleting}
         onClick={() => onDelete(id)}
       >
+        <Trash2 className="mr-1 h-3.5 w-3.5" />
         Eliminar
       </Button>
     </div>

@@ -19,7 +19,7 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
+  --background: oklch(0.985 0.002 247);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -29,7 +29,7 @@
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
+  --muted: oklch(0.97 0.002 247);
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
@@ -37,11 +37,11 @@
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  --chart-1: oklch(0.628 0.2 264);
+  --chart-2: oklch(0.65 0.2 160);
+  --chart-3: oklch(0.7 0.18 45);
+  --chart-4: oklch(0.6 0.22 330);
+  --chart-5: oklch(0.55 0.2 200);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -50,12 +50,24 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  
+  /* Modern gradient colors */
+  --color-primary-gradient-start: #667eea;
+  --color-primary-gradient-end: #764ba2;
+  --color-success-gradient-start: #10b981;
+  --color-success-gradient-end: #059669;
+  --color-warning-gradient-start: #f59e0b;
+  --color-warning-gradient-end: #d97706;
+  --color-info-gradient-start: #3b82f6;
+  --color-info-gradient-end: #2563eb;
+  --color-danger-gradient-start: #ef4444;
+  --color-danger-gradient-end: #dc2626;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  --background: oklch(0.145 0.01 260);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
+  --card: oklch(0.2 0.01 260);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
@@ -63,7 +75,7 @@
   --primary-foreground: oklch(0.205 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
+  --muted: oklch(0.25 0.01 260);
   --muted-foreground: oklch(0.708 0 0);
   --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
@@ -71,19 +83,31 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
+  --chart-1: oklch(0.7 0.2 264);
+  --chart-2: oklch(0.72 0.17 160);
+  --chart-3: oklch(0.75 0.16 45);
+  --chart-4: oklch(0.68 0.2 330);
+  --chart-5: oklch(0.65 0.18 200);
+  --sidebar: oklch(0.18 0.01 260);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary: oklch(0.7 0.2 264);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  
+  /* Modern gradient colors - dark mode */
+  --color-primary-gradient-start: #818cf8;
+  --color-primary-gradient-end: #a78bfa;
+  --color-success-gradient-start: #34d399;
+  --color-success-gradient-end: #10b981;
+  --color-warning-gradient-start: #fbbf24;
+  --color-warning-gradient-end: #f59e0b;
+  --color-info-gradient-start: #60a5fa;
+  --color-info-gradient-end: #3b82f6;
+  --color-danger-gradient-start: #f87171;
+  --color-danger-gradient-end: #ef4444;
 }
 
 @theme inline {
@@ -131,4 +155,18 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Gráficos: ejes y etiquetas visibles (evitar negro) */
+[data-slot="chart"] .recharts-cartesian-axis-tick text {
+  fill: #64748b;
+}
+.dark [data-slot="chart"] .recharts-cartesian-axis-tick text {
+  fill: #94a3b8;
+}
+[data-slot="chart"] .recharts-pie-label-text {
+  fill: #475569;
+}
+.dark [data-slot="chart"] .recharts-pie-label-text {
+  fill: #cbd5e1;
 }

@@ -10,6 +10,7 @@ import useUpdateStock from "../hooks/useUpdateStock";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import Spinner from "../components/Spinner";
+import { cn } from "../lib/utils";
 
 type equipmentProps = {
   id: number;
@@ -70,6 +71,9 @@ export default function Equipment() {
     }
   }, [stockId, isEditingSession, setValue]);
 
+  const selectClass =
+    "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
+
   if (isLoadingEquipment) return <Spinner />;
 
   function onSubmit(data: equipmentProps) {
@@ -90,62 +94,91 @@ export default function Equipment() {
 
   return (
     <AddLayout>
-      <h1 className="text-2xl font-bold mb-4">
+      <h1 className="mb-6 text-2xl font-semibold tracking-tight">
         {isEditingSession ? "Modificar equipo" : "Agregar equipo"}
       </h1>
-      <form className="flex flex-col gap-10" onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="name" className="block mb-2">
-              Nombre
+      <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)}>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="name" className="text-sm font-medium text-foreground">
+              Nombre <span className="text-destructive">*</span>
             </label>
             <Input
               type="text"
               id="name"
-              {...register("name")}
+              placeholder="Nombre del equipo"
+              {...register("name", { required: "El nombre es requerido" })}
               disabled={isEditingSession}
             />
           </div>
-          <div>
-            <label htmlFor="quantity" className="block mb-2">
-              Cantidad
+          <div className="flex flex-col gap-2">
+            <label htmlFor="quantity" className="text-sm font-medium text-foreground">
+              Cantidad <span className="text-destructive">*</span>
             </label>
-            <Input type="number" id="quantity" {...register("quantity")} />
+            <Input
+              type="number"
+              id="quantity"
+              placeholder="Cantidad disponible"
+              min={0}
+              {...register("quantity", {
+                required: "La cantidad es requerida",
+                min: { value: 0, message: "La cantidad no puede ser negativa" },
+              })}
+            />
           </div>
-          <div>
-            <label htmlFor="location" className="block mb-2">
-              Ubicacion
+          <div className="flex flex-col gap-2">
+            <label htmlFor="location" className="text-sm font-medium text-foreground">
+              Ubicación <span className="text-destructive">*</span>
             </label>
-            <Input type="text" id="location" {...register("location")} />
+            <Input
+              type="text"
+              id="location"
+              placeholder="Ubicación del equipo"
+              {...register("location", { required: "La ubicación es requerida" })}
+            />
           </div>
-          <div>
-            <label htmlFor="price" className="block mb-2">
-              Precio
+          <div className="flex flex-col gap-2">
+            <label htmlFor="price" className="text-sm font-medium text-foreground">
+              Precio <span className="text-destructive">*</span>
             </label>
-            <Input type="number" id="price" {...register("price")} />
+            <Input
+              type="number"
+              id="price"
+              placeholder="Precio unitario"
+              min={0}
+              step="0.01"
+              {...register("price", {
+                required: "El precio es requerido",
+                min: { value: 0, message: "El precio no puede ser negativo" },
+              })}
+            />
           </div>
-          <div>
-            <label className="block mb-2">Categoria</label>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="category" className="text-sm font-medium text-foreground">
+              Categoría <span className="text-destructive">*</span>
+            </label>
             <select
-              className="border rounded-md h-9 w-full"
-              {...register("category")}
+              className={cn(selectClass)}
+              {...register("category", { required: "La categoría es requerida" })}
               defaultValue={category}
               onBlur={(e) => setCategory(e.target.value)}
-              required
             >
+              <option value="">Seleccione una categoría</option>
               <option value="sound">Sonido</option>
-              <option value="lights">Iluminacion</option>
-              <option value="ambientation">Ambientacion</option>
+              <option value="lights">Iluminación</option>
+              <option value="ambientation">Ambientación</option>
               <option value="structure">Estructura</option>
               <option value="screen">Pantalla</option>
               <option value="furniture">Muebles</option>
               <option value="cables">Cables</option>
               <option value="tools">Herramientas</option>
-              <option value="others">Otro</option>
+              <option value="others">Otros</option>
             </select>
           </div>
-          <div>
-            <label className="block mb-2">Actualizado por</label>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="updated_by" className="text-sm font-medium text-foreground">
+              Actualizado por
+            </label>
             <Input
               type="text"
               id="updated_by"
@@ -154,6 +187,7 @@ export default function Equipment() {
               }
               {...register("updated_by")}
               disabled
+              className="bg-muted"
             />
           </div>
         </div>

@@ -1,4 +1,5 @@
-import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import { TrendingUp } from "lucide-react";
 
 import useGetIncomesPerMonth from "@/hooks/useGetIncomesPerMonth";
 import { formatDateCharts } from "../formatDate";
@@ -17,11 +18,12 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "../ui/chart";
+import { CHART_COLORS } from "@/lib/chartColors";
 
 const chartConfig = {
   income: {
     label: "Recaudaciones: $",
-    color: "blue",
+    color: CHART_COLORS.primary,
   },
 } satisfies ChartConfig;
 
@@ -38,49 +40,67 @@ export default function GainsChart() {
     ...data,
   ];
   return (
-    <Card>
+    <Card className="hover:shadow-lg transition-all duration-300">
       <CardHeader>
-        <CardTitle>Recaudaciones - Muzek & Show Rental</CardTitle>
+        <div className="flex items-center gap-2">
+          <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-950">
+            <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+          </div>
+          <CardTitle className="text-lg">Recaudaciones</CardTitle>
+        </div>
         <CardDescription>Enero - {formatDateCharts(currMonth)}</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig}>
+        <ChartContainer config={chartConfig} className="h-[200px] w-full">
           <LineChart
             accessibilityLayer
             data={chartData}
             margin={{
               left: 12,
               right: 12,
+              top: 12,
+              bottom: 12,
             }}
           >
-            <CartesianGrid vertical={false} />
+            <CartesianGrid
+              vertical={false}
+              strokeDasharray="3 3"
+              stroke="rgba(148,163,184,0.4)"
+            />
             <XAxis
               dataKey="month"
               tickLine={false}
               axisLine={false}
               tickMargin={8}
               tickFormatter={(value) => value.slice(0, 3)}
+              className="text-xs"
+            />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              tickFormatter={(value) => `$${value}`}
+              className="text-xs"
+              width={60}
             />
             <ChartTooltip
-              cursor={false}
+              cursor={{ stroke: "#94a3b8", strokeDasharray: "3 3" }}
               content={<ChartTooltipContent hideLabel />}
             />
             <Line
               dataKey="income"
-              type="linear"
-              stroke="blue"
-              strokeWidth={2}
-              dot={false}
+              type="monotone"
+              stroke={CHART_COLORS.primary}
+              strokeWidth={2.5}
+              dot={{ fill: CHART_COLORS.primary, strokeWidth: 2, r: 4 }}
+              activeDot={{ r: 6, fill: CHART_COLORS.primary }}
             />
           </LineChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex gap-2 font-medium leading-none">
-          {/* Trending up by 5.2% this month <TrendingUp className="h-4 w-4" /> */}
-        </div>
+      <CardFooter className="flex-col items-start gap-2 text-sm pt-4">
         <div className="leading-none text-muted-foreground">
-          Recaudaciones de ambas compañias a lo largo del año
+          Recaudaciones de ambas compañías a lo largo del año
         </div>
       </CardFooter>
     </Card>

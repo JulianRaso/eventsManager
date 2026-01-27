@@ -2,6 +2,7 @@ import { useDeleteBooking } from "../../hooks/useDeleteBooking";
 import { TableData, TableRow } from "../Table";
 import TableButtons from "../TableButtons";
 import { formatDate } from "../formatDate";
+import { cn } from "../../lib/utils";
 
 interface Client {
   name: string;
@@ -76,30 +77,36 @@ export default function BookingRow({ booking, index }: bookingProps) {
       </TableData>
       <TableData>{place}</TableData>
       <TableData>
-        <p
-          className={`rounded-xl p-1.5 ${
-            booking_status === "confirm"
-              ? "bg-green-300"
-              : booking_status === "pending"
-              ? "bg-amber-300"
-              : "bg-red-500"
-          }`}
+        <span
+          className={cn(
+            "inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium",
+            booking_status === "confirm" &&
+              "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
+            booking_status === "pending" &&
+              "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300",
+            booking_status === "cancel" &&
+              "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300"
+          )}
         >
           {booking_status === "pending"
             ? "Pendiente"
             : booking_status === "confirm"
             ? "Confirmado"
             : "Cancelado"}
-        </p>
+        </span>
       </TableData>
       <TableData>
-        {payment_status === "pending"
-          ? "Pendiente"
-          : payment_status === "partially_paid"
-          ? "Señado"
-          : "Abonado"}
+        <span className="text-muted-foreground">
+          {payment_status === "pending"
+            ? "Pendiente"
+            : payment_status === "partially_paid"
+            ? "Seña"
+            : "Abonado"}
+        </span>
       </TableData>
-      <TableData>${price}</TableData>
+      <TableData className="font-medium tabular-nums">
+        ${typeof price === "number" ? price.toLocaleString("es-AR") : price}
+      </TableData>
       <TableData>
         <TableButtons
           id={id}

@@ -1,11 +1,15 @@
 export function Table({ children }: { children: React.ReactNode }) {
-  return <table className="min-w-full border-collapse">{children}</table>;
+  return (
+    <table className="min-w-full border-collapse text-sm">
+      {children}
+    </table>
+  );
 }
 
 export function TableHead({ children }: { children: React.ReactNode }) {
   return (
-    <thead className="bg-gray-100 w-full">
-      <tr className="w-full">{children}</tr>
+    <thead className="bg-muted/60">
+      <tr>{children}</tr>
     </thead>
   );
 }
@@ -17,12 +21,12 @@ export function TableBody({
   children: React.ReactNode;
   className?: string;
 }) {
-  return <tbody className={`${className} `}>{children}</tbody>;
+  return <tbody className={className}>{children}</tbody>;
 }
 
 export function TableRow({ children }: { children: React.ReactNode }) {
   return (
-    <tr className="px-4 py-2 border-b text-sm font-medium text-gray-600 hover:bg-gray-50">
+    <tr className="border-b border-border transition-colors hover:bg-muted/30">
       {children}
     </tr>
   );
@@ -37,20 +41,34 @@ export function TableData({
 }) {
   return (
     <td
-      className={`px-2 py-1 border-b text-center text-md text-gray-800 ${className}`}
+      className={`px-3 py-3 text-center text-foreground align-middle ${className}`}
     >
       {children}
     </td>
   );
 }
 
+export function TableHeaderData({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <th
+      className={`px-3 py-3 text-center text-sm font-medium text-foreground align-middle ${className}`}
+    >
+      {children}
+    </th>
+  );
+}
+
 export function TableContainer({ children }: { children: React.ReactNode }) {
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto rounded-xl border border-border bg-card">
       <div className="inline-block min-w-full align-middle">
-        <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
-          {children}
-        </div>
+        {children}
       </div>
     </div>
   );

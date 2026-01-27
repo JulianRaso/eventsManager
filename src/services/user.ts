@@ -1,13 +1,7 @@
+import { UserProps } from "../types";
 import { supabase, supabaseUrl } from "./supabase";
 
-interface userProps {
-  fullName?: string;
-  email: string;
-  password: string;
-  avatar?: string;
-}
-
-async function signUp(user: userProps) {
+async function signUp(user: UserProps) {
   const { data, error } = await supabase.auth.signUp(user);
 
   if (error) {
@@ -17,7 +11,7 @@ async function signUp(user: userProps) {
   return data;
 }
 
-async function logIn({ email, password }: userProps) {
+async function logIn({ email, password }: UserProps) {
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,

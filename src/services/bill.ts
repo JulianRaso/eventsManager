@@ -54,7 +54,7 @@ export async function deleteInvoice(id: number) {
 
 export async function updateInvoice(invoice: billType) {
   if (invoice.id === undefined) {
-    throw new Error("Invoice id is required for update.");
+    throw new Error("El ID de la factura es requerido para actualizar");
   }
   const { data, error } = await supabase
     .from("bill")
@@ -65,7 +65,7 @@ export async function updateInvoice(invoice: billType) {
     .eq("id", invoice.id);
 
   if (error) {
-    return error;
+    throw new Error(`Error al actualizar la factura: ${error.message}`);
   }
   return data;
 }

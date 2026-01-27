@@ -1,7 +1,6 @@
-import toast from "react-hot-toast";
 import { supabase } from "./supabase";
 
-interface vehicleProps {
+interface VehicleProps {
   id?: number;
   brand: string;
   model: string;
@@ -18,7 +17,7 @@ export async function getTransport() {
   const { data: vehicles, error } = await supabase.from("vehicles").select("*");
 
   if (error) {
-    toast.error("Error al obtener los datos de los vehiculos");
+    throw new Error("Error al obtener los datos de los vehiculos");
   }
   return vehicles;
 }
@@ -27,15 +26,15 @@ export async function deleteTransport(id: number) {
   const { error } = await supabase.from("vehicles").delete().eq("id", id);
 
   if (error) {
-    toast.error("Error al eliminar el vehiculo");
+    throw new Error("Error al eliminar el vehiculo");
   }
 }
 
-export async function addVehicle(vehicle: vehicleProps) {
+export async function addVehicle(vehicle: VehicleProps) {
   const { data, error } = await supabase.from("vehicles").insert([vehicle]);
 
   if (error) {
-    toast.error("Error al actualizar el vehiculo");
+    throw new Error("Error al agregar el vehiculo");
   }
 
   return data;
@@ -48,12 +47,12 @@ export async function getCurrentTransport(id: number) {
     .eq("id", id);
 
   if (error) {
-    toast.error("Error al obtener los datos del vehiculo");
+    throw new Error("Error al obtener los datos del vehiculo");
   }
   return vehicles;
 }
 
-export async function updateTransport(vehicle: vehicleProps) {
+export async function updateTransport(vehicle: VehicleProps) {
   if (vehicle.id === undefined) {
     throw new Error("El ID del vehículo es requerido para actualizar");
   }
@@ -64,7 +63,7 @@ export async function updateTransport(vehicle: vehicleProps) {
     .select();
 
   if (error) {
-    toast.error("Hubo un error al actualizar el vehiculo");
+    throw new Error("Hubo un error al actualizar el vehiculo");
   }
   return data;
 }

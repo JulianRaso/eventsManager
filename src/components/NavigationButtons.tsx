@@ -12,11 +12,17 @@ export default function NavigationButtons({
 }) {
   const navigate = useNavigate();
   return (
-    <div className="flex justify-between items-center flex-wrap">
-      <Button onClick={(e) => (e.preventDefault(), navigate(navigateTo))}>
+    <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={(e) => (e.preventDefault(), navigate(navigateTo))}
+      >
         Cancelar
       </Button>
-      <Button disabled={isAdding}>{addTitle}</Button>
+      <Button type="submit" disabled={isAdding}>
+        {addTitle}
+      </Button>
     </div>
   );
 }

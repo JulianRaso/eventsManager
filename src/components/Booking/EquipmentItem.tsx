@@ -48,7 +48,7 @@ export default function EquipmentItem({
           value={quantity}
           disabled={Boolean(
             equipment
-              .filter((item) => item.name === stock.name)
+              .filter((item) => item.equipment_id === stock.id)
               .reduce((total, item) => total + item.quantity, 0) ===
               stock.quantity
           )}
@@ -59,7 +59,7 @@ export default function EquipmentItem({
             }
             const inputValue = Number(e.target.value);
             const usedQuantity = equipment
-              .filter((item) => item.name === stock.name)
+              .filter((item) => item.equipment_id === stock.id)
               .reduce((total, item) => total + item.quantity, 0);
             const availableQuantity = stock.quantity - usedQuantity;
             if (inputValue <= availableQuantity) {
@@ -71,29 +71,51 @@ export default function EquipmentItem({
       <TableData>
         <Button
           variant="outline"
-          onClick={(e) => (
-            e.preventDefault(),
-            quantity === 0
-              ? toast.error("Debe ingresar una cantidad")
-              : quantity > stock.quantity
-              ? toast.error("Cantidad no disponible")
-              : quantity < 0
-              ? toast.error("Cantidad no disponible")
-              : (setEquipment([
-                  ...equipment,
-                  {
-                    booking_id: bookingId,
-                    equipment_id: stock.id,
-                    name: stock.name,
-                    quantity: quantity,
-                    price: stock.price,
-                  },
-                ]),
-                setPrice((previous) => previous + quantity * stock.price))
-          )}
+          onClick={(e) => {
+            e.preventDefault();
+
+            if (quantity === 0) {
+              toast.error("Debe ingresar una cantidad");
+              return;
+            }
+            if (quantity > stock.quantity || quantity < 0) {
+              toast.error("Cantidad no disponible");
+              return;
+            }
+
+            // Verificar si el equipo ya existe en el array
+            const existingIndex = equipment.findIndex(
+              (item) => item.equipment_id === stock.id
+            );
+
+            if (existingIndex !== -1) {
+              // Si existe, actualizar la cantidad
+              const updatedEquipment = [...equipment];
+              updatedEquipment[existingIndex] = {
+                ...updatedEquipment[existingIndex],
+                quantity: updatedEquipment[existingIndex].quantity + quantity,
+              };
+              setEquipment(updatedEquipment);
+            } else {
+              // Si no existe, agregar nuevo
+              setEquipment([
+                ...equipment,
+                {
+                  booking_id: bookingId,
+                  equipment_id: stock.id,
+                  name: stock.name,
+                  quantity: quantity,
+                  price: stock.price,
+                },
+              ]);
+            }
+
+            setPrice((previous) => previous + quantity * stock.price);
+            setQuantity(0);
+          }}
           disabled={Boolean(
             equipment
-              .filter((item) => item.name === stock.name)
+              .filter((item) => item.equipment_id === stock.id)
               .reduce((total, item) => total + item.quantity, 0) ===
               stock.quantity
           )}

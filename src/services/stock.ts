@@ -1,53 +1,5 @@
-import toast from "react-hot-toast";
+import { CategoryType, StockedProps, StockProps } from "../types";
 import { supabase } from "./supabase";
-
-interface StockProps {
-  name: string;
-  location: string;
-  price: number;
-  quantity: number;
-  category:
-    | "lights"
-    | "ambientation"
-    | "sound"
-    | "structure"
-    | "tools"
-    | "cables"
-    | "others"
-    | "furniture"
-    | "screen";
-  updated_by: string;
-}
-
-interface StockedProps {
-  id: number;
-  name: string;
-  location: string;
-  price: number;
-  quantity: number;
-  category:
-    | "lights"
-    | "ambientation"
-    | "sound"
-    | "structure"
-    | "tools"
-    | "cables"
-    | "others"
-    | "furniture"
-    | "screen";
-  updated_by: string;
-}
-
-type CategoryType =
-  | "lights"
-  | "ambientation"
-  | "sound"
-  | "structure"
-  | "tools"
-  | "cables"
-  | "others"
-  | "furniture"
-  | "screen";
 
 export async function getStock(category?: CategoryType) {
   if (category) {
@@ -57,7 +9,7 @@ export async function getStock(category?: CategoryType) {
       .eq("category", category);
 
     if (error) {
-      throw new Error(`There was an error while loading ${category}`);
+      throw new Error(`Hubo un error al cargar ${category}`);
     }
     return data;
   }
@@ -65,7 +17,7 @@ export async function getStock(category?: CategoryType) {
   const { data, error } = await supabase.from("inventory").select("*");
 
   if (error) {
-    throw new Error(`There was an error while loading equipment`);
+    throw new Error("Hubo un error al cargar el equipamiento");
   }
   return data;
 }
@@ -78,7 +30,7 @@ export async function updateStock(stock: StockedProps) {
     .select();
 
   if (error) {
-    toast.error("Hubo un error al actualizar el stock");
+    throw new Error("Hubo un error al actualizar el stock");
   }
   return data;
 }
@@ -87,7 +39,7 @@ export async function deleteStock(id: number) {
   const { error } = await supabase.from("inventory").delete().eq("id", id);
 
   if (error) {
-    toast.error("Hubo un error al eliminar el stock");
+    throw new Error("Hubo un error al eliminar el stock");
   }
 }
 
@@ -97,7 +49,7 @@ export async function addStock(stockData: StockProps) {
     .insert([{ ...stockData }]);
 
   if (error) {
-    toast.error("Error al intentar agregar el stock");
+    throw new Error("Error al intentar agregar el stock");
   }
 
   return data;
@@ -110,7 +62,7 @@ export async function getCurrentStock(id: number) {
     .eq("id", id);
 
   if (error) {
-    toast.error("Hubo un error al cargar el inventario seleccionado");
+    throw new Error("Hubo un error al cargar el inventario seleccionado");
   }
 
   return data;

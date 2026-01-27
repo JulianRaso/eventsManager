@@ -1,4 +1,5 @@
 import { Label, Pie, PieChart } from "recharts";
+import { CalendarCheck } from "lucide-react";
 
 import useGetMonthlyEventsStatus from "@/hooks/useGetMonthlyEventsStatus";
 import MiniSpinner from "../MiniSpinner";
@@ -17,19 +18,20 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "../ui/chart";
+import { CHART_COLORS } from "@/lib/chartColors";
 
 const chartConfig = {
   confirm: {
     label: "Confirmados",
-    color: "#4CAF50",
+    color: CHART_COLORS.success,
   },
   pending: {
     label: "Pendientes",
-    color: "hsl(var(--chart-1))",
+    color: CHART_COLORS.warning,
   },
   cancel: {
     label: "Cancelados",
-    color: "hsl(var(--chart-2))",
+    color: CHART_COLORS.danger,
   },
 } satisfies ChartConfig;
 
@@ -50,18 +52,23 @@ export default function BookingsStatus() {
     quantity: item.total,
     fill:
       item.booking_status === "confirm"
-        ? "#4CAF50"
+        ? CHART_COLORS.success
         : item.booking_status === "pending"
-        ? "#FFEB3B"
-        : "#F44336",
+        ? CHART_COLORS.warning
+        : CHART_COLORS.danger,
   }));
 
   const totalVisitors = chartData.reduce((acc, curr) => acc + curr.quantity, 0);
 
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col hover:shadow-lg transition-all duration-300">
       <CardHeader className="items-center pb-0">
-        <CardTitle>Estado Eventos - Muzek & Show Rental</CardTitle>
+        <div className="flex items-center gap-2">
+          <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-950">
+            <CalendarCheck className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+          </div>
+          <CardTitle className="text-lg">Estado de Eventos</CardTitle>
+        </div>
         <CardDescription>{formatDateCharts(currMonth)}</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
@@ -78,8 +85,10 @@ export default function BookingsStatus() {
               data={chartData}
               dataKey="quantity"
               nameKey="eventStatus"
-              innerRadius={45}
-              strokeWidth={5}
+              innerRadius={50}
+              outerRadius={80}
+              strokeWidth={2}
+              stroke="transparent"
             >
               <Label
                 content={({ viewBox }) => {
@@ -101,7 +110,7 @@ export default function BookingsStatus() {
                         <tspan
                           x={viewBox.cx}
                           y={(viewBox.cy || 0) + 24}
-                          className="fill-muted-foreground"
+                          className="fill-muted-foreground text-sm"
                         >
                           Eventos
                         </tspan>
@@ -114,9 +123,9 @@ export default function BookingsStatus() {
           </PieChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col gap-2 text-sm">
-        <div className="leading-none text-muted-foreground">
-          Estado de los eventos de ambas compañias
+      <CardFooter className="flex-col gap-2 text-sm pt-4">
+        <div className="leading-none text-muted-foreground text-center">
+          Estado de los eventos de ambas compañías
         </div>
       </CardFooter>
     </Card>

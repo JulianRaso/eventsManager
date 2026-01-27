@@ -1,29 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createBooking } from "../services/booking";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-
-interface clientProps {
-  dni: number;
-  name: string;
-  lastName: string;
-  phoneNumber: string;
-  email?: string;
-}
-
-interface bookingProps {
-  client_dni: number;
-  booking_status: "pending" | "cancel" | "confirm";
-  comments: string;
-  organization: "Muzek" | "Show Rental";
-  event_date: string;
-  event_type: "birthday" | "marriage" | "corporate" | "fifteen_party" | "other";
-  payment_status: "pending" | "partially_paid" | "paid";
-  place: string;
-  tax: number;
-  revenue: number;
-  price: number;
-}
+import { createBooking } from "../services/booking";
+import { BookingProps, ClientProps, EquipmentItemProps } from "../types";
 
 export function useAddBooking() {
   const queryClient = useQueryClient();
@@ -33,10 +12,12 @@ export function useAddBooking() {
     mutationFn: ({
       client,
       booking,
+      equipment,
     }: {
-      client: clientProps;
-      booking: bookingProps;
-    }) => createBooking(client, booking),
+      client: ClientProps;
+      booking: BookingProps;
+      equipment?: Omit<EquipmentItemProps, "booking_id">[];
+    }) => createBooking(client, booking, equipment),
     onSuccess: () => {
       toast.success("La reserva fue creada con exito!");
       queryClient.invalidateQueries({

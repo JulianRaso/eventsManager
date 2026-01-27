@@ -1,43 +1,7 @@
-import toast from "react-hot-toast";
+import { BookedProps, BookingProps, ClientProps, EquipmentItemProps } from "../types";
+import { addItems } from "./bookingItems";
 import { checkClient, createClient } from "./client";
 import { supabase } from "./supabase";
-
-interface clientProps {
-  dni: number;
-  name: string;
-  lastName: string;
-  phoneNumber: string;
-  email?: string;
-}
-
-interface bookingProps {
-  client_dni: number;
-  booking_status: "pending" | "cancel" | "confirm";
-  comments: string;
-  organization: "Muzek" | "Show Rental";
-  event_date: string;
-  event_type: "birthday" | "marriage" | "corporate" | "fifteen_party" | "other";
-  payment_status: "pending" | "partially_paid" | "paid";
-  place: string;
-  tax: number;
-  revenue: number;
-  price: number;
-}
-
-interface bookedProps {
-  id: number;
-  client_dni: number;
-  booking_status: "pending" | "cancel" | "confirm";
-  comments: string;
-  organization: "Muzek" | "Show Rental";
-  event_date: string;
-  event_type: "birthday" | "marriage" | "corporate" | "fifteen_party" | "other";
-  payment_status: "pending" | "partially_paid" | "paid";
-  place: string;
-  tax: number;
-  revenue: number;
-  price: number;
-}
 
 //Get data from database
 export async function getBookings() {
@@ -47,7 +11,7 @@ export async function getBookings() {
       `);
 
   if (error) {
-    toast.error(
+    throw new Error(
       "Hubo un error al cargar las reservas, por favor intente nuevamente"
     );
   }
@@ -57,17 +21,19 @@ export async function getBookings() {
 
 //Insert data to Database
 
-export async function addBooking(booking: bookingProps) {
+export async function addBooking(booking: BookingProps) {
   const { data: bookingData, error: bookingError } = await supabase
     .from("booking")
     .insert([
       {
         ...booking,
       },
-    ]);
+    ])
+    .select()
+    .single();
 
   if (bookingError) {
-    toast.error(
+    throw new Error(
       "Hubo un error al crear la reserva, por favor intente nuevamente"
     );
   }
@@ -78,33 +44,44 @@ export async function deleteBooking(id: number) {
   const { error } = await supabase.from("booking").delete().eq("id", id);
 
   if (error) {
-    toast.error(
+    throw new Error(
       "Hubo un error al eliminar la reserva, por favor intente nuevamente"
     );
   }
 }
 
-//Create reservation
+//Create reservation with equipment
 export async function createBooking(
-  client: clientProps,
-  booking: bookingProps
+  client: ClientProps,
+  booking: BookingProps,
+  equipment?: Omit<EquipmentItemProps, "booking_id">[]
 ) {
+  // 1. Verificar/crear cliente
   const confirmClientResponse = await checkClient(client.dni);
   const confirmClient = confirmClientResponse.data;
   if (
     !confirmClient ||
     (Array.isArray(confirmClient) && confirmClient.length === 0)
   ) {
-    const data = await createClient(client);
-    if (data) {
-      addBooking(booking);
-    }
-    return addBooking(booking);
+    await createClient(client);
   }
-  return addBooking(booking);
+
+  // 2. Crear la reserva y obtener el ID
+  const newBooking = await addBooking(booking);
+
+  // 3. Si hay equipos, asignarles el booking_id correcto y guardarlos
+  if (equipment && equipment.length > 0 && newBooking?.id) {
+    const equipmentWithBookingId = equipment.map((item) => ({
+      ...item,
+      booking_id: newBooking.id,
+    }));
+    await addItems(equipmentWithBookingId);
+  }
+
+  return newBooking;
 }
 
-export async function updateBooking(booking: bookedProps) {
+export async function updateBooking(booking: BookedProps) {
   const { data, error } = await supabase
     .from("booking")
     .update({ ...booking })
@@ -112,7 +89,7 @@ export async function updateBooking(booking: bookedProps) {
     .select();
 
   if (error) {
-    toast.error(
+    throw new Error(
       "Hubo un error al actualizar la reserva, por favor intente nuevamente"
     );
   }
@@ -126,7 +103,7 @@ export async function getCurrentBooking(bookingId: number) {
     .eq("id", bookingId);
 
   if (error) {
-    toast.error(
+    throw new Error(
       "Hubo un error al cargar la reserva, por favor intente nuevamente"
     );
   }

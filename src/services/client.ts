@@ -1,19 +1,11 @@
-import toast from "react-hot-toast";
+import { ClientProps } from "../types";
 import { supabase } from "./supabase";
 
-interface clientProps {
-  dni: number;
-  name: string;
-  lastName: string;
-  phoneNumber: string;
-  email?: string;
-}
-
-export async function createClient(client: clientProps) {
+export async function createClient(client: ClientProps) {
   const { data, error } = await supabase.from("client").insert(client);
 
   if (error) {
-    toast.error("Hubo un error al crear el cliente");
+    throw new Error("Hubo un error al crear el cliente");
   }
   return data;
 }
@@ -27,14 +19,14 @@ export async function checkClient(dni: number) {
     .throwOnError();
 }
 
-export async function updateClient(client: clientProps) {
+export async function updateClient(client: ClientProps) {
   const { data, error } = await supabase
     .from("client")
     .update(client)
     .eq("dni", client.dni);
 
   if (error) {
-    toast.error("Hubo un error al actualizar el cliente");
+    throw new Error("Hubo un error al actualizar el cliente");
   }
   return data;
 }

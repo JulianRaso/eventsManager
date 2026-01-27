@@ -31,7 +31,11 @@ export default function Sidebar() {
   }
 
   return (
-    <div className="flex flex-col justify-between bg-gray-800 text-gray-300 shadow-lg transition-all duration-300">
+    <aside
+      className={`flex shrink-0 flex-col justify-between bg-gray-800 text-gray-300 shadow-lg transition-all duration-300 ${
+        display ? "w-64 min-w-64" : "w-20 min-w-20"
+      }`}
+    >
       <div className="flex flex-col items-center p-2 justify-center">
         <div
           className={`w-full flex text-3xl mb-4 transition-all duration-300 ${
@@ -154,6 +158,6 @@ export default function Sidebar() {
           </Button>
         </div>
       </div>
-    </div>
+    </aside>
   );
 }

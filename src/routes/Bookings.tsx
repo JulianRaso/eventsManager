@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { CalendarRange } from "lucide-react";
 import AddButton from "../components/AddButton";
 import BookingRow from "../components/Bookings/BookingRow";
 import CategoryLayout from "../components/CategoryLayout";
@@ -8,8 +9,8 @@ import {
   Table,
   TableBody,
   TableContainer,
-  TableData,
   TableHead,
+  TableHeaderData,
 } from "../components/Table";
 import {
   Pagination,
@@ -20,159 +21,158 @@ import {
   PaginationPrevious,
 } from "../components/ui/pagination";
 import useGetBookings from "../hooks/useGetBookings";
+import usePagination from "../hooks/usePagination";
+import { FilterOption } from "../types";
 
-const filterByStatus = [
-  {
-    value: "confirm",
-    label: "Confirmado",
-  },
-  {
-    value: "pending",
-    label: "Pendiente",
-  },
-  {
-    value: "cancel",
-    label: "Cancelado",
-  },
-  {
-    value: "paid",
-    label: "Abonado",
-  },
-  {
-    value: "partially_paid",
-    label: "Señado",
-  },
-  {
-    value: "marriage",
-    label: "Casamiento",
-  },
-  {
-    value: "corporate",
-    label: "Corporativo",
-  },
-  {
-    value: "fifteen_birthday",
-    label: "Cumpleaños XV",
-  },
-  {
-    value: "birthday",
-    label: "Cumpleaños",
-  },
-  {
-    value: "other",
-    label: "Otros",
-  },
+const filterByStatus: FilterOption[] = [
+  { value: "confirm", label: "Confirmado" },
+  { value: "pending", label: "Pendiente" },
+  { value: "cancel", label: "Cancelado" },
+  { value: "paid", label: "Abonado" },
+  { value: "partially_paid", label: "Señado" },
+  { value: "marriage", label: "Casamiento" },
+  { value: "corporate", label: "Corporativo" },
+  { value: "fifteen_party", label: "Cumpleaños XV" },
+  { value: "birthday", label: "Cumpleaños" },
+  { value: "other", label: "Otros" },
 ];
+
+// Función auxiliar para filtrar reservas
+function filterBookings<
+  T extends {
+    client?: { name?: string } | null;
+    booking_status: string;
+    payment_status: string;
+    event_type: string;
+  }
+>(bookings: T[], nameFilter: string, statusFilter: string): T[] {
+  return bookings.filter((booking) => {
+    // Filtro por nombre
+    const matchesName =
+      !nameFilter ||
+      booking.client?.name?.toLowerCase().includes(nameFilter.toLowerCase());
+
+    // Filtro por estado
+    const matchesStatus =
+      !statusFilter ||
+      booking.booking_status === statusFilter ||
+      booking.payment_status === statusFilter ||
+      booking.event_type === statusFilter;
+
+    return matchesName && matchesStatus;
+  });
+}
 
 export default function Bookings() {
   const { data, isLoading } = useGetBookings();
   const [filterByName, setFilterByName] = useState("");
-  const [value, setValue] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil((data?.length ?? 0) / 5);
-  const limit = 5;
-  const pages = [];
-  for (let i = 1; i <= totalPages; i++) {
-    pages.push(i);
-  }
+  const [statusValue, setStatusValue] = useState("");
 
-  const lastPostIndex = currentPage * limit;
-  const firstPostIndex = lastPostIndex - limit;
-  const currentPosts = data
-    ?.sort((a, b) =>
+  // Ordenar y filtrar datos
+  const sortedData = useMemo(() => {
+    if (!data) return [];
+    return [...data].sort((a, b) =>
       a.event_date < b.event_date ? 1 : a.event_date > b.event_date ? -1 : 0
-    )
-    .slice(firstPostIndex, lastPostIndex);
+    );
+  }, [data]);
+
+  // Aplicar filtros
+  const filteredData = useMemo(() => {
+    return filterBookings(sortedData, filterByName, statusValue);
+  }, [sortedData, filterByName, statusValue]);
+
+  // Usar hook de paginación
+  const {
+    currentPage,
+    setCurrentPage,
+    pages,
+    currentItems,
+    goToNextPage,
+    goToPrevPage,
+  } = usePagination({ data: filteredData, limit: 5 });
 
   if (isLoading) return <Spinner />;
 
+  // Si hay filtro activo, mostrar todos los resultados filtrados; si no, usar paginación
+  const displayData = filterByName || statusValue ? filteredData : currentItems;
+
   return (
     <CategoryLayout title="Reservas">
-      <Filter
-        filterByName={filterByName}
-        filterByStatus={filterByStatus}
-        setFilterByName={setFilterByName}
-        value={value}
-        setValue={setValue}
-      />
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableData>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <Filter
+          filterByName={filterByName}
+          filterByStatus={filterByStatus}
+          setFilterByName={setFilterByName}
+          value={statusValue}
+          setValue={setStatusValue}
+          className="sm:flex-1 sm:max-w-none"
+        />
+        <AddButton navigateTo="/reservas/reserva/agendar" />
+      </div>
+
+      {filteredData.length > 0 ? (
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableHeaderData className="w-10">#</TableHeaderData>
+              <TableHeaderData>Cliente</TableHeaderData>
+              <TableHeaderData>Contacto</TableHeaderData>
+              <TableHeaderData>Organización</TableHeaderData>
+              <TableHeaderData>Fecha</TableHeaderData>
+              <TableHeaderData className="hidden lg:table-cell">Tipo</TableHeaderData>
+              <TableHeaderData>Ubicación</TableHeaderData>
+              <TableHeaderData>Estado</TableHeaderData>
+              <TableHeaderData>Estado pago</TableHeaderData>
+              <TableHeaderData>Precio</TableHeaderData>
+              <TableHeaderData className="text-center">Acciones</TableHeaderData>
+            </TableHead>
+            <TableBody>
+              {displayData.map((booking, index) => (
+                <BookingRow key={booking.id} booking={booking} index={index} />
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      ) : (
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/30 py-16 text-center">
+          <CalendarRange className="mb-3 h-12 w-12 text-muted-foreground" />
+          <p className="text-lg font-medium text-foreground">
+            {filterByName || statusValue
+              ? "No hay reservas con esos filtros"
+              : "Aún no hay reservas"}
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {filterByName || statusValue
+              ? "Prueba cambiando o limpiando los filtros."
+              : "Agenda la primera reserva para comenzar."}
+          </p>
+          {!filterByName && !statusValue && (
+            <div className="mt-4">
               <AddButton navigateTo="/reservas/reserva/agendar" />
-            </TableData>
-            <TableData>Cliente</TableData>
-            <TableData>Contacto</TableData>
-            <TableData>Organizacion</TableData>
-            <TableData>Fecha</TableData>
-            <TableData className="hidden lg:table-cell">Tipo</TableData>
-            <TableData>Ubicacion</TableData>
-            <TableData>Estado</TableData>
-            <TableData>Estado pago</TableData>
-            <TableData>Precio</TableData>
-            <TableData>Acciones</TableData>
-          </TableHead>
-          <TableBody>
-            {(filterByName ? data : currentPosts)
-              ?.filter((item) => {
-                return filterByName.toLowerCase() === ""
-                  ? item
-                  : item.client?.name
-                      ?.toLowerCase()
-                      .includes(filterByName.toLowerCase());
-              })
-              .map((booking, index) =>
-                value ? (
-                  booking.booking_status === value ? (
-                    <BookingRow key={index} booking={booking} index={index} />
-                  ) : booking.payment_status === value ? (
-                    <BookingRow key={index} booking={booking} index={index} />
-                  ) : booking.event_type === value ? (
-                    <BookingRow key={index} booking={booking} index={index} />
-                  ) : (
-                    ""
-                  )
-                ) : (
-                  <BookingRow key={index} booking={booking} index={index} />
-                )
-              )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      {/* {Check if the data is empty and show a message} */}
-      {data?.length === 0 && (
-        <div className="text-2xl text-center mt-4">Agenda una Reserva!!</div>
+            </div>
+          )}
+        </div>
       )}
-      {/* Check if the data is more than the limit and show pagination */}
-      {(data?.length ?? 0) > limit && (
-        <Pagination className="w-full flex items-center mt-2">
+
+      {filteredData.length > 0 && !filterByName && !statusValue && (data?.length ?? 0) > 5 && (
+        <Pagination className="mt-4 flex w-full items-center justify-center">
           <PaginationContent>
             <PaginationItem>
-              <PaginationPrevious
-                onClick={() => {
-                  if (currentPage > 1) setCurrentPage(currentPage - 1);
-                }}
-                size={"lg"}
-              />
+              <PaginationPrevious onClick={goToPrevPage} size="default" />
             </PaginationItem>
-            {pages.map((page, index) => (
-              <PaginationItem key={index}>
+            {pages.map((page) => (
+              <PaginationItem key={page}>
                 <PaginationLink
                   onClick={() => setCurrentPage(page)}
                   isActive={currentPage === page}
-                  size={"sm"}
+                  size="default"
                 >
                   {page}
                 </PaginationLink>
               </PaginationItem>
             ))}
             <PaginationItem>
-              <PaginationNext
-                onClick={() => {
-                  if (currentPage < totalPages) setCurrentPage(currentPage + 1);
-                }}
-                size={"lg"}
-              />
+              <PaginationNext onClick={goToNextPage} size="default" />
             </PaginationItem>
           </PaginationContent>
         </Pagination>

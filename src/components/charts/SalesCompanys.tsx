@@ -1,5 +1,5 @@
-import * as React from "react";
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Building2 } from "lucide-react";
 
 import {
   Card,
@@ -16,68 +16,75 @@ import {
 } from "../ui/chart";
 import useGetEventsPerCompany from "@/hooks/useGetEventsPerCompany";
 import MiniSpinner from "../MiniSpinner";
+import { CHART_COLORS } from "@/lib/chartColors";
 
 const chartConfig = {
-  views: {
-    label: "Page Views",
-  },
-  "show Rental": {
+  showRental: {
     label: "Show Rental",
-    color: "pink",
+    color: CHART_COLORS.rose,
   },
   muzek: {
     label: "Muzek",
-    color: "lightblue",
+    color: CHART_COLORS.primary,
   },
 } satisfies ChartConfig;
 
 export default function SalesCompany() {
   const { data = [{ date: "", muzek: 0, "show Rental": 0 }], isLoading } =
     useGetEventsPerCompany();
-  const [activeChart, setActiveChart] =
-    React.useState<keyof typeof chartConfig>("show Rental");
 
   if (isLoading) return <MiniSpinner />;
 
-  const chartData = data ? [...data] : [];
+  const chartData = (data ?? []).map((item) => ({
+    date: item.date,
+    showRental: item["show Rental"],
+    muzek: item.muzek,
+  }));
 
-  const total = {
-    "show Rental": data?.reduce((acc, curr) => acc + curr["show Rental"], 0),
-    muzek: data?.reduce((acc, curr) => acc + curr["muzek"], 0),
-  };
+  const totalShowRental = chartData.reduce((acc, d) => acc + d.showRental, 0);
+  const totalMuzek = chartData.reduce((acc, d) => acc + d.muzek, 0);
 
   return (
-    <Card className="col-span-2">
-      <CardHeader className="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row">
-        <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6">
-          <CardTitle>Ventas - Muzek & Show Rental</CardTitle>
-          <CardDescription>Ventas por mes de ambas compañias</CardDescription>
+    <Card className="hover:shadow-lg transition-all duration-300">
+      <CardHeader className="border-b">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-950">
+              <Building2 className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+            </div>
+            <CardTitle className="text-lg">Eventos por Compañía</CardTitle>
+          </div>
+          <CardDescription>
+            Comparativa mensual de ambas compañías
+          </CardDescription>
         </div>
-        <div className="flex">
-          {["show Rental", "muzek"].map((key) => {
-            const chart = key as keyof typeof chartConfig;
-            return (
-              <button
-                key={chart}
-                data-active={activeChart === chart}
-                className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-6"
-                onClick={() => setActiveChart(chart)}
-              >
-                <span className="text-xs text-muted-foreground">
-                  {chartConfig[chart].label}
-                </span>
-                <span className="text-lg font-bold leading-none sm:text-3xl">
-                  {total[key as keyof typeof total].toLocaleString()}
-                </span>
-              </button>
-            );
-          })}
+        <div className="flex flex-wrap gap-6 pt-4">
+          <div className="flex items-center gap-2">
+            <div
+              className="h-3 w-3 rounded-sm shrink-0"
+              style={{ backgroundColor: CHART_COLORS.rose }}
+            />
+            <span className="text-sm text-muted-foreground">Show Rental</span>
+            <span className="text-sm font-semibold tabular-nums">
+              {totalShowRental.toLocaleString()}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div
+              className="h-3 w-3 rounded-sm shrink-0"
+              style={{ backgroundColor: CHART_COLORS.primary }}
+            />
+            <span className="text-sm text-muted-foreground">Muzek</span>
+            <span className="text-sm font-semibold tabular-nums">
+              {totalMuzek.toLocaleString()}
+            </span>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="px-2 sm:p-6">
         <ChartContainer
           config={chartConfig}
-          className="aspect-auto h-[250px] w-full"
+          className="aspect-auto h-[280px] w-full"
         >
           <BarChart
             accessibilityLayer
@@ -85,15 +92,22 @@ export default function SalesCompany() {
             margin={{
               left: 12,
               right: 12,
+              top: 12,
+              bottom: 12,
             }}
           >
-            <CartesianGrid vertical={false} />
+            <CartesianGrid
+              vertical={false}
+              strokeDasharray="3 3"
+              stroke="rgba(148,163,184,0.4)"
+            />
             <XAxis
               dataKey="date"
               tickLine={false}
               axisLine={false}
               tickMargin={8}
               minTickGap={32}
+              className="text-xs"
               tickFormatter={(value) => {
                 const date = new Date(value);
                 return date.toLocaleDateString("es-ES", {
@@ -102,11 +116,18 @@ export default function SalesCompany() {
                 });
               }}
             />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              className="text-xs"
+              width={40}
+            />
             <ChartTooltip
+              cursor={{ fill: "rgba(148,163,184,0.15)" }}
               content={
                 <ChartTooltipContent
-                  className="w-[150px]"
-                  nameKey="views"
+                  className="w-[180px]"
                   labelFormatter={(value) => {
                     return new Date(value).toLocaleDateString("es-ES", {
                       day: "numeric",
@@ -117,7 +138,18 @@ export default function SalesCompany() {
                 />
               }
             />
-            <Bar dataKey={activeChart} fill={`var(--color-${activeChart})`} />
+            <Bar
+              dataKey="showRental"
+              name="Show Rental"
+              fill={CHART_COLORS.rose}
+              radius={[4, 4, 0, 0]}
+            />
+            <Bar
+              dataKey="muzek"
+              name="Muzek"
+              fill={CHART_COLORS.primary}
+              radius={[4, 4, 0, 0]}
+            />
           </BarChart>
         </ChartContainer>
       </CardContent>

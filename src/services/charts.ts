@@ -27,8 +27,6 @@ export async function getYearlySales(year: number) {
   });
   if (error) throw new Error("Error fetching yearly sales data.");
 
-  console.log(data);
-
   return data;
 }
 
