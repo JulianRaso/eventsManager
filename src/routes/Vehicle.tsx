@@ -35,7 +35,7 @@ export default function Vehicle() {
   const navigate = useNavigate();
   const [status, setStatus] = useState("");
   const [lastServiceDisplay, setLastServiceDisplay] = useState("");
-  const { register, reset, handleSubmit, setValue, watch } = useForm<vehicleProps>();
+  const { register, reset, handleSubmit, setValue } = useForm<vehicleProps>();
   const { isPending, addVehicle } = useAddVehicle();
   const { isUpdating, updateVehicle } = useUpdateVehicle();
   const vehicle = Number(useParams().vehicleId);

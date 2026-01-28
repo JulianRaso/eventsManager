@@ -58,15 +58,12 @@ const filterByCategory = [
   { value: "maintenance", label: "En Mantenimiento" },
 ];
 
-// Función auxiliar para filtrar vehículos
-function filterVehicles(
-  vehicles: Array<{
-    brand?: string;
-    status: string | null;
-  }>,
+// Función auxiliar para filtrar vehículos (genérica para conservar el tipo completo)
+function filterVehicles<T extends { brand?: string; status: string | null }>(
+  vehicles: T[],
   nameFilter: string,
   statusFilter: string
-) {
+): T[] {
   return vehicles.filter((vehicle) => {
     // Filtro por nombre
     const matchesName =
@@ -156,7 +153,7 @@ export default function Transport() {
                   <TableData>
                     {
                       statusTypes[
-                        vehicle.status != null ? vehicle.status : "null"
+                        (vehicle.status != null ? vehicle.status : "null") as keyof typeof statusTypes
                       ].es
                     }
                   </TableData>

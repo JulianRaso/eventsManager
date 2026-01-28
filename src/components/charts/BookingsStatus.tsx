@@ -42,7 +42,8 @@ export default function BookingsStatus() {
 
   if (isLoading) return <MiniSpinner />;
 
-  const chartData = data?.map((item) => ({
+  type StatusItem = { booking_status: string; total: number };
+  const chartData = data?.map((item: StatusItem) => ({
     eventStatus:
       item.booking_status === "confirm"
         ? "Confirmados"
@@ -58,7 +59,10 @@ export default function BookingsStatus() {
         : CHART_COLORS.danger,
   }));
 
-  const totalVisitors = chartData.reduce((acc, curr) => acc + curr.quantity, 0);
+  const totalVisitors = chartData.reduce(
+    (acc: number, curr: { quantity: number }) => acc + curr.quantity,
+    0
+  );
 
   return (
     <Card className="flex flex-col hover:shadow-lg transition-all duration-300">

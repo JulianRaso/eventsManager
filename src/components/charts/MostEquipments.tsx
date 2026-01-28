@@ -29,19 +29,25 @@ export function MostEquipments() {
 
   const colors = [...CHART_PALETTE];
 
-  const chartData = data?.map((item, index) => ({
+  type EquipmentItem = { name: string; total: number };
+  type ChartDataEntry = { equipment: string; quantity: number; fill: string };
+
+  const chartData = data?.map((item: EquipmentItem, index: number): ChartDataEntry => ({
     equipment: item.name,
     quantity: item.total,
     fill: colors[index % colors.length],
   }));
 
-  const chartConfig: ChartConfig = data?.reduce((acc, item, index) => {
-    acc[item.name] = {
-      label: item.name,
-      color: colors[index % colors.length],
-    };
-    return acc;
-  }, {} as ChartConfig);
+  const chartConfig: ChartConfig = data?.reduce(
+    (acc: ChartConfig, item: EquipmentItem, index: number) => {
+      acc[item.name] = {
+        label: item.name,
+        color: colors[index % colors.length],
+      };
+      return acc;
+    },
+    {} as ChartConfig
+  );
 
   return (
     <Card className="flex flex-col hover:shadow-lg transition-all duration-300">
@@ -72,7 +78,7 @@ export function MostEquipments() {
               strokeWidth={2}
               stroke="transparent"
             >
-              {chartData?.map((entry, index) => (
+              {chartData?.map((entry: ChartDataEntry, index: number) => (
                 <Cell key={`cell-${index}`} fill={entry.fill} />
               ))}
             </Pie>

@@ -31,7 +31,20 @@ const paidTypes = {
     es: "Cheque",
     en: "Check",
   },
-};
+} as const;
+
+type PaidWithKey = keyof typeof paidTypes;
+
+interface InvoiceRow {
+  id: number;
+  name: string;
+  quantity: number;
+  amount: number;
+  paid_with: PaidWithKey;
+  paid_by: string;
+  created_at?: string;
+  booking_id?: number;
+}
 
 export default function Bill() {
   const { data, isLoading } = useGetBills();
@@ -61,8 +74,8 @@ export default function Bill() {
             </TableHead>
             <TableBody>
               {data?.length != 0 &&
-                data?.map((invoice, index) => (
-                  <TableRow key={index}>
+                (data as InvoiceRow[])?.map((invoice: InvoiceRow, index: number) => (
+                  <TableRow key={invoice.id}>
                     <TableData>{index + 1}</TableData>
                     <TableData>{invoice.name}</TableData>
                     <TableData>{invoice.quantity}</TableData>
@@ -72,7 +85,7 @@ export default function Bill() {
                     </TableData>
                     <TableData>{invoice.paid_by}</TableData>
                     <TableData>{paidTypes[invoice.paid_with].es}</TableData>
-                    <TableData>{formatDateTime(invoice.created_at)}</TableData>
+                    <TableData>{invoice.created_at ? formatDateTime(invoice.created_at) : "-"}</TableData>
                     <TableData>
                       <TableButtons
                         id={invoice.id}

@@ -35,14 +35,23 @@ export default function SalesCompany() {
 
   if (isLoading) return <MiniSpinner />;
 
-  const chartData = (data ?? []).map((item) => ({
+  type CompanyDataItem = { date: string; muzek: number; "show Rental": number };
+  type ChartDataItem = { date: string; showRental: number; muzek: number };
+
+  const chartData = (data ?? []).map((item: CompanyDataItem): ChartDataItem => ({
     date: item.date,
     showRental: item["show Rental"],
     muzek: item.muzek,
   }));
 
-  const totalShowRental = chartData.reduce((acc, d) => acc + d.showRental, 0);
-  const totalMuzek = chartData.reduce((acc, d) => acc + d.muzek, 0);
+  const totalShowRental = chartData.reduce(
+    (acc: number, d: ChartDataItem) => acc + d.showRental,
+    0
+  );
+  const totalMuzek = chartData.reduce(
+    (acc: number, d: ChartDataItem) => acc + d.muzek,
+    0
+  );
 
   return (
     <Card className="hover:shadow-lg transition-all duration-300">
