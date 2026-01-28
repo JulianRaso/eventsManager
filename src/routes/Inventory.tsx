@@ -88,7 +88,7 @@ export default function Inventory() {
           setValue={setCategoryValue}
           className="sm:flex-1 sm:max-w-none"
         />
-        <AddButton navigateTo="/inventario/agregar" />
+        <AddButton navigateTo="/inventario/agregar" label="Nuevo elemento" />
       </div>
 
       {filteredData.length > 0 ? (
@@ -142,7 +142,7 @@ export default function Inventory() {
           </p>
           {!filterByName && (
             <div className="mt-4">
-              <AddButton navigateTo="/inventario/agregar" />
+              <AddButton navigateTo="/inventario/agregar" label="Nuevo elemento" />
             </div>
           )}
         </div>

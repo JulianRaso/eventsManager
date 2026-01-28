@@ -121,7 +121,7 @@ export default function Transport() {
           setValue={setValue}
           className="sm:flex-1 sm:max-w-none"
         />
-        <AddButton navigateTo="/transporte/agregar" />
+        <AddButton navigateTo="/transporte/agregar" label="Nuevo vehículo" />
       </div>
 
       {filteredData.length > 0 ? (
@@ -191,7 +191,7 @@ export default function Transport() {
           </p>
           {!filterByName && !value && (
             <div className="mt-4">
-              <AddButton navigateTo="/transporte/agregar" />
+              <AddButton navigateTo="/transporte/agregar" label="Nuevo vehículo" />
             </div>
           )}
         </div>

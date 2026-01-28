@@ -48,7 +48,7 @@ export default function Bill() {
           <Table>
             <TableHead>
               <TableData>
-                <AddButton navigateTo="/gastos/agregar" />
+                <AddButton navigateTo="/gastos/agregar" label="Nuevo gasto" />
               </TableData>
               <TableData>Nombre</TableData>
               <TableData>Cantidad</TableData>

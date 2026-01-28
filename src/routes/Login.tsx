@@ -2,9 +2,16 @@ import { useForm } from "react-hook-form";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/Input";
 import useLogin from "../hooks/useLogin";
+import companyLogo from "../assets/ShowRental.png";
+import { cn } from "../lib/utils";
 
 export default function Login() {
-  const { register, reset, handleSubmit } = useForm<{
+  const {
+    register,
+    reset,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<{
     email: string;
     password: string;
   }>();
@@ -16,58 +23,90 @@ export default function Login() {
   }
 
   return (
-    <div className="h-dvh w-dvw flex items-center justify-center bg-gray-50">
-      <div className="border-2 p-8 rounded-2xl bg-white shadow-lg">
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="flex flex-col gap-6">
-            <div className="text-lg font-semibold flex items-center gap-1">
-              Iniciar sesión
-              <p className="text-red-500">*</p>
+    <div className="flex min-h-dvh w-full items-center justify-center bg-muted/30 px-4 py-8">
+      <div className="w-full max-w-md">
+        <div className="rounded-xl border border-border bg-card p-6 shadow-lg sm:p-8 lg:p-10">
+          {/* Logo y título */}
+          <div className="mb-8 flex flex-col items-center gap-4">
+            <div className="flex h-20 w-20 overflow-hidden rounded-xl border-2 border-border shadow-md">
+              <img
+                src={companyLogo}
+                alt="Show Rental"
+                className="h-full w-full object-cover"
+              />
             </div>
+            <div className="text-center">
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+                Iniciar sesión
+              </h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Ingresá con tu correo y contraseña
+              </p>
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
             <div className="flex flex-col gap-2">
-              <label htmlFor="email" className="text-sm font-semibold">
-                Correo electrónico
+              <label htmlFor="email" className="text-sm font-medium text-foreground">
+                Correo electrónico <span className="text-destructive">*</span>
               </label>
               <Input
                 type="email"
                 id="email"
-                {...register("email")}
-                className="border-2 border-gray-300 rounded-md p-2"
-                required
+                placeholder="tu@email.com"
+                autoComplete="email"
+                {...register("email", {
+                  required: "El correo es requerido",
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: "Correo electrónico inválido",
+                  },
+                })}
+                className={cn(errors.email && "border-destructive focus-visible:ring-destructive/20")}
               />
+              {errors.email && (
+                <p className="text-xs text-destructive">{errors.email.message}</p>
+              )}
             </div>
+
             <div className="flex flex-col gap-2">
-              <label htmlFor="password" className="text-sm font-semibold">
-                Contraseña
+              <label htmlFor="password" className="text-sm font-medium text-foreground">
+                Contraseña <span className="text-destructive">*</span>
               </label>
               <Input
                 type="password"
                 id="password"
-                {...register("password")}
-                className="border-2 border-gray-300 rounded-md p-2"
-                required
+                placeholder="••••••••"
+                autoComplete="current-password"
+                {...register("password", {
+                  required: "La contraseña es requerida",
+                })}
+                className={cn(errors.password && "border-destructive focus-visible:ring-destructive/20")}
               />
+              {errors.password && (
+                <p className="text-xs text-destructive">{errors.password.message}</p>
+              )}
             </div>
-            <div className="flex flex-col gap-2">
+
+            <div className="mt-2 flex flex-col gap-3 sm:flex-row-reverse sm:gap-2">
               <Button
                 type="submit"
-                className="bg-blue-500 text-white font-semibold py-2 rounded-md hover:bg-blue-600 transition duration-200"
+                className="flex-1"
                 disabled={isPending}
               >
-                Iniciar sesión
+                {isPending ? "Entrando..." : "Iniciar sesión"}
               </Button>
-            </div>
-            <div className="flex flex-col gap-2">
               <Button
                 type="button"
-                className="bg-gray-200 text-gray-700 font-semibold py-2 rounded-md hover:bg-gray-300 transition duration-200"
+                variant="outline"
+                className="flex-1"
                 onClick={() => reset()}
               >
                 Limpiar campos
               </Button>
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );

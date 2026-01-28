@@ -107,7 +107,7 @@ export default function Bookings() {
           setValue={setStatusValue}
           className="sm:flex-1 sm:max-w-none"
         />
-        <AddButton navigateTo="/reservas/reserva/agendar" />
+        <AddButton navigateTo="/reservas/reserva/agendar" label="Nueva reserva" />
       </div>
 
       {filteredData.length > 0 ? (
@@ -148,7 +148,7 @@ export default function Bookings() {
           </p>
           {!filterByName && !statusValue && (
             <div className="mt-4">
-              <AddButton navigateTo="/reservas/reserva/agendar" />
+              <AddButton navigateTo="/reservas/reserva/agendar" label="Nueva reserva" />
             </div>
           )}
         </div>
