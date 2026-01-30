@@ -14,7 +14,7 @@ interface Booking {
   event_date: string;
   payment_status: string;
   place: string;
-  event_type: string;
+  event_type: "other" | "fifteen_party" | "corporate" | "marriage" | "birthday";
   price: number;
 }
 
