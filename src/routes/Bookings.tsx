@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { CalendarRange } from "lucide-react";
 import AddButton from "../components/AddButton";
+import BookingsMobileList from "../components/Bookings/BookingsMobileList";
 import BookingRow from "../components/Bookings/BookingRow";
 import CategoryLayout from "../components/CategoryLayout";
 import Filter from "../components/Filter";
@@ -21,6 +22,7 @@ import {
   PaginationPrevious,
 } from "../components/ui/pagination";
 import useGetBookings from "../hooks/useGetBookings";
+import { useMediaQuery } from "../hooks/useMediaQuery";
 import usePagination from "../hooks/usePagination";
 import { FilterOption } from "../types";
 
@@ -64,6 +66,7 @@ function filterBookings<
 }
 
 export default function Bookings() {
+  const isDesktop = useMediaQuery("(min-width: 768px)");
   const { data, isLoading } = useGetBookings();
   const [filterByName, setFilterByName] = useState("");
   const [statusValue, setStatusValue] = useState("");
@@ -111,28 +114,32 @@ export default function Bookings() {
       </div>
 
       {filteredData.length > 0 ? (
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableHeaderData className="w-10">#</TableHeaderData>
-              <TableHeaderData>Cliente</TableHeaderData>
-              <TableHeaderData>Contacto</TableHeaderData>
-              <TableHeaderData>Organización</TableHeaderData>
-              <TableHeaderData>Fecha</TableHeaderData>
-              <TableHeaderData className="hidden lg:table-cell">Tipo</TableHeaderData>
-              <TableHeaderData>Ubicación</TableHeaderData>
-              <TableHeaderData>Estado</TableHeaderData>
-              <TableHeaderData>Estado pago</TableHeaderData>
-              <TableHeaderData>Precio</TableHeaderData>
-              <TableHeaderData className="text-center">Acciones</TableHeaderData>
-            </TableHead>
-            <TableBody>
-              {displayData.map((booking, index) => (
-                <BookingRow key={booking.id} booking={booking} index={index} />
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+        isDesktop ? (
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableHeaderData className="w-10">#</TableHeaderData>
+                <TableHeaderData>Cliente</TableHeaderData>
+                <TableHeaderData>Contacto</TableHeaderData>
+                <TableHeaderData>Organización</TableHeaderData>
+                <TableHeaderData>Fecha</TableHeaderData>
+                <TableHeaderData className="hidden lg:table-cell">Tipo</TableHeaderData>
+                <TableHeaderData>Ubicación</TableHeaderData>
+                <TableHeaderData>Estado</TableHeaderData>
+                <TableHeaderData>Estado pago</TableHeaderData>
+                <TableHeaderData>Precio</TableHeaderData>
+                <TableHeaderData className="text-center">Acciones</TableHeaderData>
+              </TableHead>
+              <TableBody>
+                {displayData.map((booking, index) => (
+                  <BookingRow key={booking.id} booking={booking} index={index} />
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        ) : (
+          <BookingsMobileList bookings={displayData} />
+        )
       ) : (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/30 py-16 text-center">
           <CalendarRange className="mb-3 h-12 w-12 text-muted-foreground" />

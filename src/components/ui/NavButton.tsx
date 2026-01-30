@@ -6,6 +6,7 @@ interface NavButtonProps {
   display: boolean;
   icon: ReactNode;
   description: string;
+  to?: string;
   className?: string;
 }
 
@@ -13,21 +14,24 @@ export default function NavButton({
   display,
   icon,
   description,
+  to: toProp,
   className,
 }: NavButtonProps) {
   const currLocation = useLocation().pathname.split("/");
-  const path = description
-    ?.toLowerCase()
-    .replace(/\s/g, "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+  const path =
+    toProp ??
+    description
+      ?.toLowerCase()
+      .replace(/\s/g, "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
   const isActive =
     currLocation[1] === path ||
     (path === "dashboard" && (currLocation[1] === "dashboard" || currLocation[1] === ""));
 
   return (
     <NavLink
-      to={path}
+      to={path.startsWith("/") ? path : `/${path}`}
       className={cn(
         className,
         "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
