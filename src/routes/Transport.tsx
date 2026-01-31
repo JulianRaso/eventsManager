@@ -166,6 +166,7 @@ export default function Transport() {
                       onDelete={() => {
                         deleteTransport(vehicle.id);
                       }}
+                      deleteLabel="este vehículo"
                     />
                   </TableData>
                 </TableRow>

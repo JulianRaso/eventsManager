@@ -109,6 +109,7 @@ export default function BookingCard({ booking }: BookingCardProps) {
           route="/reservas/reserva"
           isDeleting={isDeleting}
           onDelete={deleteBooking}
+          deleteLabel="esta reserva"
         />
       </div>
     </article>

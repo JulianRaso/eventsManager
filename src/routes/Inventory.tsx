@@ -120,6 +120,7 @@ export default function Inventory() {
                       route="/inventario/editar"
                       isDeleting={isDelete}
                       onDelete={deleteStock}
+                      deleteLabel="este elemento"
                     />
                   </TableData>
                 </TableRow>

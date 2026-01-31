@@ -92,6 +92,7 @@ export default function Bill() {
                         route="/gastos/editar"
                         isDeleting={isDeleting}
                         onDelete={deleteInvoice}
+                        deleteLabel="este gasto"
                       />
                     </TableData>
                   </TableRow>

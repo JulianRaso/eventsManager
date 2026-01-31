@@ -113,6 +113,7 @@ export default function BookingRow({ booking, index }: bookingProps) {
           route="/reservas/reserva"
           isDeleting={isDeleting}
           onDelete={deleteBooking}
+          deleteLabel="esta reserva"
         />
       </TableData>
     </TableRow>
