@@ -1,14 +1,27 @@
 import { useState } from "react";
+import { ChevronRight } from "lucide-react";
 import { GoSidebarCollapse, GoSidebarExpand } from "react-icons/go";
 import companyLogo from "../assets/ShowRental.png";
 import NavButton from "./ui/NavButton";
 import UserSection from "./UserSection";
-import { navItems } from "../config/navItems";
+import { navItems, isNavGroup } from "../config/navItems";
 import { cn } from "../lib/utils";
+
+function getInitialOpenGroups(): Record<string, boolean> {
+  return Object.fromEntries(
+    navItems.filter(isNavGroup).map((g) => [g.groupLabel, true])
+  );
+}
 
 export default function Sidebar() {
   const companyName = "Show Rental";
   const [display, setDisplay] = useState(true);
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(
+    getInitialOpenGroups
+  );
+
+  const toggleGroup = (label: string) =>
+    setOpenGroups((prev) => ({ ...prev, [label]: !prev[label] }));
 
   return (
     <aside
@@ -17,8 +30,8 @@ export default function Sidebar() {
         display ? "w-64 min-w-64" : "w-20 min-w-20"
       )}
     >
-      {/* Header: toggle + logo */}
       <div className="flex flex-col gap-2 p-3">
+        {/* Toggle button */}
         <div
           className={cn(
             "flex w-full items-center transition-all duration-300",
@@ -39,6 +52,7 @@ export default function Sidebar() {
           </button>
         </div>
 
+        {/* Logo */}
         <div
           className={cn(
             "flex flex-col items-center gap-3 transition-all duration-300",
@@ -60,7 +74,9 @@ export default function Sidebar() {
           <span
             className={cn(
               "text-center text-lg font-bold tracking-tight text-slate-100 transition-all duration-300",
-              display ? "max-h-8 overflow-visible" : "max-h-0 overflow-hidden opacity-0"
+              display
+                ? "max-h-8 overflow-visible"
+                : "max-h-0 overflow-hidden opacity-0"
             )}
           >
             {companyName}
@@ -75,16 +91,71 @@ export default function Sidebar() {
           )}
           aria-label="Navegación principal"
         >
-          {navItems.map((item) => (
-            <NavButton
-              key={item.path}
-              display={display}
-              icon={item.icon}
-              description={item.description}
-              to={item.path}
-              className={item.hidden ? "hidden" : undefined}
-            />
-          ))}
+          {navItems.map((entry) =>
+            isNavGroup(entry) ? (
+              <div key={entry.groupLabel}>
+                {display ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => toggleGroup(entry.groupLabel)}
+                      className="mt-3 flex w-full items-center justify-between rounded-md px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500 transition-colors hover:text-slate-300"
+                    >
+                      <span>{entry.groupLabel}</span>
+                      <ChevronRight
+                        className={cn(
+                          "h-3.5 w-3.5 transition-transform duration-200",
+                          openGroups[entry.groupLabel] && "rotate-90"
+                        )}
+                      />
+                    </button>
+                    <div
+                      className={cn(
+                        "overflow-hidden transition-all duration-200",
+                        openGroups[entry.groupLabel] ? "max-h-96" : "max-h-0"
+                      )}
+                    >
+                      {entry.items
+                        .filter((item) => !item.hidden)
+                        .map((item) => (
+                          <NavButton
+                            key={item.path}
+                            display={display}
+                            icon={item.icon}
+                            description={item.description}
+                            to={item.path}
+                          />
+                        ))}
+                    </div>
+                  </>
+                ) : (
+                  // Collapsed: solo íconos sin encabezado de grupo
+                  <div className="mt-3 flex flex-col gap-1 border-t border-slate-700/50 pt-3">
+                    {entry.items
+                      .filter((item) => !item.hidden)
+                      .map((item) => (
+                        <NavButton
+                          key={item.path}
+                          display={display}
+                          icon={item.icon}
+                          description={item.description}
+                          to={item.path}
+                        />
+                      ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <NavButton
+                key={entry.path}
+                display={display}
+                icon={entry.icon}
+                description={entry.description}
+                to={entry.path}
+                className={entry.hidden ? "hidden" : undefined}
+              />
+            )
+          )}
         </nav>
       </div>
 

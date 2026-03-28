@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+import { ArrowRightLeft, Banknote, CreditCard, DollarSign } from "lucide-react";
 import AddButton from "@/components/AddButton";
 import CategoryLayout from "@/components/CategoryLayout";
 import { formatDateTime } from "@/components/formatDate";
@@ -11,8 +13,10 @@ import {
   TableRow,
 } from "@/components/Table";
 import TableButtons from "@/components/TableButtons";
+import { KPICard } from "@/components/ui/KPICard";
 import { useDeleteInvoice } from "@/hooks/useDeleteInvoice";
 import useGetBills from "@/hooks/UseGetBills";
+import { formatCurrency } from "@/utils/formatCurrency";
 
 const paidTypes = {
   cash: {
@@ -50,6 +54,18 @@ export default function Bill() {
   const { data, isLoading } = useGetBills();
   const { isDeleting, deleteInvoice } = useDeleteInvoice();
 
+  const totals = useMemo(() => {
+    const bills = (data as InvoiceRow[]) ?? [];
+    const sum = (filter: (b: InvoiceRow) => boolean) =>
+      bills.filter(filter).reduce((acc, b) => acc + (b.amount ?? 0), 0);
+    return {
+      total: sum(() => true),
+      cash: sum((b) => b.paid_with === "cash"),
+      transfer: sum((b) => b.paid_with === "transfer"),
+      card: sum((b) => b.paid_with === "card"),
+    };
+  }, [data]);
+
   if (isLoading) {
     return <Spinner />;
   }
@@ -57,6 +73,32 @@ export default function Bill() {
   return (
     <div className="w-full h-full flex items-center justify-center">
       <CategoryLayout title="Gastos">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
+          <KPICard
+            title="Total"
+            value={`$${formatCurrency(totals.total)}`}
+            icon={DollarSign}
+            variant="primary"
+          />
+          <KPICard
+            title="Efectivo"
+            value={`$${formatCurrency(totals.cash)}`}
+            icon={Banknote}
+            variant="success"
+          />
+          <KPICard
+            title="Transferencia"
+            value={`$${formatCurrency(totals.transfer)}`}
+            icon={ArrowRightLeft}
+            variant="info"
+          />
+          <KPICard
+            title="Tarjeta"
+            value={`$${formatCurrency(totals.card)}`}
+            icon={CreditCard}
+            variant="warning"
+          />
+        </div>
         <TableContainer>
           <Table>
             <TableHead>

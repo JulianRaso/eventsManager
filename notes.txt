@@ -1,0 +1,2 @@
+-- Todas las tablas están creadas y up to date.
+-- Referencia: src/types/database.types.ts (generado con supabase gen types)

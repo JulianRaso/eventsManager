@@ -9,6 +9,7 @@ import Bookings from "./routes/Bookings";
 import Dashboard from "./routes/Dashboard";
 import Equipment from "./routes/Equipment";
 import HumandResource from "./routes/HumandResource";
+import PersonalForm from "./routes/PersonalForm";
 import Inventory from "./routes/Inventory";
 import Layout from "./routes/Layout";
 import Login from "./routes/Login";
@@ -18,6 +19,24 @@ import Transport from "./routes/Transport";
 import Vehicle from "./routes/Vehicle";
 import Invoice from "./routes/Invoice";
 import ClientInvoice from "./routes/ClientInvoice";
+import Presupuesto from "./routes/Presupuesto";
+import ComingSoon from "./components/ComingSoon";
+import Clientes from "./routes/Clientes";
+import ClienteForm from "./routes/ClienteForm";
+import CuentaCorrientes from "./routes/CuentaCorrientes";
+import ArticulosVendidos from "./routes/ArticulosVendidos";
+import ParametrizacionContable from "./routes/ParametrizacionContable";
+import CuentasContables from "./routes/CuentasContables";
+import AsientoTeorico from "./routes/AsientoTeorico";
+import Proveedores from "./routes/Proveedores";
+import OrdenCompra from "./routes/OrdenCompra";
+import CompraDetalle from "./routes/CompraDetalle";
+import CuentaProveedores from "./routes/CuentaProveedores";
+import Ingresos from "./routes/Ingresos";
+import Recaudacion from "./routes/Recaudacion";
+import Caja from "./routes/Caja";
+import EventoDetalle from "./routes/EventoDetalle";
+import Disponibilidad from "./routes/Disponibilidad";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -60,8 +79,38 @@ function App() {
           </Route>
 
           <Route path="/recibo/:invoiceID" element={<ClientInvoice />} />
+          <Route path="/presupuesto/:bookingId" element={<Presupuesto />} />
+          <Route path="/evento/:bookingId" element={<EventoDetalle />} />
+          <Route path="/disponibilidad" element={<Disponibilidad />} />
 
+          {/* Ventas */}
+          <Route path="/clientes" element={<Clientes />} />
+          <Route path="/clientes/agregar" element={<ClienteForm />} />
+          <Route path="/clientes/editar/:dni" element={<ClienteForm />} />
+          <Route path="/cuenta-corrientes" element={<CuentaCorrientes />} />
+          <Route path="/articulos-vendidos" element={<ArticulosVendidos />} />
           <Route path="/personal" element={<HumandResource />} />
+          <Route path="/personal/agregar" element={<PersonalForm />} />
+          <Route path="/personal/editar/:personalId" element={<PersonalForm />} />
+
+          {/* Compras */}
+          <Route path="/proveedores" element={<Proveedores />} />
+          <Route path="/compras" element={<OrdenCompra />} />
+          <Route path="/compras/:id" element={<CompraDetalle />} />
+          <Route path="/cuenta-proveedores" element={<CuentaProveedores />} />
+
+          {/* Stock */}
+          <Route path="/parametrizacion-contable" element={<ParametrizacionContable />} />
+          <Route path="/informe-uso" element={<ComingSoon title="Informe de uso" />} />
+
+          {/* Contabilidad */}
+          <Route path="/cuentas-contables" element={<CuentasContables />} />
+          <Route path="/asiento-teorico" element={<AsientoTeorico />} />
+          <Route path="/resultado-economico" element={<ComingSoon title="Resultado Económico" />} />
+
+          <Route path="/ingresos" element={<Ingresos />} />
+          <Route path="/recaudacion" element={<Recaudacion />} />
+          <Route path="/caja" element={<Caja />} />
 
           <Route path="/gastos" element={<Bill />} />
 

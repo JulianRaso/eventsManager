@@ -24,12 +24,11 @@ export default function useUpdateBooking() {
   const { isPending: isUpdating, mutate: updateBooking } = useMutation({
     mutationKey: ["bookings"],
     mutationFn: (booking: bookingProps) => updateBookingAPI(booking),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       toast.success("Reserva actualizada correctamente");
-      queryClient.invalidateQueries({
-        queryKey: ["bookings"],
-      });
-      navigate("/reservas");
+      queryClient.invalidateQueries({ queryKey: ["bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["bookingEvent", variables.id] });
+      navigate(`/evento/${variables.id}`);
     },
   });
 

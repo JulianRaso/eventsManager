@@ -41,6 +41,16 @@ export function formatDateTime(date: string) {
   return formatedDate;
 }
 
+/** Formatea una fecha ISO a texto completo, ej: "25 de marzo de 2026". */
+export function formatDateLong(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("es-AR", {
+    year: "numeric",
+    month: "long",
+    day: "2-digit",
+  });
+}
+
 export function formatDateCharts(yearMonth: string) {
   const [yearStr, monthStr] = yearMonth.split("-");
   const year = Number(yearStr);

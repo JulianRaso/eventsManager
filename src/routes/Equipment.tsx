@@ -5,7 +5,7 @@ import useAddStock from "../hooks/useAddStock";
 import AddLayout from "../components/AddLayout";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getCurrentStock } from "../services/stock";
+import { getCurrentInventory } from "../services/stock";
 import useUpdateStock from "../hooks/useUpdateStock";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -50,7 +50,7 @@ export default function Equipment() {
 
   useEffect(() => {
     if (isEditingSession) {
-      getCurrentStock(stockId)
+      getCurrentInventory(stockId)
         .then((res = []) => {
           if (res && res.length !== 0) {
             const { name, location, price, quantity, category, updated_by } =

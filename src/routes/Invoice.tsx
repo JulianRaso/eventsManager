@@ -5,27 +5,12 @@ import { Input } from "@/components/ui/Input";
 import { useAddInvoice } from "@/hooks/useAddInvoice";
 import useUpdateInvoice from "@/hooks/useUpdateInvoice";
 import { getInvoices } from "@/services/bill";
+import { BillType, UserData } from "@/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useParams } from "react-router-dom";
-
-type billType = {
-  id?: number;
-  name: string;
-  quantity: number;
-  paid_with: "cash" | "card" | "transfer" | "bank check";
-  paid_by: string;
-  amount: number;
-  booking_id?: number;
-  created_at?: string;
-  paid_to?: string;
-  updated_by: string;
-  cbu?: number;
-};
-
-type UserData = { email: string; user_metadata: { fullName: string } };
 
 export default function Invoice() {
   const userData = useQueryClient().getQueryData(["user"]) as UserData;
@@ -35,7 +20,7 @@ export default function Invoice() {
   };
 
   const { register, reset, handleSubmit, setValue, watch } =
-    useForm<billType>();
+    useForm<BillType>();
   const billID = Number(useParams().billId);
   const isEditingSession = Boolean(billID);
   const [isLoadingEquipment, setLoadingEquipment] = useState(
@@ -85,7 +70,7 @@ export default function Invoice() {
     return <Spinner />;
   }
 
-  function onSubmit(data: billType) {
+  function onSubmit(data: BillType) {
     const updatedBill = {
       id: billID,
       name: data.name,
@@ -111,8 +96,7 @@ export default function Invoice() {
 
     if (isEditingSession) {
       updateInvoice(updatedBill);
-    }
-    if (!isEditingSession) {
+    } else {
       addInvoice(billData);
     }
     reset();

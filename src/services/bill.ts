@@ -14,6 +14,17 @@ type billType = {
   cbu?: number;
 };
 
+export async function getBookingBills(bookingId: number) {
+  const { data, error } = await supabase
+    .from("bill")
+    .select("*")
+    .eq("booking_id", bookingId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw new Error("Error al cargar los gastos del evento");
+  return data ?? [];
+}
+
 export async function getInvoices(id?: number) {
   if (id !== undefined) {
     const { data, error } = await supabase

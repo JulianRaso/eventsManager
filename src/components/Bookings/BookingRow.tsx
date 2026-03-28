@@ -1,6 +1,6 @@
 import { useDeleteBooking } from "../../hooks/useDeleteBooking";
 import { TableData, TableRow } from "../Table";
-import TableButtons from "../TableButtons";
+import BookingActionsMenu from "./BookingActionsMenu";
 import { formatDate } from "../formatDate";
 import { cn } from "../../lib/utils";
 
@@ -108,12 +108,12 @@ export default function BookingRow({ booking, index }: bookingProps) {
         ${typeof price === "number" ? price.toLocaleString("es-AR") : price}
       </TableData>
       <TableData>
-        <TableButtons
+        <BookingActionsMenu
           id={id}
-          route="/reservas/reserva"
+          editRoute="/reservas/reserva"
+          viewRoute="/evento"
           isDeleting={isDeleting}
           onDelete={deleteBooking}
-          deleteLabel="esta reserva"
         />
       </TableData>
     </TableRow>

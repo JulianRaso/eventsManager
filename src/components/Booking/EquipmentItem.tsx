@@ -3,15 +3,8 @@ import { TableData, TableRow } from "../Table";
 import { Button } from "../ui/button";
 import { Input } from "../ui/Input";
 import { useState } from "react";
+import type { EquipmentItem } from "../../types/Booking-typ";
 
-type EquipmentItem = {
-  id?: number;
-  booking_id: number;
-  equipment_id: number;
-  name: string;
-  quantity: number;
-  price: number;
-};
 
 type EquipmentItemProps = {
   stock: {

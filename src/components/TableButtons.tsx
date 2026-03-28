@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { Eye, FileText, Pencil, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import {
@@ -18,6 +18,10 @@ interface TableButtonsProps {
   onDelete: (id: number) => void;
   /** Texto opcional para el mensaje, ej: "esta reserva", "este gasto", "este elemento" */
   deleteLabel?: string;
+  /** Ruta base del recibo. Si se omite, el botón "Recibo" no se muestra. */
+  receiptRoute?: string;
+  /** Ruta base de la vista detalle. Si se omite, el botón "Ver" no se muestra. */
+  viewRoute?: string;
 }
 
 export default function TableButtons({
@@ -26,6 +30,8 @@ export default function TableButtons({
   isDeleting,
   onDelete,
   deleteLabel = "este elemento",
+  receiptRoute,
+  viewRoute,
 }: TableButtonsProps) {
   const navigate = useNavigate();
   const [openConfirm, setOpenConfirm] = useState(false);
@@ -37,6 +43,32 @@ export default function TableButtons({
 
   return (
     <div className="flex flex-wrap items-center justify-center gap-2">
+      {viewRoute && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="w-full sm:w-auto"
+          disabled={isDeleting}
+          onClick={() => navigate(`${viewRoute}/${id}`)}
+        >
+          <Eye className="mr-1 h-3.5 w-3.5" />
+          Ver
+        </Button>
+      )}
+      {receiptRoute && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="w-full sm:w-auto"
+          disabled={isDeleting}
+          onClick={() => navigate(`${receiptRoute}/${id}`)}
+        >
+          <FileText className="mr-1 h-3.5 w-3.5" />
+          Recibo
+        </Button>
+      )}
       <Button
         type="button"
         variant="outline"

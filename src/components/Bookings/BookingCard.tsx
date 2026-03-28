@@ -1,5 +1,5 @@
 import { useDeleteBooking } from "../../hooks/useDeleteBooking";
-import TableButtons from "../TableButtons";
+import BookingActionsMenu from "./BookingActionsMenu";
 import { formatDate } from "../formatDate";
 import { cn } from "../../lib/utils";
 
@@ -104,12 +104,12 @@ export default function BookingCard({ booking }: BookingCardProps) {
         </span>
       </div>
       <div className="pt-1">
-        <TableButtons
+        <BookingActionsMenu
           id={id}
-          route="/reservas/reserva"
+          editRoute="/reservas/reserva"
+          viewRoute="/evento"
           isDeleting={isDeleting}
           onDelete={deleteBooking}
-          deleteLabel="esta reserva"
         />
       </div>
     </article>

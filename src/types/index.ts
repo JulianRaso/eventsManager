@@ -50,7 +50,7 @@ export type CategoryType =
   | "furniture"
   | "screen";
 
-export interface StockProps {
+export interface InventoryProps {
   name: string;
   location: string;
   price: number;
@@ -59,7 +59,7 @@ export interface StockProps {
   updated_by: string;
 }
 
-export interface StockedProps extends StockProps {
+export interface InventoriedProps extends InventoryProps {
   id: number;
 }
 
@@ -85,4 +85,85 @@ export interface UserProps {
 export interface FilterOption {
   value: string;
   label: string;
+}
+
+// Booking API response record
+export interface BookingRecord {
+  id?: number;
+  created_at: string;
+  client_dni: number;
+  event_date: string;
+  event_type: EventType;
+  organization: Organization;
+  place: string;
+  booking_status: BookingStatus;
+  payment_status: PaymentStatus;
+  comments: string;
+  tax: number;
+  revenue: number;
+  price: number;
+}
+
+// Bill / expense form type
+export interface BillType {
+  id?: number;
+  name: string;
+  quantity: number;
+  paid_with: "cash" | "card" | "transfer" | "bank check";
+  paid_by: string;
+  amount: number;
+  booking_id?: number;
+  created_at?: string;
+  paid_to?: string;
+  updated_by: string;
+  cbu?: number;
+}
+
+// Personal / Staff types
+export type PersonalRole =
+  | "tecnico"
+  | "sonidista"
+  | "iluminador"
+  | "chofer"
+  | "coordinador"
+  | "otro";
+
+export interface PersonalProps {
+  name: string;
+  lastName: string;
+  dni?: number;
+  phoneNumber?: string;
+  role: PersonalRole;
+  daily_rate: number;
+  notes?: string;
+}
+
+export interface PersonaledProps extends PersonalProps {
+  id: number;
+  created_at?: string;
+}
+
+// Booking ↔ Personal assignment types
+export interface AssignmentProps {
+  booking_id: number;
+  personal_id: number;
+  days: number;
+  rate: number;
+  notes?: string;
+}
+
+export interface AssignedProps extends AssignmentProps {
+  id: number;
+  created_at?: string;
+  personal?: {
+    name: string;
+    lastName: string;
+    role: PersonalRole;
+  };
+}
+
+// Authenticated user data (from query cache)
+export interface UserData {
+  email: string;
+  user_metadata: { fullName: string };
 }

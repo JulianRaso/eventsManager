@@ -1,38 +1,18 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateStock as updateStockAPI } from "../services/stock";
+import { updateInventory } from "../services/stock";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-
-interface stockProps {
-  id: number;
-  name: string;
-  location: string;
-  price: number;
-  quantity: number;
-  category:
-    | "lights"
-    | "ambientation"
-    | "sound"
-    | "structure"
-    | "tools"
-    | "cables"
-    | "others"
-    | "furniture"
-    | "screen";
-  updated_by: string;
-}
+import type { InventoriedProps } from "../types";
 
 export default function useUpdateStock({ category }: { category: string }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { isPending: isUpdating, mutate: updateStock } = useMutation({
-    mutationKey: [category],
-    mutationFn: (stock: stockProps) => updateStockAPI(stock),
+    mutationFn: (item: InventoriedProps) => updateInventory(item),
     onSuccess: () => {
-      toast.success("Stock actualizado correctamente");
-      queryClient.invalidateQueries({
-        queryKey: [category],
-      });
+      toast.success("Inventario actualizado correctamente");
+      queryClient.invalidateQueries({ queryKey: ["inventory"] });
+      queryClient.invalidateQueries({ queryKey: [category] });
       navigate("/inventario");
     },
   });

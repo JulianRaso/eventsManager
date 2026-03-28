@@ -1,11 +1,13 @@
-import { useMemo, useState } from "react";
-import { CalendarRange } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { CalendarDays, CalendarRange, CheckCircle2, Clock, LayoutList, XCircle } from "lucide-react";
 import AddButton from "../components/AddButton";
 import BookingsMobileList from "../components/Bookings/BookingsMobileList";
+import BookingsCalendar from "../components/Bookings/BookingsCalendar";
 import BookingRow from "../components/Bookings/BookingRow";
 import CategoryLayout from "../components/CategoryLayout";
 import Filter from "../components/Filter";
 import Spinner from "../components/Spinner";
+import { KPICard } from "../components/ui/KPICard";
 import {
   Table,
   TableBody,
@@ -70,6 +72,7 @@ export default function Bookings() {
   const { data, isLoading } = useGetBookings();
   const [filterByName, setFilterByName] = useState("");
   const [statusValue, setStatusValue] = useState("");
+  const [view, setView] = useState<"table" | "calendar">("table");
 
   // Ordenar y filtrar datos
   const sortedData = useMemo(() => {
@@ -84,7 +87,7 @@ export default function Bookings() {
     return filterBookings(sortedData, filterByName, statusValue);
   }, [sortedData, filterByName, statusValue]);
 
-  // Usar hook de paginación
+  // Paginación siempre sobre los datos filtrados
   const {
     currentPage,
     setCurrentPage,
@@ -94,13 +97,55 @@ export default function Bookings() {
     goToPrevPage,
   } = usePagination({ data: filteredData, limit: 5 });
 
+  // KPI totals (over all bookings, not filtered)
+  const totals = useMemo(() => {
+    if (!sortedData) return { total: 0, confirmed: 0, pending: 0, cancelled: 0 };
+    return {
+      total: sortedData.length,
+      confirmed: sortedData.filter((b) => b.booking_status === "confirm").length,
+      pending: sortedData.filter((b) => b.booking_status === "pending").length,
+      cancelled: sortedData.filter((b) => b.booking_status === "cancel").length,
+    };
+  }, [sortedData]);
+
+  // Resetear página al cambiar filtros
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterByName, statusValue, setCurrentPage]);
+
   if (isLoading) return <Spinner />;
 
-  // Si hay filtro activo, mostrar todos los resultados filtrados; si no, usar paginación
-  const displayData = filterByName || statusValue ? filteredData : currentItems;
+  const displayData = currentItems;
 
   return (
     <CategoryLayout title="Reservas">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
+        <KPICard
+          title="Total"
+          value={totals.total}
+          icon={CalendarRange}
+          variant="primary"
+        />
+        <KPICard
+          title="Confirmadas"
+          value={totals.confirmed}
+          icon={CheckCircle2}
+          variant="success"
+        />
+        <KPICard
+          title="Pendientes"
+          value={totals.pending}
+          icon={Clock}
+          variant="warning"
+        />
+        <KPICard
+          title="Canceladas"
+          value={totals.cancelled}
+          icon={XCircle}
+          variant="info"
+        />
+      </div>
+
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <Filter
           filterByName={filterByName}
@@ -110,10 +155,40 @@ export default function Bookings() {
           setValue={setStatusValue}
           className="sm:flex-1 sm:max-w-none"
         />
-        <AddButton navigateTo="/reservas/reserva/agendar" label="Nueva reserva" />
+        <div className="flex items-center gap-2">
+          <div className="flex rounded-lg border border-border bg-muted/30 p-0.5">
+            <button
+              type="button"
+              onClick={() => setView("table")}
+              className={`rounded-md p-1.5 transition-colors ${
+                view === "table"
+                  ? "bg-background shadow-sm text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              title="Vista tabla"
+            >
+              <LayoutList className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setView("calendar")}
+              className={`rounded-md p-1.5 transition-colors ${
+                view === "calendar"
+                  ? "bg-background shadow-sm text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              title="Vista calendario"
+            >
+              <CalendarDays className="h-4 w-4" />
+            </button>
+          </div>
+          <AddButton navigateTo="/reservas/reserva/agendar" label="Nueva reserva" />
+        </div>
       </div>
 
-      {filteredData.length > 0 ? (
+      {view === "calendar" ? (
+        <BookingsCalendar bookings={filteredData} />
+      ) : filteredData.length > 0 ? (
         isDesktop ? (
           <TableContainer>
             <Table>
@@ -161,7 +236,7 @@ export default function Bookings() {
         </div>
       )}
 
-      {filteredData.length > 0 && !filterByName && !statusValue && (data?.length ?? 0) > 5 && (
+      {view === "table" && filteredData.length > 5 && (
         <Pagination className="mt-4 flex w-full items-center justify-center">
           <PaginationContent>
             <PaginationItem>

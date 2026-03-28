@@ -1,69 +1,53 @@
-import { CategoryType, StockedProps, StockProps } from "../types";
+import { CategoryType, InventoriedProps, InventoryProps } from "../types";
 import { supabase } from "./supabase";
 
-export async function getStock(category?: CategoryType) {
+export async function getInventory(category?: CategoryType) {
   if (category) {
     const { data, error } = await supabase
       .from("inventory")
       .select("*")
       .eq("category", category);
 
-    if (error) {
-      throw new Error(`Hubo un error al cargar ${category}`);
-    }
+    if (error) throw new Error(`Hubo un error al cargar ${category}`);
     return data;
   }
 
   const { data, error } = await supabase.from("inventory").select("*");
-
-  if (error) {
-    throw new Error("Hubo un error al cargar el equipamiento");
-  }
+  if (error) throw new Error("Hubo un error al cargar el inventario");
   return data;
 }
 
-export async function updateStock(stock: StockedProps) {
+export async function updateInventory(item: InventoriedProps) {
   const { data, error } = await supabase
     .from("inventory")
-    .update({ ...stock })
-    .eq("id", stock.id)
+    .update({ ...item })
+    .eq("id", item.id)
     .select();
 
-  if (error) {
-    throw new Error("Hubo un error al actualizar el stock");
-  }
+  if (error) throw new Error("Hubo un error al actualizar el inventario");
   return data;
 }
 
-export async function deleteStock(id: number) {
+export async function deleteInventory(id: number) {
   const { error } = await supabase.from("inventory").delete().eq("id", id);
-
-  if (error) {
-    throw new Error("Hubo un error al eliminar el stock");
-  }
+  if (error) throw new Error("Hubo un error al eliminar el ítem");
 }
 
-export async function addStock(stockData: StockProps) {
+export async function addInventory(item: InventoryProps) {
   const { data, error } = await supabase
     .from("inventory")
-    .insert([{ ...stockData }]);
+    .insert([{ ...item }]);
 
-  if (error) {
-    throw new Error("Error al intentar agregar el stock");
-  }
-
+  if (error) throw new Error("Error al intentar agregar el ítem");
   return data;
 }
 
-export async function getCurrentStock(id: number) {
+export async function getCurrentInventory(id: number) {
   const { data, error } = await supabase
     .from("inventory")
     .select("*")
     .eq("id", id);
 
-  if (error) {
-    throw new Error("Hubo un error al cargar el inventario seleccionado");
-  }
-
+  if (error) throw new Error("Hubo un error al cargar el ítem seleccionado");
   return data;
 }

@@ -1,275 +1,276 @@
 import AddLayout from "@/components/AddLayout";
-import {
-  Table,
-  TableBody,
-  TableData,
-  TableHead,
-  TableRow,
-} from "@/components/Table";
+import { formatDateLong } from "@/components/formatDate";
+import { Button } from "@/components/ui/button";
 import { getCurrentBooking } from "@/services/booking";
-import { getItems } from "@/services/bookingItems";
+import { getBookingPayments, PaymentProps } from "@/services/bookingPayments";
 import { checkClient } from "@/services/client";
+import { BookingRecord } from "@/types";
+import { formatCurrency } from "@/utils/formatCurrency";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import companyLogo from "../assets/ShowRental.png";
 import Spinner from "@/components/Spinner";
+import { Printer } from "lucide-react";
 
-import { PDFDownloadLink } from "@react-pdf/renderer";
-import InvoicePDF from "@/components/Pdf";
-
-type EquipmentItem = {
-  id?: number;
-  booking_id: number;
-  equipment_id: number;
-  name: string;
-  quantity: number;
-  price: number;
+const eventTypes: Record<string, { es: string }> = {
+  other: { es: "Otro" },
+  fifteen_party: { es: "Quince Años" },
+  corporate: { es: "Corporativo" },
+  marriage: { es: "Casamiento" },
+  birthday: { es: "Cumpleaños" },
 };
 
-const eventTypes = {
-  other: {
-    es: "Otro",
-    en: "Other",
-  },
-  fifteen_party: {
-    es: "Quince Años",
-    en: "Fifteen Party",
-  },
-  corporate: {
-    es: "Corporativo",
-    en: "Corporate",
-  },
-  marriage: {
-    es: "Casamiento",
-    en: "Marriage",
-  },
-  birthday: {
-    es: "Cumpleaños",
-    en: "Birthday",
-  },
+const paymentMethodLabel: Record<string, string> = {
+  cash: "Efectivo",
+  transfer: "Transferencia",
+  card: "Tarjeta",
 };
-
-type eventType = {
-  created_at: string;
-  client_dni: number;
-  event_date: string;
-  event_type: "other" | "fifteen_party" | "corporate" | "marriage" | "birthday";
-  organization: string;
-  place: string;
-  booking_status: string;
-  payment_status: string;
-  comments: string;
-  tax: number;
-  revenue: number;
-};
-
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("es-ES", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-}
 
 export default function ClientInvoice() {
   const [isLoading, setIsLoading] = useState(true);
   const invoiceID = Number(useParams().invoiceID);
-  const [invoiceData, setInvoiceData] = useState({} as eventType);
-
+  const [invoiceData, setInvoiceData] = useState<BookingRecord | null>(null);
   const [clientData, setClientData] = useState({
-    dni: 0 as number,
-    name: "....",
-    lastName: "....",
-    phoneNumber: "....",
-    email: "....",
+    name: "",
+    lastName: "",
+    phoneNumber: "",
+    email: "",
   });
-  const [equipment, setEquipment] = useState<EquipmentItem[]>([]);
-  const [price, setPrice] = useState(0);
+  const [payments, setPayments] = useState<PaymentProps[]>([]);
 
   useEffect(() => {
     getCurrentBooking(invoiceID)
       .then((data = []) => {
         if (data && data.length > 0) {
+          const first = data[0];
           setInvoiceData({
-            created_at: data[0].created_at,
-            client_dni: data[0].client_dni,
-            event_date: data[0].event_date,
-            event_type: data[0].event_type,
-            organization: data[0].organization,
-            place: data[0].place,
-            booking_status: data[0].booking_status,
-            payment_status: data[0].payment_status,
-            comments: data[0].comments ?? "No comments",
-            tax: data[0].tax,
-            revenue: data[0].revenue,
+            created_at: first.created_at,
+            client_dni: first.client_dni,
+            event_date: first.event_date,
+            event_type: first.event_type,
+            organization: first.organization,
+            place: first.place,
+            booking_status: first.booking_status,
+            payment_status: first.payment_status,
+            comments: first.comments ?? "",
+            tax: first.tax,
+            revenue: first.revenue,
+            price: first.price,
           });
-          checkClient(data[0].client_dni).then((res) => {
-            if (res.data) {
-              const { dni, name, lastName, phoneNumber, email } = res.data;
+          checkClient(first.client_dni).then((res) => {
+            if (res?.data) {
+              const { name, lastName, phoneNumber, email } = res.data;
               setClientData({
-                dni: dni || 0,
-                name: name || "",
-                lastName: lastName || "",
-                phoneNumber: phoneNumber || "",
-                email: email || "",
+                name: name ?? "",
+                lastName: lastName ?? "",
+                phoneNumber: phoneNumber ?? "",
+                email: email ?? "",
               });
             }
           });
-          getItems(Number(invoiceID)).then((res) => {
-            if (res) {
-              setEquipment(
-                res.map((item) => ({
-                  id: item.id,
-                  booking_id: item.booking_id,
-                  equipment_id: item.equipment_id,
-                  name: item.name,
-                  quantity: item.quantity,
-                  price: item.price ?? 0,
-                }))
-              );
-              setPrice(
-                res?.reduce((acc, item) => {
-                  return (
-                    acc + (item.price != null ? item.price : 0) * item.quantity
-                  );
-                }, 0)
-              );
-            }
+          getBookingPayments(invoiceID).then((res) => {
+            setPayments(res ?? []);
           });
-          setIsLoading(false);
         }
+        setIsLoading(false);
       })
-      .catch((error) => {
-        console.error("Error fetching invoice data:", error);
-      });
+      .catch(() => setIsLoading(false));
   }, [invoiceID]);
 
   if (!invoiceID || isLoading) return <Spinner />;
+  if (!invoiceData) {
+    return (
+      <AddLayout>
+        <p className="text-center text-muted-foreground">
+          No se encontró la reserva.
+        </p>
+      </AddLayout>
+    );
+  }
+
+  const ivaAmount = (invoiceData.price / 100) * (invoiceData.tax ?? 0);
+  const totalCliente = invoiceData.price + ivaAmount;
+  const totalPagado = payments.reduce((sum, p) => sum + p.amount, 0);
+  const saldo = totalCliente - totalPagado;
+
   return (
     <AddLayout>
-      <div className="flex items-center justify-between mb-10">
-        <img
-          className="h-14 w-14 mr-2 rounded-lg"
-          src={companyLogo}
-          alt="Logo"
-        />
-        <div className="text-gray-800 font-semibold text-3xl">
-          {invoiceData.organization}
-        </div>
-        <div className="text-gray-700">
-          <div className="font-bold text-xl mb-2">Recibo</div>
-          <div className="text-sm">
-            Fecha: {formatDate(invoiceData.created_at)}
+      <div className="flex flex-col gap-6">
+        {/* Header */}
+        <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <img
+              src={companyLogo}
+              alt="Logo"
+              className="h-14 w-14 rounded-xl border border-border object-cover shadow-sm"
+            />
+            <div>
+              <h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+                {invoiceData.organization}
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                San Juan 671, Corrientes, Argentina
+              </p>
+            </div>
+          </div>
+          <div className="text-left sm:text-right">
+            <p className="text-sm font-medium text-foreground">Recibo</p>
+            <p className="text-sm text-muted-foreground">
+              {formatDateLong(invoiceData.created_at)}
+            </p>
           </div>
         </div>
-      </div>
 
-      <div className="border-b-2 border-gray-300 pb-8 mb-6">
-        <h2 className="text-2xl font-bold mb-4">Evento</h2>
-        <div className="text-gray-700 mb-2">
-          <b>Cliente:</b> {clientData.name + " " + clientData.lastName}
+        {/* Datos del evento */}
+        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+          <h2 className="mb-4 text-lg font-semibold tracking-tight text-foreground">
+            Datos del evento
+          </h2>
+          <dl className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
+            <div>
+              <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Cliente
+              </dt>
+              <dd className="mt-0.5 text-sm font-medium text-foreground">
+                {clientData.name} {clientData.lastName}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Tipo de evento
+              </dt>
+              <dd className="mt-0.5 text-sm font-medium text-foreground">
+                {eventTypes[invoiceData.event_type]?.es ?? invoiceData.event_type}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Teléfono
+              </dt>
+              <dd className="mt-0.5 text-sm text-foreground">
+                {clientData.phoneNumber || "—"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Fecha del evento
+              </dt>
+              <dd className="mt-0.5 text-sm font-medium text-foreground">
+                {formatDateLong(invoiceData.event_date)}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Lugar
+              </dt>
+              <dd className="mt-0.5 text-sm font-medium text-foreground">
+                {invoiceData.place}
+              </dd>
+            </div>
+          </dl>
         </div>
-        <div className="text-gray-700 mb-2">
-          <b>Email:</b> {clientData.email}
-        </div>
-        <div className="text-gray-700 mb-2">
-          <b>Tipo:</b> {eventTypes[invoiceData.event_type]?.es}
-        </div>
-        <div className="text-gray-700 mb-2">
-          <b>Lugar:</b> {invoiceData.place}
-        </div>
-        <div className="text-gray-700 mb-2">
-          <b>Fecha:</b> {formatDate(invoiceData.event_date)}
-        </div>
-      </div>
-      <Table>
-        <TableHead>
-          <TableData className="text-start">Descripcion</TableData>
-          <TableData>Cantidad</TableData>
-          <TableData>Metros</TableData>
-          <TableData>Total</TableData>
-        </TableHead>
-        <TableBody>
-          {equipment.map((item) => (
-            <TableRow key={item.id}>
-              <TableData className="text-start">{item.name}</TableData>
-              <TableData>{item.quantity}</TableData>
-              <TableData>{null}</TableData>
-              <TableData>
-                $
-                {Number(
-                  item.price * item.quantity +
-                    ((item.price * item.quantity) / 100) *
-                      Number(invoiceData.revenue ?? 0)
-                ).toFixed(2)}
-              </TableData>
-            </TableRow>
-          ))}
-        </TableBody>
-        <TableData className="text-start font-bold">Total</TableData>
-        <TableData>{null}</TableData>
-        <TableData>{null}</TableData>
-        <TableData className="font-bold">
-          $
-          {Number(
-            price + (price / 100) * Number(invoiceData.revenue ?? 0)
-          ).toFixed(2)}
-        </TableData>
-      </Table>
 
-      <div className="text-right mb-8 mt-4">
-        <div className="text-gray-700 mr-2">
-          <b>Impuesto</b>
-        </div>
-        <div className="text-gray-700 font-bold text-lg">
-          $
-          {(
-            (Number(price + (price / 100) * Number(invoiceData.revenue ?? 0)) /
-              100) *
-            invoiceData.tax
-          ).toFixed(2)}
-        </div>
-      </div>
-      <div className="flex flex-col items-end mb-8">
-        <div className="text-gray-700 mr-2 font-bold">Total</div>
-        <div className="text-gray-700 font-bold text-xl">
-          $
-          {(
-            Number(price + (price / 100) * Number(invoiceData.revenue ?? 0)) +
-            (Number(price + (price / 100) * Number(invoiceData.revenue ?? 0)) /
-              100) *
-              invoiceData.tax
-          ).toFixed(2)}
-        </div>
-      </div>
-      <div className="border-t-2 border-gray-300 pt-6 mb-4">
-        <div className="text-gray-700 mb-2">
-          Recibo no valido como factura. Los pagos deben acompañarse de un
-          comprobante.
-        </div>
-        <div className="text-gray-700">
-          {invoiceData.organization} - San Juan 671, Corrientes, Argentina
-        </div>
-      </div>
-      <div className="flex justify-end">
-        <PDFDownloadLink
-          document={
-            <InvoicePDF
-              invoiceData={invoiceData}
-              clientData={clientData}
-              equipment={equipment}
-              price={price}
-            />
-          }
-          fileName={`${clientData.name}_${clientData.lastName}_${invoiceID}.pdf`}
-        >
-          {({ loading }) => (
-            <button className="px-4 py-2 bg-blue-500 text-white rounded-lg  hover:cursor-pointer">
-              {loading ? "Generando..." : "Descargar PDF"}
-            </button>
+        {/* Pagos */}
+        <div className="rounded-xl border border-border bg-card shadow-sm">
+          <div className="border-b border-border px-4 py-3 sm:px-6">
+            <h2 className="text-lg font-semibold tracking-tight text-foreground">
+              Pagos realizados
+            </h2>
+          </div>
+          {payments.length === 0 ? (
+            <p className="px-6 py-6 text-sm text-muted-foreground">
+              No se registraron pagos aún.
+            </p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/30">
+                  <th className="px-5 py-3 text-left font-medium text-muted-foreground">
+                    Fecha
+                  </th>
+                  <th className="px-5 py-3 text-left font-medium text-muted-foreground">
+                    Método
+                  </th>
+                  <th className="px-5 py-3 text-left font-medium text-muted-foreground">
+                    Notas
+                  </th>
+                  <th className="px-5 py-3 text-right font-medium text-muted-foreground">
+                    Monto
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {payments.map((p) => (
+                  <tr key={p.id} className="border-b border-border last:border-0">
+                    <td className="px-5 py-3 text-foreground">
+                      {formatDateLong(p.payment_date)}
+                    </td>
+                    <td className="px-5 py-3 text-foreground">
+                      {paymentMethodLabel[p.payment_method] ?? p.payment_method}
+                    </td>
+                    <td className="px-5 py-3 text-muted-foreground">
+                      {p.notes ?? "—"}
+                    </td>
+                    <td className="px-5 py-3 text-right font-medium tabular-nums text-foreground">
+                      ${formatCurrency(p.amount)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
-        </PDFDownloadLink>
+        </div>
+
+        {/* Resumen */}
+        <div className="flex flex-col items-end gap-2 rounded-xl border border-border bg-muted/20 px-6 py-4">
+          <div className="flex w-full max-w-xs flex-col gap-1.5 text-sm">
+            <div className="flex justify-between gap-8">
+              <span className="text-muted-foreground">Total del evento</span>
+              <span className="tabular-nums">${formatCurrency(invoiceData.price)}</span>
+            </div>
+            {invoiceData.tax > 0 && (
+              <div className="flex justify-between gap-8">
+                <span className="text-muted-foreground">IVA ({invoiceData.tax}%)</span>
+                <span className="tabular-nums">${formatCurrency(ivaAmount)}</span>
+              </div>
+            )}
+            <div className="flex justify-between gap-8 border-t border-border pt-1.5">
+              <span className="text-muted-foreground">Total a abonar</span>
+              <span className="font-medium tabular-nums">${formatCurrency(totalCliente)}</span>
+            </div>
+            <div className="flex justify-between gap-8">
+              <span className="text-muted-foreground">Total pagado</span>
+              <span className="font-medium tabular-nums text-emerald-600 dark:text-emerald-400">
+                ${formatCurrency(totalPagado)}
+              </span>
+            </div>
+            <div className="flex justify-between gap-8 border-t border-border pt-1.5">
+              <span className="font-semibold text-foreground">Saldo pendiente</span>
+              <span
+                className={
+                  saldo <= 0
+                    ? "font-bold tabular-nums text-emerald-600 dark:text-emerald-400"
+                    : "font-bold tabular-nums text-amber-600 dark:text-amber-400"
+                }
+              >
+                ${formatCurrency(Math.max(0, saldo))}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer legal */}
+        <p className="text-center text-xs text-muted-foreground">
+          Este recibo no reemplaza la factura. Conservá tu comprobante de pago.
+        </p>
+
+        {/* Imprimir */}
+        <div className="flex justify-end">
+          <Button variant="outline" className="gap-2" onClick={() => window.print()}>
+            <Printer className="h-4 w-4" />
+            Imprimir recibo
+          </Button>
+        </div>
       </div>
     </AddLayout>
   );

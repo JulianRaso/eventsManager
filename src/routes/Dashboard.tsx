@@ -65,7 +65,6 @@ export default function Dashboard() {
             value={totalEvents}
             icon={CalendarCheck}
             variant="primary"
-            trend={{ value: 12, isPositive: true }}
             description="Este mes"
           />
           <KPICard
@@ -73,7 +72,6 @@ export default function Dashboard() {
             value={`$${currentMonthIncome.toLocaleString()}`}
             icon={DollarSign}
             variant="success"
-            trend={{ value: 8, isPositive: true }}
           />
           <KPICard
             title="Equipos Alquilados"
@@ -87,10 +85,6 @@ export default function Dashboard() {
             value={`${confirmationRate}%`}
             icon={TrendingUp}
             variant="warning"
-            trend={{
-              value: 5,
-              isPositive: confirmationRate >= 50,
-            }}
           />
         </div>
       </section>
