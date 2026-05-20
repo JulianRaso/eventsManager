@@ -70,7 +70,7 @@ export async function getUpcomingBookingItems() {
 
   const { data: bookings, error: bookingsError } = await supabase
     .from("booking")
-    .select("id")
+    .select("id, event_date, start_time, end_time")
     .gte("event_date", today)
     .neq("booking_status", "cancel");
 
@@ -80,6 +80,7 @@ export async function getUpcomingBookingItems() {
   if (!bookings || bookings.length === 0) return [];
 
   const ids = bookings.map((b) => b.id);
+  const bookingMap = new Map(bookings.map((b) => [b.id, b]));
 
   const { data: items, error: itemsError } = await supabase
     .from("booking_items")
@@ -89,7 +90,12 @@ export async function getUpcomingBookingItems() {
   if (itemsError)
     throw new Error("Hubo un error al cargar los equipos reservados");
 
-  return items ?? [];
+  return (items ?? []).map((item) => ({
+    ...item,
+    event_date: bookingMap.get(item.booking_id)?.event_date ?? "",
+    start_time: bookingMap.get(item.booking_id)?.start_time ?? null,
+    end_time: bookingMap.get(item.booking_id)?.end_time ?? null,
+  }));
 }
 
 export async function deleteItems(ids: number[]) {

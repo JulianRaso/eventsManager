@@ -92,6 +92,7 @@ export type Database = {
           client_dni: number
           comments: string | null
           created_at: string
+          end_time: string | null
           event_date: string
           event_type: Database["public"]["Enums"]["event_type"]
           id: number
@@ -101,6 +102,7 @@ export type Database = {
           place: string
           price: number
           revenue: number
+          start_time: string | null
           tax: number
         }
         Insert: {
@@ -109,6 +111,7 @@ export type Database = {
           client_dni: number
           comments?: string | null
           created_at?: string
+          end_time?: string | null
           event_date: string
           event_type?: Database["public"]["Enums"]["event_type"]
           id?: number
@@ -118,6 +121,7 @@ export type Database = {
           place: string
           price?: number
           revenue?: number
+          start_time?: string | null
           tax?: number
         }
         Update: {
@@ -126,6 +130,7 @@ export type Database = {
           client_dni?: number
           comments?: string | null
           created_at?: string
+          end_time?: string | null
           event_date?: string
           event_type?: Database["public"]["Enums"]["event_type"]
           id?: number
@@ -135,6 +140,7 @@ export type Database = {
           place?: string
           price?: number
           revenue?: number
+          start_time?: string | null
           tax?: number
         }
         Relationships: [
@@ -509,41 +515,112 @@ export type Database = {
         }
         Relationships: []
       }
+      personal_roles: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          id: string
+          label: string
+          sort_order: number
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          id?: string
+          label: string
+          sort_order?: number
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          id?: string
+          label?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       personal: {
         Row: {
           created_at: string | null
+          cbu: string | null
           daily_rate: number
           dni: number | null
           id: number
           lastName: string
           name: string
           notes: string | null
+          alias: string | null
           phoneNumber: string | null
           role: string
         }
         Insert: {
           created_at?: string | null
+          cbu?: string | null
           daily_rate: number
           dni?: number | null
           id?: number
           lastName: string
           name: string
           notes?: string | null
+          alias?: string | null
           phoneNumber?: string | null
           role: string
         }
         Update: {
           created_at?: string | null
+          cbu?: string | null
           daily_rate?: number
           dni?: number | null
           id?: number
           lastName?: string
           name?: string
           notes?: string | null
+          alias?: string | null
           phoneNumber?: string | null
           role?: string
         }
         Relationships: []
+      }
+      personal_payments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: number
+          notes: string | null
+          payment_date: string
+          payment_method: string
+          personal_id: number
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: number
+          notes?: string | null
+          payment_date: string
+          payment_method: string
+          personal_id: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: number
+          notes?: string | null
+          payment_date?: string
+          payment_method?: string
+          personal_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personal_payments_personal_id_fkey"
+            columns: ["personal_id"]
+            isOneToOne: false
+            referencedRelation: "personal"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

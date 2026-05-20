@@ -40,7 +40,7 @@ export function KPICard({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-xl border bg-card p-6",
+        "relative overflow-hidden rounded-xl border bg-card p-4",
         "shadow-sm hover:shadow-lg transition-all duration-300",
         "hover:-translate-y-1"
       )}
@@ -54,9 +54,9 @@ export function KPICard({
       />
 
       <div className="flex items-start justify-between">
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <p className="text-3xl font-bold tracking-tight">
+        <div className="space-y-1.5">
+          <p className="text-xs font-medium text-muted-foreground">{title}</p>
+          <p className="text-2xl font-bold tracking-tight">
             {typeof value === "number" ? value.toLocaleString() : value}
           </p>
           {trend && (
@@ -80,11 +80,11 @@ export function KPICard({
 
         <div
           className={cn(
-            "flex h-12 w-12 items-center justify-center rounded-lg",
+            "flex h-10 w-10 items-center justify-center rounded-lg",
             iconBgStyles[variant]
           )}
         >
-          <Icon className="h-6 w-6" />
+          <Icon className="h-5 w-5" />
         </div>
       </div>
     </div>

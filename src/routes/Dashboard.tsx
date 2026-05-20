@@ -12,12 +12,14 @@ import SalesCompany from "../components/charts/SalesCompanys";
 import { KPICard } from "../components/ui/KPICard";
 import useGetMonthlyEventsStatus from "../hooks/useGetMonthlyEventsStatus";
 import useGetIncomesPerMonth from "../hooks/useGetIncomesPerMonth";
-import useGetMostUsedEquipment from "../hooks/useGetMostUsedEquipment";
+import useGetCurrentMonthNet from "../hooks/useGetCurrentMonthNet";
+import useClientBalances from "../hooks/useClientBalances";
 
 export default function Dashboard() {
   const { data: eventsData } = useGetMonthlyEventsStatus();
   const { data: incomesData } = useGetIncomesPerMonth();
-  const { data: equipmentData } = useGetMostUsedEquipment();
+  const { data: netData } = useGetCurrentMonthNet();
+  const { clients } = useClientBalances();
 
   // Calcular total de eventos del mes
   const totalEvents =
@@ -26,40 +28,28 @@ export default function Dashboard() {
       0
     ) || 0;
 
-  // Calcular eventos confirmados para la tasa
-  const confirmedEvents =
-    eventsData?.find(
-      (item: { booking_status: string }) => item.booking_status === "confirm"
-    )?.total || 0;
-  const confirmationRate =
-    totalEvents > 0 ? Math.round((confirmedEvents / totalEvents) * 100) : 0;
-
   // Obtener ingresos del mes actual
   const currentMonthIncome = incomesData?.[incomesData.length - 1]?.income || 0;
-
-  // Obtener total de equipos alquilados
-  const totalEquipmentRented =
-    equipmentData?.reduce(
-      (acc: number, item: { total: number }) => acc + item.total,
-      0
-    ) || 0;
+  const currentMonthCosts = netData?.costs ?? 0;
+  const totalAccountsReceivable =
+    clients?.reduce((s, c) => s + (c.saldo ?? 0), 0) ?? 0;
 
   return (
-    <div className="flex min-h-full w-full flex-col px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10 xl:px-10">
+    <div className="flex min-h-full w-full flex-col px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-7 xl:px-10">
       {/* Header */}
-      <section className="mb-8 lg:mb-10">
+      <section className="mb-6 lg:mb-7">
         <DashboardHeader />
       </section>
 
       {/* KPI Cards */}
-      <section className="mb-8 lg:mb-10" aria-labelledby="resumen-heading">
+      <section className="mb-6 lg:mb-7" aria-labelledby="resumen-heading">
         <h2
           id="resumen-heading"
-          className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground lg:mb-5"
+          className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground lg:mb-3"
         >
           Resumen
         </h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
+        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-3">
           <KPICard
             title="Total Eventos"
             value={totalEvents}
@@ -74,15 +64,15 @@ export default function Dashboard() {
             variant="success"
           />
           <KPICard
-            title="Equipos Alquilados"
-            value={totalEquipmentRented}
+            title="Costos del Mes"
+            value={`$${currentMonthCosts.toLocaleString()}`}
             icon={Package}
             variant="info"
-            description="Total del período"
+            description="Costos asociados a eventos"
           />
           <KPICard
-            title="Tasa de Confirmación"
-            value={`${confirmationRate}%`}
+            title="Cuenta Corriente"
+            value={`$${totalAccountsReceivable.toLocaleString()}`}
             icon={TrendingUp}
             variant="warning"
           />
@@ -90,7 +80,7 @@ export default function Dashboard() {
       </section>
 
       {/* Main Chart */}
-      <section className="mb-8 lg:mb-10">
+      <section className="mb-6 lg:mb-7">
         <SalesCompany />
       </section>
 
@@ -98,11 +88,11 @@ export default function Dashboard() {
       <section className="flex-1" aria-labelledby="metricas-heading">
         <h2
           id="metricas-heading"
-          className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground lg:mb-5"
+          className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground lg:mb-4"
         >
           Métricas
         </h2>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-5">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 lg:gap-4">
           <BookingsStatus />
           <GainsChart />
           <MostEquipments />

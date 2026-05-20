@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, AlertCircle, CheckCircle2, Users, DollarSign } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import CategoryLayout from "../components/CategoryLayout";
@@ -95,9 +95,7 @@ export default function CuentaCorrientes() {
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/30 py-16 text-center">
           <CheckCircle2 className="mb-3 h-12 w-12 text-emerald-500" />
           <p className="text-lg font-medium text-foreground">Sin deudas pendientes</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Todos los clientes están al día.
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">Todos los clientes están al día.</p>
         </div>
       ) : (
         <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
@@ -116,17 +114,17 @@ export default function CuentaCorrientes() {
               {filtered.map((client) => {
                 const isOpen = expanded.has(client.dni);
                 return (
-                  <>
-                    {/* Fila cliente */}
+                  <Fragment key={client.dni}>
                     <tr
-                      key={client.dni}
-                      className="cursor-pointer border-b border-border hover:bg-muted/20 transition-colors"
+                      className="cursor-pointer border-b border-border transition-colors hover:bg-muted/20"
                       onClick={() => toggleExpand(client.dni)}
                     >
                       <td className="px-3 py-3 text-muted-foreground">
-                        {isOpen
-                          ? <ChevronDown className="h-4 w-4" />
-                          : <ChevronRight className="h-4 w-4" />}
+                        {isOpen ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
                       </td>
                       <td className="px-4 py-3 font-medium text-foreground">
                         {client.name} {client.lastName}
@@ -140,66 +138,75 @@ export default function CuentaCorrientes() {
                         ${formatCurrency(client.totalCobrado)}
                       </td>
                       <td className="px-4 py-3 text-right font-semibold tabular-nums">
-                        <span className={client.saldo > 0 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400"}>
+                        <span
+                          className={
+                            client.saldo > 0
+                              ? "text-amber-600 dark:text-amber-400"
+                              : "text-emerald-600 dark:text-emerald-400"
+                          }
+                        >
                           ${formatCurrency(client.saldo)}
                         </span>
                       </td>
                     </tr>
 
-                    {/* Detalle de reservas */}
-                    {isOpen && client.bookings.map((b) => (
-                      <tr
-                        key={b.id}
-                        className="border-b border-border bg-muted/10 last:border-0"
-                      >
-                        <td className="px-3 py-2" />
-                        <td className="px-4 py-2 pl-8 text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <span>{formatDate(b.event_date)}</span>
-                            <span className="text-xs">· {b.organization}</span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-2 text-center">
-                          <span className={cn(
-                            "inline-flex rounded-full px-2 py-0.5 text-xs font-medium",
-                            b.booking_status === "confirm"
-                              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
-                              : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
-                          )}>
-                            {b.booking_status === "confirm" ? "Confirmado" : "Pendiente"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-2 text-right tabular-nums text-muted-foreground">
-                          ${formatCurrency(b.totalFacturado)}
-                        </td>
-                        <td className="px-4 py-2 text-right tabular-nums text-emerald-600 dark:text-emerald-400">
-                          ${formatCurrency(b.totalCobrado)}
-                        </td>
-                        <td className="px-4 py-2 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <span className={cn(
-                              "font-medium tabular-nums",
-                              b.saldo > 0 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400"
-                            )}>
-                              ${formatCurrency(b.saldo)}
-                            </span>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="h-6 px-2 text-xs"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/evento/${b.id}`);
-                              }}
+                    {isOpen &&
+                      client.bookings.map((b) => (
+                        <tr key={b.id} className="border-b border-border bg-muted/10 last:border-0">
+                          <td className="px-3 py-2" />
+                          <td className="px-4 py-2 pl-8 text-muted-foreground">
+                            <div className="flex items-center gap-2">
+                              <span>{formatDate(b.event_date)}</span>
+                              <span className="text-xs">· {b.organization}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-2 text-center">
+                            <span
+                              className={cn(
+                                "inline-flex rounded-full px-2 py-0.5 text-xs font-medium",
+                                b.booking_status === "confirm"
+                                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                                  : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
+                              )}
                             >
-                              Ver
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </>
+                              {b.booking_status === "confirm" ? "Confirmado" : "Pendiente"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-2 text-right tabular-nums text-muted-foreground">
+                            ${formatCurrency(b.totalFacturado)}
+                          </td>
+                          <td className="px-4 py-2 text-right tabular-nums text-emerald-600 dark:text-emerald-400">
+                            ${formatCurrency(b.totalCobrado)}
+                          </td>
+                          <td className="px-4 py-2 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <span
+                                className={cn(
+                                  "font-medium tabular-nums",
+                                  b.saldo > 0
+                                    ? "text-amber-600 dark:text-amber-400"
+                                    : "text-emerald-600 dark:text-emerald-400"
+                                )}
+                              >
+                                ${formatCurrency(b.saldo)}
+                              </span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 px-2 text-xs"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/evento/${b.id}`);
+                                }}
+                              >
+                                Ver
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                  </Fragment>
                 );
               })}
             </tbody>

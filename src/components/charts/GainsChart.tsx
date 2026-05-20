@@ -1,7 +1,7 @@
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { TrendingUp } from "lucide-react";
 
-import useGetIncomesPerMonth from "@/hooks/useGetIncomesPerMonth";
+import useGetFinancePerMonth from "@/hooks/useGetFinancePerMonth";
 import { formatDateCharts } from "../formatDate";
 import MiniSpinner from "../MiniSpinner";
 import {
@@ -25,17 +25,22 @@ const chartConfig = {
     label: "Recaudaciones: $",
     color: CHART_COLORS.primary,
   },
+  costs: {
+    label: "Costos: $",
+    color: CHART_COLORS.danger,
+  },
 } satisfies ChartConfig;
 
 export default function GainsChart() {
   const currMonth = `${new Date().getFullYear()}-${new Date().getMonth() + 1}`;
-  const { data = [{ month: "", income: 0 }], isLoading } =
-    useGetIncomesPerMonth();
+  const { data = [{ month: "", income: 0, costs: 0 }], isLoading } =
+    useGetFinancePerMonth();
   if (isLoading) return <MiniSpinner />;
   const chartData = [
     {
       month: "Enero",
-      income: 100,
+      income: 0,
+      costs: 0,
     },
     ...data,
   ];
@@ -95,12 +100,20 @@ export default function GainsChart() {
               dot={{ fill: CHART_COLORS.primary, strokeWidth: 2, r: 4 }}
               activeDot={{ r: 6, fill: CHART_COLORS.primary }}
             />
+            <Line
+              dataKey="costs"
+              type="monotone"
+              stroke={CHART_COLORS.danger}
+              strokeWidth={2.5}
+              dot={{ fill: CHART_COLORS.danger, strokeWidth: 2, r: 4 }}
+              activeDot={{ r: 6, fill: CHART_COLORS.danger }}
+            />
           </LineChart>
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm pt-4">
         <div className="leading-none text-muted-foreground">
-          Recaudaciones de ambas compañías a lo largo del año
+          Recaudaciones y costos asociados a eventos a lo largo del año
         </div>
       </CardFooter>
     </Card>

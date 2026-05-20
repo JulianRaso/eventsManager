@@ -46,7 +46,7 @@ export default function ArticulosVendidos() {
 
     data.forEach((item) => {
       if (!item.booking) return;
-      if (item.booking.booking_status === "cancel") return;
+      if (item.booking.booking_status !== "confirm") return;
 
       const d = new Date(item.booking.event_date);
       if (d.getFullYear() !== year || d.getMonth() !== month) return;
@@ -78,7 +78,7 @@ export default function ArticulosVendidos() {
     eventos: new Set(
       data
         .filter((i) => {
-          if (!i.booking || i.booking.booking_status === "cancel") return false;
+          if (!i.booking || i.booking.booking_status !== "confirm") return false;
           const d = new Date(i.booking.event_date);
           return d.getFullYear() === year && d.getMonth() === month;
         })

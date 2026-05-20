@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
-import { FileText, Loader2, Plus, Trash2 } from "lucide-react";
+import { CreditCard, Loader2, Package, Plus, Receipt, Trash2, Users } from "lucide-react";
 import Spinner from "../components/Spinner";
+import MiniSpinner from "../components/MiniSpinner";
 import Filter from "../components/Filter";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/Input";
@@ -18,11 +19,21 @@ import { useAddBooking } from "../hooks/useAddBooking";
 import useUpdateBooking from "../hooks/useUpdateBooking";
 import useGetStockAvailability from "../hooks/useGetStockAvailability";
 import useGetPersonal from "../hooks/useGetPersonal";
+import useGetBookingEvent from "../hooks/useGetBookingEvent";
+import useGetBookingPersonal from "../hooks/useGetBookingPersonal";
+import { useAssignPersonal } from "../hooks/useAssignPersonal";
+import useGetBookingPayments from "../hooks/useGetBookingPayments";
+import useBookingPayments from "../hooks/useBookingPayments";
+import useGetBookingBills from "../hooks/useGetBookingBills";
+import useBookingBills from "../hooks/useBookingBills";
+import useManageBookingItems from "../hooks/useManageBookingItems";
 import { getCurrentBooking } from "../services/booking";
 import { checkClient } from "../services/client";
 import { fromDDMMYYYY } from "../components/formatDate";
 import type { eventData } from "../types/Booking-typ";
 import { formatCurrency } from "../utils/formatCurrency";
+import { cn } from "../lib/utils";
+import type { PersonaledProps } from "../types";
 
 const selectClass =
   "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50";
@@ -54,6 +65,19 @@ type LocalPersonalItem = {
   rate: number;
 };
 
+type BookingEditView = "general" | "materials" | "costs";
+
+const roleLabels: Record<string, string> = {
+  tecnico: "Técnico",
+  sonidista: "Sonidista",
+  iluminador: "Iluminador",
+  chofer: "Chofer",
+  operario: "Operario",
+  asistente: "Asistente",
+  coordinador: "Coordinador",
+  otro: "Otro",
+};
+
 export default function Booking() {
   const navigate = useNavigate();
   const {
@@ -69,17 +93,12 @@ export default function Booking() {
       booking_status: "pending",
       payment_status: "pending",
       tax: 0,
-      revenue: 0,
       price: 0,
     },
   });
 
   const { isAdding, addBooking } = useAddBooking();
   const { isUpdating, updateBooking } = useUpdateBooking();
-
-  // Pickers (always initialized — hooks can't be conditional)
-  const { availability } = useGetStockAvailability();
-  const { data: personalList = [] } = useGetPersonal();
 
   const [dni, setDni] = useState(0);
   const [existClient, setExistClient] = useState(false);
@@ -88,6 +107,7 @@ export default function Booking() {
   const bookingId = Number(useParams().bookingId);
   const isEditingSession = Boolean(bookingId);
   const [isLoadingBooking, setIsLoadingBooking] = useState(bookingId ? true : false);
+  const [loadedRevenue, setLoadedRevenue] = useState(0);
 
   // Create-mode local state
   const [localEquipment, setLocalEquipment] = useState<LocalEquipItem[]>([]);
@@ -102,11 +122,70 @@ export default function Booking() {
 
   const watchPrice = watch("price") ?? 0;
   const watchTax = watch("tax") ?? 0;
-  const watchRevenue = watch("revenue") ?? 0;
+  const watchEventDate = watch("event_date");
+  const watchStartTime = watch("start_time");
+  const watchEndTime = watch("end_time");
+
+  // Pickers (always initialized — hooks can't be conditional)
+  const { availability, isLoading: isLoadingStock } = useGetStockAvailability({
+    date: watchEventDate || undefined,
+    startTime: watchStartTime,
+    endTime: watchEndTime,
+    excludeBookingId: isEditingSession ? bookingId : undefined,
+  });
+  const { data: personalList = [] } = useGetPersonal();
+
+  // Edit-mode: related data (always initialized; queries are enabled only with bookingId)
+  const { items: bookingItems = [] } = useGetBookingEvent(bookingId);
+  const { data: assignments = [] } = useGetBookingPersonal(bookingId);
+  const { isAssigning, assignPersonal, isRemoving: isRemovingAssignment, removeAssignment } =
+    useAssignPersonal(bookingId);
+  const { payments = [] } = useGetBookingPayments(bookingId);
+  const {
+    registerPayment,
+    isAdding: isAddingPayment,
+    removePayment,
+    isRemoving: isRemovingPayment,
+  } = useBookingPayments(bookingId);
+  const { bills = [] } = useGetBookingBills(bookingId);
+  const {
+    addBill,
+    isAdding: isAddingBill,
+    removeBill,
+    isRemoving: isRemovingBill,
+  } = useBookingBills(bookingId);
+  const {
+    addItem,
+    isAdding: isAddingItem,
+    removeItem,
+    isRemoving: isRemovingItem,
+  } = useManageBookingItems(bookingId);
+
+  // Edit-mode view state
+  const [activeView, setActiveView] = useState<BookingEditView>("general");
+  const [showAssignForm, setShowAssignForm] = useState(false);
+  const [selectedPersonalId, setSelectedPersonalId] = useState("");
+  const [assignDays, setAssignDays] = useState("1");
+  const [assignRate, setAssignRate] = useState("");
+
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [payAmount, setPayAmount] = useState("");
+  const [payMethod, setPayMethod] = useState<"cash" | "transfer" | "card">("cash");
+  const [payDate, setPayDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [payNotes, setPayNotes] = useState("");
+
+  const [showGastoForm, setShowGastoForm] = useState(false);
+  const [gastoName, setGastoName] = useState("");
+  const [gastoAmount, setGastoAmount] = useState("");
+  const [gastoPaidWith, setGastoPaidWith] = useState<
+    "cash" | "card" | "transfer" | "bank check"
+  >("cash");
+  const [gastoPaidBy, setGastoPaidBy] = useState("");
+  const [gastoPaidTo, setGastoPaidTo] = useState("");
 
   // Financial calculations
   const costoEquipo = localEquipment.reduce(
-    (sum, item) => sum + item.price * item.quantity * (1 + Number(watchRevenue) / 100),
+    (sum, item) => sum + item.price * item.quantity,
     0
   );
   const costoPersonal = localPersonal.reduce((sum, p) => sum + p.days * p.rate, 0);
@@ -114,6 +193,70 @@ export default function Booking() {
   const ivaAmount = (Number(watchPrice) / 100) * Number(watchTax);
   const totalCliente = Number(watchPrice) + ivaAmount;
   const margen = Number(watchPrice) - costoTotal;
+
+  // Edit-mode financials (based on persisted relations)
+  const itemsSubtotal = bookingItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+  const itemsCostTotal = itemsSubtotal + (itemsSubtotal / 100) * Number(watchTax);
+  const personnelCost = assignments.reduce((sum, a) => sum + a.days * a.rate, 0);
+  const billsTotal = bills.reduce((sum, b) => sum + (b.amount ?? 0), 0);
+  const editCostoTotal = itemsCostTotal + personnelCost + billsTotal;
+  const editMargen = Number(watchPrice) - editCostoTotal;
+  const editMargenPct = Number(watchPrice) > 0 ? (editMargen / Number(watchPrice)) * 100 : 0;
+
+  const totalCollected = payments.reduce((sum, p) => sum + p.amount, 0);
+  const balance = totalCliente - totalCollected;
+
+  function handlePersonalSelect(e: React.ChangeEvent<HTMLSelectElement>) {
+    const pid = Number(e.target.value);
+    setSelectedPersonalId(e.target.value);
+    const person = (personalList as PersonaledProps[]).find((p) => p.id === pid);
+    if (person) setAssignRate(String(person.daily_rate));
+  }
+
+  function handleAssign() {
+    if (!selectedPersonalId || !assignDays || !assignRate) return;
+    assignPersonal(
+      {
+        booking_id: bookingId,
+        personal_id: Number(selectedPersonalId),
+        days: Number(assignDays),
+        rate: Number(assignRate),
+      },
+      {
+        onSuccess: () => {
+          setShowAssignForm(false);
+          setSelectedPersonalId("");
+          setAssignDays("1");
+          setAssignRate("");
+        },
+      }
+    );
+  }
+
+  function handleRegisterPayment() {
+    if (!payAmount || Number(payAmount) <= 0) return;
+    registerPayment(
+      {
+        booking_id: bookingId,
+        amount: Number(payAmount),
+        payment_method: payMethod,
+        payment_date: payDate,
+        notes: payNotes || undefined,
+      },
+      {
+        onSuccess: () => {
+          setShowPaymentForm(false);
+          setPayAmount("");
+          setPayMethod("cash");
+          setPayDate(new Date().toISOString().slice(0, 10));
+          setPayNotes("");
+        },
+      }
+    );
+  }
 
   // Filtered stock for equipment dialog
   const filteredStock = availability.filter((item) => {
@@ -134,14 +277,16 @@ export default function Booking() {
         }
         const b = res[0];
         setValue("event_date", b.event_date);
+        if (b.start_time) setValue("start_time", b.start_time.slice(0, 5));
+        if (b.end_time) setValue("end_time", b.end_time.slice(0, 5));
         setValue("place", b.place);
         setValue("organization", b.organization);
         setValue("booking_status", b.booking_status);
         setValue("payment_status", b.payment_status);
         setValue("event_type", b.event_type);
         setValue("tax", b.tax ?? 0);
-        setValue("revenue", b.revenue ?? 0);
         setValue("price", b.price ?? 0);
+        setLoadedRevenue(b.revenue ?? 0);
         if (b.comments) setValue("comments", b.comments);
 
         checkClient(b.client_dni).then((res) => {
@@ -244,11 +389,13 @@ export default function Booking() {
       organization: data.organization,
       comments: data.comments ?? "",
       event_date: eventDate,
+      start_time: data.start_time || null,
+      end_time: data.end_time || null,
       event_type: data.event_type,
       payment_status: data.payment_status,
       place: data.place,
       tax: Number(data.tax),
-      revenue: Number(data.revenue),
+      revenue: isEditingSession ? loadedRevenue : 0,
       price: Number(data.price),
     };
 
@@ -289,21 +436,43 @@ export default function Booking() {
               : "Completá los datos para agendar el evento"}
           </p>
         </div>
-        {isEditingSession && (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate(`/recibo/${bookingId}`)}
-          >
-            <FileText className="mr-2 h-4 w-4" />
-            Ver recibo
-          </Button>
-        )}
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+        {/* Vistas (solo edición) */}
+        {isEditingSession && (
+          <div
+            className="flex flex-wrap gap-2"
+            role="group"
+            aria-label="Vistas de edición de la reserva"
+          >
+            {(
+              [
+                { id: "general", label: "General" },
+                { id: "materials", label: "Materiales y mano de obra" },
+                { id: "costs", label: "Costos" },
+              ] as const
+            ).map((v) => {
+              const isActive = activeView === v.id;
+              return (
+                <Button
+                  key={v.id}
+                  type="button"
+                  variant={isActive ? "default" : "outline"}
+                  size="sm"
+                  aria-pressed={isActive}
+                  onClick={() => setActiveView(v.id)}
+                >
+                  {v.label}
+                </Button>
+              );
+            })}
+          </div>
+        )}
+
         {/* Cliente + Evento */}
-        <div className="grid gap-6 md:grid-cols-2">
+        {(!isEditingSession || activeView === "general") && (
+          <div className="grid gap-6 md:grid-cols-2">
           {/* Cliente */}
           <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
@@ -426,6 +595,20 @@ export default function Booking() {
                   </p>
                 )}
               </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                    Hora inicio
+                  </label>
+                  <Input type="time" {...register("start_time")} />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                    Hora fin
+                  </label>
+                  <Input type="time" {...register("end_time")} />
+                </div>
+              </div>
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
                   Lugar
@@ -440,6 +623,692 @@ export default function Booking() {
             </div>
           </div>
         </div>
+        )}
+
+        {/* Edición: Materiales y mano de obra */}
+        {isEditingSession && activeView === "materials" && (
+          <>
+            {/* Equipamiento asignado */}
+            <div className="rounded-xl border border-border bg-card shadow-sm">
+              <div className="flex items-center justify-between border-b border-border px-5 py-4">
+                <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  <Package className="h-4 w-4" />
+                  Equipamiento asignado
+                </h2>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowEquipDialog(true)}
+                >
+                  <Plus className="mr-1 h-3.5 w-3.5" />
+                  Agregar
+                </Button>
+              </div>
+
+              {bookingItems.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border bg-muted/30">
+                        <th className="px-5 py-3 text-left font-medium text-muted-foreground">
+                          Nombre
+                        </th>
+                        <th className="px-5 py-3 text-center font-medium text-muted-foreground">
+                          Cantidad
+                        </th>
+                        <th className="px-5 py-3 text-right font-medium text-muted-foreground">
+                          Precio unit.
+                        </th>
+                        <th className="px-5 py-3 text-right font-medium text-muted-foreground">
+                          Total
+                        </th>
+                        <th className="px-5 py-3" />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {bookingItems.map((item, i) => (
+                        <tr
+                          key={item.id ?? i}
+                          className="border-b border-border last:border-0"
+                        >
+                          <td className="px-5 py-3 text-foreground">{item.name}</td>
+                          <td className="px-5 py-3 text-center tabular-nums">
+                            {item.quantity}
+                          </td>
+                          <td className="px-5 py-3 text-right tabular-nums text-muted-foreground">
+                            ${formatCurrency(item.price)}
+                          </td>
+                          <td className="px-5 py-3 text-right font-medium tabular-nums">
+                            ${formatCurrency(item.price * item.quantity)}
+                          </td>
+                          <td className="px-5 py-3 text-right">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                              disabled={isRemovingItem}
+                              onClick={() => item.id && removeItem(item.id)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="px-5 py-8 text-center text-sm text-muted-foreground">
+                  No hay equipamiento asignado.
+                </p>
+              )}
+            </div>
+
+            {/* Personal asignado */}
+            <div className="rounded-xl border border-border bg-card shadow-sm">
+              <div className="flex items-center justify-between border-b border-border px-5 py-4">
+                <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  <Users className="h-4 w-4" />
+                  Personal asignado
+                </h2>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAssignForm((v) => !v)}
+                >
+                  <Plus className="mr-1 h-3.5 w-3.5" />
+                  Asignar
+                </Button>
+              </div>
+
+              {showAssignForm && (
+                <div className="border-b border-border bg-muted/20 px-5 py-4">
+                  <div className="grid gap-3 sm:grid-cols-4">
+                    <div className="sm:col-span-2">
+                      <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                        Empleado
+                      </label>
+                      <select
+                        className={selectClass}
+                        value={selectedPersonalId}
+                        onChange={handlePersonalSelect}
+                      >
+                        <option value="">Seleccionar...</option>
+                        {(personalList as PersonaledProps[]).map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name} {p.lastName} — {roleLabels[p.role] ?? p.role}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                        Días
+                      </label>
+                      <Input
+                        type="number"
+                        min={1}
+                        value={assignDays}
+                        onChange={(e) => setAssignDays(e.target.value)}
+                        placeholder="1"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                        Tarifa/día ($)
+                      </label>
+                      <Input
+                        type="number"
+                        min={0}
+                        value={assignRate}
+                        onChange={(e) => setAssignRate(e.target.value)}
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-3 flex gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      disabled={isAssigning || !selectedPersonalId}
+                      onClick={handleAssign}
+                    >
+                      {isAssigning ? "Guardando..." : "Confirmar"}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setShowAssignForm(false)}
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {assignments.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border bg-muted/30">
+                        <th className="px-5 py-3 text-left font-medium text-muted-foreground">
+                          Nombre
+                        </th>
+                        <th className="px-5 py-3 text-left font-medium text-muted-foreground hidden md:table-cell">
+                          Rol
+                        </th>
+                        <th className="px-5 py-3 text-center font-medium text-muted-foreground">
+                          Días
+                        </th>
+                        <th className="px-5 py-3 text-right font-medium text-muted-foreground">
+                          Tarifa/día
+                        </th>
+                        <th className="px-5 py-3 text-right font-medium text-muted-foreground">
+                          Total
+                        </th>
+                        <th className="px-5 py-3" />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {assignments.map((a) => (
+                        <tr
+                          key={a.id}
+                          className="border-b border-border last:border-0"
+                        >
+                          <td className="px-5 py-3 font-medium text-foreground">
+                            {a.personal
+                              ? `${a.personal.name} ${a.personal.lastName}`
+                              : `#${a.personal_id}`}
+                          </td>
+                          <td className="px-5 py-3 text-muted-foreground hidden md:table-cell">
+                            {a.personal
+                              ? (roleLabels[a.personal.role] ?? a.personal.role)
+                              : "—"}
+                          </td>
+                          <td className="px-5 py-3 text-center tabular-nums">
+                            {a.days}
+                          </td>
+                          <td className="px-5 py-3 text-right tabular-nums text-muted-foreground">
+                            ${formatCurrency(a.rate)}
+                          </td>
+                          <td className="px-5 py-3 text-right font-medium tabular-nums">
+                            ${formatCurrency(a.days * a.rate)}
+                          </td>
+                          <td className="px-5 py-3 text-right">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                              disabled={isRemovingAssignment}
+                              onClick={() => removeAssignment(a.id)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                !showAssignForm && (
+                  <p className="px-5 py-8 text-center text-sm text-muted-foreground">
+                    No hay personal asignado.
+                  </p>
+                )
+              )}
+            </div>
+          </>
+        )}
+
+        {/* Edición: Costos */}
+        {isEditingSession && activeView === "costs" && (
+          <>
+            {/* Resumen financiero */}
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+              <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Costo equipo
+                </p>
+                <p className="mt-1 text-base font-semibold tabular-nums text-foreground">
+                  ${formatCurrency(itemsCostTotal)}
+                </p>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Costo personal
+                </p>
+                <p className="mt-1 text-base font-semibold tabular-nums text-foreground">
+                  ${formatCurrency(personnelCost)}
+                </p>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Gastos
+                </p>
+                <p className="mt-1 text-base font-semibold tabular-nums text-foreground">
+                  ${formatCurrency(billsTotal)}
+                </p>
+              </div>
+              <div
+                className={cn(
+                  "rounded-xl border p-4 shadow-sm",
+                  editMargen >= 0
+                    ? "border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/30"
+                    : "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30"
+                )}
+              >
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Margen
+                </p>
+                <p
+                  className={cn(
+                    "mt-1 text-base font-semibold tabular-nums",
+                    editMargen >= 0
+                      ? "text-emerald-700 dark:text-emerald-400"
+                      : "text-red-700 dark:text-red-400"
+                  )}
+                >
+                  ${formatCurrency(Math.abs(editMargen))}
+                </p>
+                <p
+                  className={cn(
+                    "mt-0.5 text-xs",
+                    editMargen >= 0
+                      ? "text-emerald-600 dark:text-emerald-500"
+                      : "text-red-600 dark:text-red-500"
+                  )}
+                >
+                  {editMargen >= 0 ? "+" : "-"}
+                  {Math.abs(editMargenPct).toFixed(1)}%
+                </p>
+              </div>
+            </div>
+
+            {/* Pagos */}
+            <div className="rounded-xl border border-border bg-card shadow-sm">
+              <div className="flex items-center justify-between border-b border-border px-5 py-4">
+                <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  <CreditCard className="h-4 w-4" />
+                  Pagos recibidos
+                </h2>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowPaymentForm((v) => !v)}
+                >
+                  <Plus className="mr-1 h-3.5 w-3.5" />
+                  Registrar pago
+                </Button>
+              </div>
+
+              {showPaymentForm && (
+                <div className="border-b border-border bg-muted/20 px-5 py-4">
+                  <div className="grid gap-3 sm:grid-cols-4">
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                        Monto ($)
+                      </label>
+                      <Input
+                        type="number"
+                        min={0}
+                        value={payAmount}
+                        onChange={(e) => setPayAmount(e.target.value)}
+                        placeholder="0.00"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                        Método
+                      </label>
+                      <select
+                        className={selectClass}
+                        value={payMethod}
+                        onChange={(e) =>
+                          setPayMethod(e.target.value as typeof payMethod)
+                        }
+                      >
+                        <option value="cash">Efectivo</option>
+                        <option value="transfer">Transferencia</option>
+                        <option value="card">Tarjeta</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                        Fecha
+                      </label>
+                      <Input
+                        type="date"
+                        value={payDate}
+                        onChange={(e) => setPayDate(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                        Notas
+                      </label>
+                      <Input
+                        type="text"
+                        value={payNotes}
+                        onChange={(e) => setPayNotes(e.target.value)}
+                        placeholder="Opcional"
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-3 flex gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      disabled={isAddingPayment || !payAmount}
+                      onClick={handleRegisterPayment}
+                    >
+                      {isAddingPayment ? "Guardando..." : "Confirmar"}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setShowPaymentForm(false)}
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {payments.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border bg-muted/30">
+                        <th className="px-5 py-3 text-left font-medium text-muted-foreground">
+                          Fecha
+                        </th>
+                        <th className="px-5 py-3 text-left font-medium text-muted-foreground">
+                          Método
+                        </th>
+                        <th className="px-5 py-3 text-left font-medium text-muted-foreground hidden md:table-cell">
+                          Notas
+                        </th>
+                        <th className="px-5 py-3 text-right font-medium text-muted-foreground">
+                          Monto
+                        </th>
+                        <th className="px-5 py-3" />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {payments.map((p) => (
+                        <tr key={p.id} className="border-b border-border last:border-0">
+                          <td className="px-5 py-3 text-foreground">{p.payment_date}</td>
+                          <td className="px-5 py-3 text-muted-foreground">
+                            {p.payment_method === "cash"
+                              ? "Efectivo"
+                              : p.payment_method === "transfer"
+                              ? "Transferencia"
+                              : "Tarjeta"}
+                          </td>
+                          <td className="px-5 py-3 text-muted-foreground hidden md:table-cell">
+                            {p.notes ?? "—"}
+                          </td>
+                          <td className="px-5 py-3 text-right font-medium tabular-nums text-foreground">
+                            ${formatCurrency(p.amount)}
+                          </td>
+                          <td className="px-5 py-3 text-right">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                              disabled={isRemovingPayment}
+                              onClick={() => removePayment(p.id)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                !showPaymentForm && (
+                  <p className="px-5 py-8 text-center text-sm text-muted-foreground">
+                    No hay pagos registrados.
+                  </p>
+                )
+              )}
+
+              <div className="flex justify-end border-t border-border bg-muted/20 px-5 py-4">
+                <div className="flex flex-col gap-1.5 text-sm">
+                  <div className="flex justify-between gap-10">
+                    <span className="text-muted-foreground">Total al cliente</span>
+                    <span className="tabular-nums">${formatCurrency(totalCliente)}</span>
+                  </div>
+                  <div className="flex justify-between gap-10">
+                    <span className="text-muted-foreground">Cobrado</span>
+                    <span className="tabular-nums text-emerald-600 dark:text-emerald-400">
+                      ${formatCurrency(totalCollected)}
+                    </span>
+                  </div>
+                  <div className="mt-2 flex justify-between gap-10 border-t border-border pt-2">
+                    <span className="font-semibold text-foreground">Saldo pendiente</span>
+                    <span
+                      className={cn(
+                        "font-bold tabular-nums",
+                        balance <= 0
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : "text-amber-600 dark:text-amber-400"
+                      )}
+                    >
+                      ${formatCurrency(Math.max(balance, 0))}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Gastos */}
+            <div className="rounded-xl border border-border bg-card shadow-sm">
+              <div className="flex items-center justify-between border-b border-border px-5 py-4">
+                <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  <Receipt className="h-4 w-4" />
+                  Gastos del evento
+                </h2>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowGastoForm((v) => !v)}
+                >
+                  <Plus className="mr-1.5 h-3.5 w-3.5" />
+                  Agregar gasto
+                </Button>
+              </div>
+
+              {showGastoForm && (
+                <div className="border-b border-border px-5 py-4">
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="lg:col-span-2">
+                      <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                        Descripción
+                      </label>
+                      <Input
+                        placeholder="Ej: Combustible, Catering..."
+                        value={gastoName}
+                        onChange={(e) => setGastoName(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                        Monto ($)
+                      </label>
+                      <Input
+                        type="number"
+                        min={0}
+                        placeholder="0"
+                        value={gastoAmount}
+                        onChange={(e) => setGastoAmount(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                        Método de pago
+                      </label>
+                      <select
+                        className={selectClass}
+                        value={gastoPaidWith}
+                        onChange={(e) =>
+                          setGastoPaidWith(e.target.value as typeof gastoPaidWith)
+                        }
+                      >
+                        <option value="cash">Efectivo</option>
+                        <option value="transfer">Transferencia</option>
+                        <option value="card">Tarjeta</option>
+                        <option value="bank check">Cheque</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                        Pagado por
+                      </label>
+                      <Input
+                        placeholder="Nombre"
+                        value={gastoPaidBy}
+                        onChange={(e) => setGastoPaidBy(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                        Pagado a (opcional)
+                      </label>
+                      <Input
+                        placeholder="Proveedor o persona"
+                        value={gastoPaidTo}
+                        onChange={(e) => setGastoPaidTo(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-3 flex justify-end gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setShowGastoForm(false);
+                        setGastoName("");
+                        setGastoAmount("");
+                        setGastoPaidBy("");
+                        setGastoPaidTo("");
+                      }}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      disabled={isAddingBill || !gastoName || !gastoAmount || !gastoPaidBy}
+                      onClick={() => {
+                        addBill(
+                          {
+                            name: gastoName,
+                            amount: Number(gastoAmount),
+                            paid_with: gastoPaidWith,
+                            paid_by: gastoPaidBy,
+                            paid_to: gastoPaidTo || undefined,
+                            quantity: 1,
+                            updated_by: "",
+                          },
+                          {
+                            onSuccess: () => {
+                              setShowGastoForm(false);
+                              setGastoName("");
+                              setGastoAmount("");
+                              setGastoPaidBy("");
+                              setGastoPaidTo("");
+                            },
+                          }
+                        );
+                      }}
+                    >
+                      {isAddingBill ? "Guardando..." : "Guardar gasto"}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {bills.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border bg-muted/30">
+                        <th className="px-5 py-3 text-left font-medium text-muted-foreground">
+                          Descripción
+                        </th>
+                        <th className="px-5 py-3 text-left font-medium text-muted-foreground hidden md:table-cell">
+                          Pagado por
+                        </th>
+                        <th className="px-5 py-3 text-left font-medium text-muted-foreground hidden md:table-cell">
+                          Método
+                        </th>
+                        <th className="px-5 py-3 text-right font-medium text-muted-foreground">
+                          Monto
+                        </th>
+                        <th className="px-5 py-3" />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {bills.map((b) => (
+                        <tr key={b.id} className="border-b border-border last:border-0">
+                          <td className="px-5 py-3 text-foreground">{b.name}</td>
+                          <td className="px-5 py-3 text-muted-foreground hidden md:table-cell">
+                            {b.paid_by}
+                            {b.paid_to ? ` → ${b.paid_to}` : ""}
+                          </td>
+                          <td className="px-5 py-3 text-muted-foreground hidden md:table-cell">
+                            {b.paid_with === "cash"
+                              ? "Efectivo"
+                              : b.paid_with === "transfer"
+                              ? "Transferencia"
+                              : b.paid_with === "card"
+                              ? "Tarjeta"
+                              : "Cheque"}
+                          </td>
+                          <td className="px-5 py-3 text-right font-medium tabular-nums text-foreground">
+                            ${formatCurrency(b.amount)}
+                          </td>
+                          <td className="px-5 py-3 text-right">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                              disabled={isRemovingBill}
+                              onClick={() => removeBill(b.id)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                !showGastoForm && (
+                  <p className="px-5 py-8 text-center text-sm text-muted-foreground">
+                    No hay gastos registrados.
+                  </p>
+                )
+              )}
+            </div>
+          </>
+        )}
 
         {/* Equipamiento (solo creación) */}
         {!isEditingSession && (
@@ -584,7 +1453,8 @@ export default function Booking() {
         )}
 
         {/* Estado y precio */}
-        <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+        {(!isEditingSession || activeView === "general") && (
+          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Estado y precio
           </h2>
@@ -625,21 +1495,6 @@ export default function Booking() {
                   <option value="cancel">Cancelado</option>
                 )}
               </select>
-            </div>
-
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                Margen de ganancia %
-              </label>
-              <Input
-                type="number"
-                min={0}
-                placeholder="0"
-                {...register("revenue")}
-              />
-              <p className="mt-1 text-xs text-muted-foreground">
-                Aplicado al costo de equipamiento
-              </p>
             </div>
 
             <div>
@@ -712,9 +1567,11 @@ export default function Booking() {
             </div>
           )}
         </div>
+        )}
 
         {/* Comentarios */}
-        <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+        {(!isEditingSession || activeView === "general") && (
+          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Comentarios
           </h2>
@@ -725,6 +1582,7 @@ export default function Booking() {
             {...register("comments")}
           />
         </div>
+        )}
 
         {/* Acciones */}
         <div className="flex justify-end gap-3">
@@ -769,7 +1627,11 @@ export default function Booking() {
               setFilterByName={setEquipFilter}
             />
             <div className="max-h-80 overflow-y-auto rounded-md border border-border">
-              {filteredStock.length === 0 ? (
+              {isLoadingStock ? (
+                <div className="flex items-center justify-center py-12">
+                  <MiniSpinner />
+                </div>
+              ) : filteredStock.length === 0 ? (
                 <p className="p-4 text-sm text-muted-foreground">Sin resultados.</p>
               ) : (
                 <table className="w-full text-sm">
@@ -814,8 +1676,25 @@ export default function Booking() {
                             size="sm"
                             variant="outline"
                             className="h-7 px-2 text-xs"
-                            disabled={item.available === 0}
-                            onClick={() => addEquipItem(item)}
+                              disabled={
+                                item.available === 0 ||
+                                (isEditingSession && (isAddingItem || !equipQty[item.id]))
+                              }
+                            onClick={() => {
+                              if (isEditingSession) {
+                                const qty = Number(equipQty[item.id] ?? 1);
+                                if (qty <= 0 || qty > item.available) return;
+                                addItem({
+                                  equipment_id: item.id,
+                                  name: item.name,
+                                  quantity: qty,
+                                  price: item.price,
+                                });
+                                setEquipQty((prev) => ({ ...prev, [item.id]: "" }));
+                                return;
+                              }
+                              addEquipItem(item);
+                            }}
                           >
                             Agregar
                           </Button>

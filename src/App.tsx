@@ -9,7 +9,10 @@ import Bookings from "./routes/Bookings";
 import Dashboard from "./routes/Dashboard";
 import Equipment from "./routes/Equipment";
 import HumandResource from "./routes/HumandResource";
+import PersonalReport from "./routes/PersonalReport";
+import PersonalReportDetail from "./routes/PersonalReportDetail";
 import PersonalForm from "./routes/PersonalForm";
+import PersonalRoles from "./routes/PersonalRoles";
 import Inventory from "./routes/Inventory";
 import Layout from "./routes/Layout";
 import Login from "./routes/Login";
@@ -81,6 +84,7 @@ function App() {
           <Route path="/recibo/:invoiceID" element={<ClientInvoice />} />
           <Route path="/presupuesto/:bookingId" element={<Presupuesto />} />
           <Route path="/evento/:bookingId" element={<EventoDetalle />} />
+          <Route path="/evento/:bookingId/editar" element={<EventoDetalle />} />
           <Route path="/disponibilidad" element={<Disponibilidad />} />
 
           {/* Ventas */}
@@ -90,6 +94,9 @@ function App() {
           <Route path="/cuenta-corrientes" element={<CuentaCorrientes />} />
           <Route path="/articulos-vendidos" element={<ArticulosVendidos />} />
           <Route path="/personal" element={<HumandResource />} />
+          <Route path="/reporte-personal" element={<PersonalReport />} />
+          <Route path="/reporte-personal/:personalId" element={<PersonalReportDetail />} />
+          <Route path="/personal/roles" element={<PersonalRoles />} />
           <Route path="/personal/agregar" element={<PersonalForm />} />
           <Route path="/personal/editar/:personalId" element={<PersonalForm />} />
 
@@ -106,7 +113,7 @@ function App() {
           {/* Contabilidad */}
           <Route path="/cuentas-contables" element={<CuentasContables />} />
           <Route path="/asiento-teorico" element={<AsientoTeorico />} />
-          <Route path="/resultado-economico" element={<ComingSoon title="Resultado Económico" />} />
+          {/* <Route path="/resultado-economico" element={<ComingSoon title="Resultado Económico" />} /> */}
 
           <Route path="/ingresos" element={<Ingresos />} />
           <Route path="/recaudacion" element={<Recaudacion />} />

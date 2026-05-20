@@ -26,11 +26,12 @@ export interface BookingProps {
   comments: string;
   organization: Organization;
   event_date: string;
+  start_time?: string | null;
+  end_time?: string | null;
   event_type: EventType;
   payment_status: PaymentStatus;
   place: string;
   tax: number;
-  revenue: number;
   price: number;
 }
 
@@ -93,6 +94,8 @@ export interface BookingRecord {
   created_at: string;
   client_dni: number;
   event_date: string;
+  start_time?: string | null;
+  end_time?: string | null;
   event_type: EventType;
   organization: Organization;
   place: string;
@@ -120,22 +123,18 @@ export interface BillType {
 }
 
 // Personal / Staff types
-export type PersonalRole =
-  | "tecnico"
-  | "sonidista"
-  | "iluminador"
-  | "chofer"
-  | "coordinador"
-  | "otro";
+export type PersonalRoleCode = string;
 
 export interface PersonalProps {
   name: string;
   lastName: string;
   dni?: number;
   phoneNumber?: string;
-  role: PersonalRole;
+  role: PersonalRoleCode;
   daily_rate: number;
   notes?: string;
+  cbu?: string | null;
+  alias?: string | null;
 }
 
 export interface PersonaledProps extends PersonalProps {
@@ -158,7 +157,7 @@ export interface AssignedProps extends AssignmentProps {
   personal?: {
     name: string;
     lastName: string;
-    role: PersonalRole;
+    role: PersonalRoleCode;
   };
 }
 

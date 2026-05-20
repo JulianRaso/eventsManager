@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import AddLayout from "../components/AddLayout";
 import NavigationButtons from "../components/NavigationButtons";
 import Spinner from "../components/Spinner";
@@ -8,18 +9,20 @@ import { Input } from "../components/ui/Input";
 import useAddPersonal from "../hooks/useAddPersonal";
 import useUpdatePersonal from "../hooks/useUpdatePersonal";
 import { getPersonalById } from "../services/personal";
-import { PersonalRole } from "../types";
 import { PersonalProps, PersonaledProps } from "../types";
 import { cn } from "../lib/utils";
+import { getPersonalRoles } from "../services/personalRoles";
 
-const roles = [
+const fallbackRoles = [
   { value: "tecnico", label: "Técnico" },
   { value: "sonidista", label: "Sonidista" },
   { value: "iluminador", label: "Iluminador" },
   { value: "chofer", label: "Chofer" },
+  { value: "operario", label: "Operario" },
+  { value: "asistente", label: "Asistente" },
   { value: "coordinador", label: "Coordinador" },
   { value: "otro", label: "Otro" },
-];
+] as const;
 
 const selectClass =
   "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
@@ -33,6 +36,18 @@ export default function PersonalForm() {
   const { isAdding, createPersonal } = useAddPersonal();
   const { isUpdating, editPersonal } = useUpdatePersonal();
   const isSaving = isAdding || isUpdating;
+
+  const { data: personalRoles = [] } = useQuery({
+    queryKey: ["personal_roles_active"],
+    queryFn: () => getPersonalRoles({ includeInactive: false }),
+  });
+
+  const roles = useMemo(() => {
+    if (personalRoles.length > 0) {
+      return personalRoles.map((r) => ({ value: r.code, label: r.label }));
+    }
+    return [...fallbackRoles];
+  }, [personalRoles]);
 
   const {
     register,
@@ -49,9 +64,11 @@ export default function PersonalForm() {
       setValue("lastName", data.lastName);
       if (data.dni) setValue("dni", data.dni);
       if (data.phoneNumber) setValue("phoneNumber", data.phoneNumber);
-      setValue("role", data.role as PersonalRole);
+      setValue("role", data.role);
       setValue("daily_rate", data.daily_rate);
       if (data.notes) setValue("notes", data.notes);
+      if (data.cbu) setValue("cbu", data.cbu);
+      if (data.alias) setValue("alias", data.alias);
     });
   }, [isEditing, personalId, setValue]);
 
@@ -188,6 +205,33 @@ export default function PersonalForm() {
               type="number"
               placeholder="12345678"
               {...register("dni", { valueAsNumber: true })}
+              disabled={isSaving}
+            />
+          </div>
+
+          {/* CBU */}
+          <div className="flex flex-col gap-2">
+            <label htmlFor="cbu" className={labelClass}>
+              CBU
+            </label>
+            <Input
+              id="cbu"
+              placeholder="CBU (22 dígitos)"
+              inputMode="numeric"
+              {...register("cbu")}
+              disabled={isSaving}
+            />
+          </div>
+
+          {/* Alias */}
+          <div className="flex flex-col gap-2">
+            <label htmlFor="alias" className={labelClass}>
+              Alias
+            </label>
+            <Input
+              id="alias"
+              placeholder="alias.cuenta.banco"
+              {...register("alias")}
               disabled={isSaving}
             />
           </div>

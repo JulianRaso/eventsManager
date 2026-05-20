@@ -481,6 +481,44 @@ export type Database = {
         }
         Relationships: []
       }
+      personal_payments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: number
+          notes: string | null
+          payment_date: string
+          payment_method: string
+          personal_id: number
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: number
+          notes?: string | null
+          payment_date: string
+          payment_method: string
+          personal_id: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: number
+          notes?: string | null
+          payment_date?: string
+          payment_method?: string
+          personal_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personal_payments_personal_id_fkey"
+            columns: ["personal_id"]
+            isOneToOne: false
+            referencedRelation: "personal"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

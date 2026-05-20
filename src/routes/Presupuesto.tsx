@@ -10,7 +10,9 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import companyLogo from "../assets/ShowRental.png";
 import Spinner from "@/components/Spinner";
-import { Printer } from "lucide-react";
+import { FileDown } from "lucide-react";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import PresupuestoPDF from "@/components/PresupuestoPDF";
 
 const eventTypes: Record<string, { es: string }> = {
   other: { es: "Otro" },
@@ -240,12 +242,25 @@ export default function Presupuesto() {
           Este presupuesto tiene validez de 30 días desde su emisión.
         </p>
 
-        {/* Imprimir */}
+        {/* Exportar PDF */}
         <div className="flex justify-end">
-          <Button variant="outline" className="gap-2" onClick={() => window.print()}>
-            <Printer className="h-4 w-4" />
-            Imprimir presupuesto
-          </Button>
+          <PDFDownloadLink
+            document={
+              <PresupuestoPDF
+                bookingData={bookingData}
+                clientData={clientData}
+                equipment={equipment}
+              />
+            }
+            fileName={`presupuesto-${clientData.name}-${clientData.lastName}.pdf`.toLowerCase().replace(/\s+/g, "-")}
+          >
+            {({ loading }) => (
+              <Button variant="outline" className="gap-2" disabled={loading}>
+                <FileDown className="h-4 w-4" />
+                {loading ? "Generando..." : "Exportar PDF"}
+              </Button>
+            )}
+          </PDFDownloadLink>
         </div>
       </div>
     </AddLayout>

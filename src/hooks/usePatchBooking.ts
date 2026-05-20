@@ -6,6 +6,8 @@ import { BookingStatus } from "../types";
 interface PatchFields {
   booking_status?: BookingStatus;
   price?: number;
+  start_time?: string | null;
+  end_time?: string | null;
 }
 
 export default function usePatchBooking(bookingId: number) {

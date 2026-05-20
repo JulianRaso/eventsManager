@@ -8,6 +8,7 @@ interface NavButtonProps {
   description: string;
   to?: string;
   className?: string;
+  onClick?: () => void;
 }
 
 export default function NavButton({
@@ -16,6 +17,7 @@ export default function NavButton({
   description,
   to: toProp,
   className,
+  onClick,
 }: NavButtonProps) {
   const currLocation = useLocation().pathname.split("/");
   const path =
@@ -32,6 +34,7 @@ export default function NavButton({
   return (
     <NavLink
       to={path.startsWith("/") ? path : `/${path}`}
+      onClick={onClick}
       className={cn(
         className,
         "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",

@@ -8,11 +8,12 @@ export type eventData = {
     event_type: "birthday" | "marriage" | "corporate" | "fifteen_party" | "other";
     place: string;
     event_date: string;
+    start_time?: string | null;
+    end_time?: string | null;
     booking_status: "pending" | "cancel" | "confirm";
     payment_status: "pending" | "partially_paid" | "paid";
     comments: string;
     tax: number;
-    revenue: number;
     price: number;
   };
   

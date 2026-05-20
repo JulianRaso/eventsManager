@@ -10,7 +10,9 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import companyLogo from "../assets/ShowRental.png";
 import Spinner from "@/components/Spinner";
-import { Printer } from "lucide-react";
+import { FileDown } from "lucide-react";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import ReciboPDF from "@/components/ReciboPDF";
 
 const eventTypes: Record<string, { es: string }> = {
   other: { es: "Otro" },
@@ -239,7 +241,7 @@ export default function ClientInvoice() {
               <span className="font-medium tabular-nums">${formatCurrency(totalCliente)}</span>
             </div>
             <div className="flex justify-between gap-8">
-              <span className="text-muted-foreground">Total pagado</span>
+              <span className="text-muted-foreground">Total abonado</span>
               <span className="font-medium tabular-nums text-emerald-600 dark:text-emerald-400">
                 ${formatCurrency(totalPagado)}
               </span>
@@ -264,12 +266,25 @@ export default function ClientInvoice() {
           Este recibo no reemplaza la factura. Conservá tu comprobante de pago.
         </p>
 
-        {/* Imprimir */}
+        {/* Exportar PDF */}
         <div className="flex justify-end">
-          <Button variant="outline" className="gap-2" onClick={() => window.print()}>
-            <Printer className="h-4 w-4" />
-            Imprimir recibo
-          </Button>
+          <PDFDownloadLink
+            document={
+              <ReciboPDF
+                invoiceData={invoiceData}
+                clientData={clientData}
+                payments={payments}
+              />
+            }
+            fileName={`recibo-${clientData.name}-${clientData.lastName}.pdf`.toLowerCase().replace(/\s+/g, "-")}
+          >
+            {({ loading }) => (
+              <Button variant="outline" className="gap-2" disabled={loading}>
+                <FileDown className="h-4 w-4" />
+                {loading ? "Generando..." : "Exportar PDF"}
+              </Button>
+            )}
+          </PDFDownloadLink>
         </div>
       </div>
     </AddLayout>

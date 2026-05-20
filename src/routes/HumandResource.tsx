@@ -1,5 +1,7 @@
 import { useMemo } from "react";
-import { Users, Wrench, DollarSign, Headphones } from "lucide-react";
+import { Users, Wrench, DollarSign, Headphones, Settings2, BarChart3 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { NavLink } from "react-router-dom";
 import AddButton from "../components/AddButton";
 import CategoryLayout from "../components/CategoryLayout";
 import Spinner from "../components/Spinner";
@@ -14,23 +16,27 @@ import {
 } from "../components/Table";
 import TableButtons from "../components/TableButtons";
 import { KPICard } from "../components/ui/KPICard";
+import { Button } from "../components/ui/button";
 import useGetPersonal from "../hooks/useGetPersonal";
 import useDeletePersonal from "../hooks/useDeletePersonal";
 import { formatCurrency } from "../utils/formatCurrency";
 import { PersonaledProps } from "../types";
-
-const roleLabels: Record<string, string> = {
-  tecnico: "Técnico",
-  sonidista: "Sonidista",
-  iluminador: "Iluminador",
-  chofer: "Chofer",
-  coordinador: "Coordinador",
-  otro: "Otro",
-};
+import { getPersonalRoles } from "../services/personalRoles";
 
 export default function HumandResource() {
   const { data, isLoading } = useGetPersonal();
   const { isDeleting, removePersonal } = useDeletePersonal();
+
+  const { data: personalRoles = [] } = useQuery({
+    queryKey: ["personal_roles"],
+    queryFn: () => getPersonalRoles({ includeInactive: true }),
+  });
+
+  const roleLabels = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const r of personalRoles) map[r.code] = r.label;
+    return map;
+  }, [personalRoles]);
 
   const totals = useMemo(() => {
     const staff = (data as PersonaledProps[]) ?? [];
@@ -77,7 +83,19 @@ export default function HumandResource() {
         />
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+        <NavLink to="/reporte-personal">
+          <Button variant="outline" size="sm" className="gap-1.5">
+            <BarChart3 className="h-4 w-4" />
+            Reporte y cuenta personal
+          </Button>
+        </NavLink>
+        <NavLink to="/personal/roles">
+          <Button variant="outline" size="sm" className="gap-1.5">
+            <Settings2 className="h-4 w-4" />
+            Gestionar roles
+          </Button>
+        </NavLink>
         <AddButton navigateTo="/personal/agregar" label="Nuevo empleado" />
       </div>
 

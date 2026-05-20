@@ -1,7 +1,7 @@
-import { Package, TrendingUp } from "lucide-react";
+import { Package } from "lucide-react";
 import { Pie, PieChart, Cell } from "recharts";
 
-import useGetMostUsedEquipment from "@/hooks/useGetMostUsedEquipment";
+import useGetMostUsedCategories from "@/hooks/useGetMostUsedCategories";
 import MiniSpinner from "../MiniSpinner";
 import {
   Card,
@@ -23,7 +23,7 @@ import { CHART_PALETTE } from "@/lib/chartColors";
 export function MostEquipments() {
   const currMonth = `${new Date().getFullYear()}-${new Date().getMonth() + 1}`;
   const { data = [{ name: "", total: 0 }], isLoading } =
-    useGetMostUsedEquipment();
+    useGetMostUsedCategories();
 
   if (isLoading) return <MiniSpinner />;
 
@@ -56,7 +56,7 @@ export function MostEquipments() {
           <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-950">
             <Package className="h-4 w-4 text-blue-600 dark:text-blue-400" />
           </div>
-          <CardTitle className="text-lg">Equipos Más Solicitados</CardTitle>
+          <CardTitle className="text-lg">Categorías Más Solicitadas</CardTitle>
         </div>
         <CardDescription>Enero - {formatDateCharts(currMonth)}</CardDescription>
       </CardHeader>
@@ -86,12 +86,8 @@ export function MostEquipments() {
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex-col gap-2 text-sm pt-4">
-        <div className="flex items-center gap-2 font-medium leading-none text-emerald-600 dark:text-emerald-400">
-          <TrendingUp className="h-4 w-4" />
-          +20% respecto del mes anterior
-        </div>
         <div className="leading-none text-muted-foreground text-center">
-          Top 10 equipos más solicitados
+          Top 10 categorías más solicitadas
         </div>
       </CardFooter>
     </Card>

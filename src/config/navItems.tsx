@@ -10,9 +10,10 @@ import {
   ReceiptText,
   ShoppingCart,
   BookOpen,
-  TrendingUp,
+  //TrendingUp,
   Building2,
   ClipboardList,
+  BarChart3,
   CreditCard,
   Truck,
   Settings2,
@@ -29,6 +30,7 @@ export interface NavItemConfig {
 
 export interface NavGroupConfig {
   groupLabel: string;
+  groupIcon: ReactNode;
   items: NavItemConfig[];
 }
 
@@ -42,16 +44,19 @@ export const navItems: NavEntry[] = [
   { path: "dashboard", description: "Dashboard", icon: <MdDashboard /> },
   {
     groupLabel: "Ventas",
+    groupIcon: <ShoppingCart size={18} />,
     items: [
       { path: "reservas", description: "Reservas", icon: <MdEvent /> },
       { path: "clientes", description: "Clientes", icon: <Users size={18} /> },
       { path: "cuenta-corrientes", description: "Cta. Corrientes", icon: <ReceiptText size={18} /> },
       { path: "articulos-vendidos", description: "Artículos Vendidos", icon: <ShoppingCart size={18} /> },
       { path: "personal", description: "Personal", icon: <IoPerson /> },
+      { path: "reporte-personal", description: "Reporte personal", icon: <BarChart3 size={18} /> },
     ],
   },
   {
     groupLabel: "Compras",
+    groupIcon: <Truck size={18} />,
     items: [
       { path: "proveedores", description: "Proveedores", icon: <Building2 size={18} /> },
       { path: "compras", description: "Comprobantes", icon: <ClipboardList size={18} /> },
@@ -60,6 +65,7 @@ export const navItems: NavEntry[] = [
   },
   {
     groupLabel: "Stock",
+    groupIcon: <Boxes size={18} />,
     items: [
       { path: "inventario", description: "Artículos", icon: <MdOutlineInventory2 /> },
       { path: "parametrizacion-contable", description: "Param. Contable", icon: <Settings2 size={18} /> },
@@ -69,6 +75,7 @@ export const navItems: NavEntry[] = [
   },
   {
     groupLabel: "Tesorería",
+    groupIcon: <Banknote size={18} />,
     items: [
       { path: "recaudacion", description: "Recaudación", icon: <Banknote size={18} /> },
       { path: "caja", description: "Caja", icon: <Scale size={18} /> },
@@ -78,14 +85,16 @@ export const navItems: NavEntry[] = [
   },
   {
     groupLabel: "Contabilidad",
+    groupIcon: <BookOpen size={18} />,
     items: [
       { path: "cuentas-contables", description: "Cuentas Contables", icon: <BookOpen size={18} /> },
       { path: "asiento-teorico", description: "Asiento Teórico", icon: <ClipboardList size={18} /> },
-      { path: "resultado-economico", description: "Resultado Económico", icon: <TrendingUp size={18} /> },
+      //{ path: "resultado-economico", description: "Resultado Económico", icon: <TrendingUp size={18} /> },
     ],
   },
   {
     groupLabel: "Activo Fijo",
+    groupIcon: <Truck size={18} />,
     items: [
       { path: "transporte", description: "Transporte", icon: <Truck size={18} /> },
     ],
