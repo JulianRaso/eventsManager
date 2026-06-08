@@ -1,11 +1,11 @@
 import { useState, useMemo } from "react";
 import { ChevronLeft, ChevronRight, Package, BarChart2, DollarSign, Hash } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import CategoryLayout from "../components/CategoryLayout";
-import Spinner from "../components/Spinner";
-import { KPICard } from "../components/ui/KPICard";
-import { formatCurrency } from "../utils/formatCurrency";
-import { getAllBookingItemsWithDate } from "../services/bookingItems";
+import CategoryLayout from "@/components/CategoryLayout";
+import Spinner from "@/components/Spinner";
+import { KPICard } from "@/components/ui/KPICard";
+import { formatCurrency } from "@/utils/formatCurrency";
+import { getAllBookingItemsWithDate } from "@/services/bookingItems";
 
 const MONTH_NAMES = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -27,8 +27,8 @@ export default function ArticulosVendidos() {
   const [month, setMonth] = useState(now.getMonth()); // 0-based
 
   const { data = [], isLoading } = useQuery({
-    queryKey: ["allBookingItemsWithDate"],
-    queryFn: getAllBookingItemsWithDate,
+    queryKey: ["allBookingItemsWithDate", "confirm"],
+    queryFn: () => getAllBookingItemsWithDate({ bookingStatus: "confirm" }),
   });
 
   function prevMonth() {
@@ -46,7 +46,6 @@ export default function ArticulosVendidos() {
 
     data.forEach((item) => {
       if (!item.booking) return;
-      if (item.booking.booking_status !== "confirm") return;
 
       const d = new Date(item.booking.event_date);
       if (d.getFullYear() !== year || d.getMonth() !== month) return;
@@ -78,7 +77,7 @@ export default function ArticulosVendidos() {
     eventos: new Set(
       data
         .filter((i) => {
-          if (!i.booking || i.booking.booking_status !== "confirm") return false;
+          if (!i.booking) return false;
           const d = new Date(i.booking.event_date);
           return d.getFullYear() === year && d.getMonth() === month;
         })

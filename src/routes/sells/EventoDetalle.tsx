@@ -1,50 +1,29 @@
 import { useState } from "react";
 import { ArrowLeft, Calendar, Clock, CreditCard, FileDown, FileText, MapPin, Package, Pencil, Phone, Plus, Receipt, Trash2, User, Users } from "lucide-react";
 import { PDFDownloadLink } from "@react-pdf/renderer";
-import FixturePDF from "../components/FixturePDF";
+import FixturePDF from "@/components/FixturePDF";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import Spinner from "../components/Spinner";
-import MiniSpinner from "../components/MiniSpinner";
-import Filter from "../components/Filter";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/Input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "../components/ui/dialog";
-import { DialogClose } from "@radix-ui/react-dialog";
-import useGetBookingEvent from "../hooks/useGetBookingEvent";
-import useGetBookingPersonal from "../hooks/useGetBookingPersonal";
-import { useAssignPersonal } from "../hooks/useAssignPersonal";
-import useGetPersonal from "../hooks/useGetPersonal";
-import useGetBookingPayments from "../hooks/useGetBookingPayments";
-import useBookingPayments from "../hooks/useBookingPayments";
-import useGetBookingBills from "../hooks/useGetBookingBills";
-import useBookingBills from "../hooks/useBookingBills";
-import useManageBookingItems from "../hooks/useManageBookingItems";
-import usePatchBooking from "../hooks/usePatchBooking";
-import useGetStockAvailability from "../hooks/useGetStockAvailability";
-import { formatDate } from "../components/formatDate";
-import { formatCurrency } from "../utils/formatCurrency";
-import { cn } from "../lib/utils";
-import { PersonaledProps, BookingStatus } from "../types";
+import Spinner from "@/components/Spinner";
+import EquipmentPickerDialog from "@/components/Booking/EquipmentPickerDialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/Input";
+import useGetBookingEvent from "@/hooks/useGetBookingEvent";
+import useGetBookingPersonal from "@/hooks/useGetBookingPersonal";
+import { useAssignPersonal } from "@/hooks/useAssignPersonal";
+import useGetPersonal from "@/hooks/useGetPersonal";
+import useGetBookingPayments from "@/hooks/useGetBookingPayments";
+import useBookingPayments from "@/hooks/useBookingPayments";
+import useGetBookingBills from "@/hooks/useGetBookingBills";
+import useBookingBills from "@/hooks/useBookingBills";
+import useManageBookingItems from "@/hooks/useManageBookingItems";
+import usePatchBooking from "@/hooks/usePatchBooking";
+import useGetStockAvailability from "@/hooks/useGetStockAvailability";
+import { formatDate } from "@/components/formatDate";
+import { formatCurrency } from "@/utils/formatCurrency";
+import { cn } from "@/lib/utils";
+import { PersonaledProps, BookingStatus } from "@/types";
 
 type EventoDetalleView = "general" | "materials" | "costs";
-
-const filterByCategory = [
-  { value: "sound", label: "Sonido" },
-  { value: "lights", label: "Iluminación" },
-  { value: "ambientation", label: "Ambientación" },
-  { value: "structure", label: "Estructuras" },
-  { value: "cables", label: "Cables" },
-  { value: "screen", label: "Pantalla" },
-  { value: "furniture", label: "Muebles" },
-  { value: "tools", label: "Herramientas" },
-  { value: "others", label: "Otros" },
-];
 
 const eventTypes: Record<string, string> = {
   other: "Otro",
@@ -127,10 +106,12 @@ export default function EventoDetalle() {
 
   // Equipment dialog state
   const [showEquipDialog, setShowEquipDialog] = useState(false);
-  const [equipCategory, setEquipCategory] = useState("all");
-  const [equipFilter, setEquipFilter] = useState("");
-  const [equipQty, setEquipQty] = useState<Record<number, string>>({});
-  const { availability, isLoading: isLoadingStock } = useGetStockAvailability({
+  const {
+    availability,
+    isLoading: isLoadingStock,
+    hasIncompleteTimes,
+    hasTimeContext,
+  } = useGetStockAvailability({
     date: booking?.event_date,
     startTime: booking?.start_time,
     endTime: booking?.end_time,
@@ -270,7 +251,7 @@ export default function EventoDetalle() {
   const margenPct = precioBase > 0 ? (margen / precioBase) * 100 : 0;
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-6 p-4 md:p-6">
+    <div className="mx-auto flex w-full min-w-0 max-w-6xl flex-col gap-6 p-4 md:p-6">
       {/* Back */}
       <Button
         variant="ghost"
@@ -795,7 +776,7 @@ export default function EventoDetalle() {
       {activeView === "materials" && (
         <>
           {/* Equipamiento */}
-          <div className="rounded-xl border border-border bg-card shadow-sm">
+          <div className="min-w-0 overflow-hidden rounded-xl border border-border bg-card shadow-sm">
             <div className="flex items-center justify-between border-b border-border px-5 py-4">
               <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                 <Package className="h-4 w-4" />
@@ -814,125 +795,48 @@ export default function EventoDetalle() {
               )}
             </div>
 
+            {isEditMode && hasIncompleteTimes && (
+              <p className="border-b border-border px-5 py-2 text-xs text-amber-700 dark:text-amber-300">
+                Sin hora de inicio y fin, el equipamiento de otros eventos del
+                mismo día se considerará ocupado todo el día.
+              </p>
+            )}
+
             {isEditMode && (
-              <Dialog open={showEquipDialog} onOpenChange={setShowEquipDialog}>
-                <DialogContent className="max-w-4xl">
-                  <DialogHeader>
-                    <DialogTitle>Agregar equipo</DialogTitle>
-                  </DialogHeader>
-                  <Filter
-                    filterByName={equipFilter}
-                    filterByStatus={filterByCategory}
-                    setFilterByName={setEquipFilter}
-                    value={equipCategory === "all" ? "" : equipCategory}
-                    setValue={(v) => setEquipCategory(v || "all")}
-                  />
-                  <div className="max-h-80 overflow-y-auto rounded-lg border border-border">
-                    {isLoadingStock ? (
-                      <div className="flex items-center justify-center py-12">
-                        <MiniSpinner />
-                      </div>
-                    ) : (
-                      <table className="w-full text-xs">
-                        <thead>
-                          <tr className="border-b border-border bg-muted/30">
-                            <th className="px-3 py-1.5 text-left font-medium text-muted-foreground">Equipo</th>
-                            <th className="px-3 py-1.5 text-center font-medium text-muted-foreground">Dispon.</th>
-                            <th className="px-3 py-1.5 text-center font-medium text-muted-foreground">Precio</th>
-                            <th className="px-3 py-1.5 text-center font-medium text-muted-foreground">Cant.</th>
-                            <th className="px-3 py-1.5" />
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {availability
-                            .filter((s) => {
-                              const matchCat = equipCategory === "all" || s.category === equipCategory;
-                              const matchText = equipFilter === "" || s.name.toLowerCase().includes(equipFilter.toLowerCase());
-                              return matchCat && matchText;
-                            })
-                            .map((s) => (
-                              <tr key={s.id} className={`border-b border-border last:border-0 ${s.available === 0 ? "opacity-40" : ""}`}>
-                                <td className="px-3 py-1.5">{s.name}</td>
-                                <td className="px-3 py-1.5 text-center tabular-nums text-muted-foreground">
-                                  {s.available}
-                                </td>
-                                <td className="px-3 py-1.5 text-center tabular-nums text-muted-foreground">
-                                  ${formatCurrency(s.price)}
-                                </td>
-                                <td className="px-3 py-1.5 text-center">
-                                  <Input
-                                    type="number"
-                                    min={1}
-                                    max={s.available}
-                                    className="h-6 w-14 text-center text-xs"
-                                    disabled={s.available === 0}
-                                    value={equipQty[s.id] ?? ""}
-                                    onChange={(e) =>
-                                      setEquipQty((prev) => ({ ...prev, [s.id]: e.target.value }))
-                                    }
-                                  />
-                                </td>
-                                <td className="px-3 py-1.5 text-right">
-                                  <Button
-                                    type="button"
-                                    size="sm"
-                                    variant="outline"
-                                    className="h-6 px-2"
-                                    disabled={isAddingItem || s.available === 0 || !equipQty[s.id] || Number(equipQty[s.id]) <= 0 || Number(equipQty[s.id]) > s.available}
-                                    onClick={() => {
-                                      addItem(
-                                        {
-                                          equipment_id: s.id,
-                                          name: s.name,
-                                          quantity: Number(equipQty[s.id]),
-                                          price: s.price,
-                                        },
-                                        {
-                                          onSuccess: () =>
-                                            setEquipQty((prev) => ({ ...prev, [s.id]: "" })),
-                                        }
-                                      );
-                                    }}
-                                  >
-                                    <Plus className="h-3.5 w-3.5" />
-                                  </Button>
-                                </td>
-                              </tr>
-                            ))}
-                        </tbody>
-                      </table>
-                    )}
-                  </div>
-                  <DialogFooter>
-                    <DialogClose asChild>
-                      <Button type="button" variant="outline">
-                        Cerrar
-                      </Button>
-                    </DialogClose>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+              <EquipmentPickerDialog
+                open={showEquipDialog}
+                onOpenChange={setShowEquipDialog}
+                availability={availability}
+                isLoading={isLoadingStock}
+                hasIncompleteTimes={hasIncompleteTimes}
+                hasTimeContext={hasTimeContext}
+                eventDate={booking?.event_date}
+                startTime={booking?.start_time}
+                endTime={booking?.end_time}
+                onAdd={(item) => addItem(item)}
+                isAdding={isAddingItem}
+              />
             )}
 
             {items.length > 0 ? (
               <>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                  <table className="w-full table-fixed text-sm">
                     <thead>
                       <tr className="border-b border-border bg-muted/30">
-                        <th className="px-5 py-3 text-left font-medium text-muted-foreground">
+                        <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                           Nombre
                         </th>
-                        <th className="px-5 py-3 text-center font-medium text-muted-foreground">
+                        <th className="w-20 px-4 py-3 text-center font-medium text-muted-foreground">
                           Cantidad
                         </th>
-                        <th className="px-5 py-3 text-right font-medium text-muted-foreground">
+                        <th className="w-28 px-4 py-3 text-right font-medium text-muted-foreground">
                           Precio unit.
                         </th>
-                        <th className="px-5 py-3 text-right font-medium text-muted-foreground">
+                        <th className="w-28 px-4 py-3 text-right font-medium text-muted-foreground">
                           Total
                         </th>
-                        <th className="px-5 py-3" />
+                        <th className="w-12 px-4 py-3" />
                       </tr>
                     </thead>
                     <tbody>
@@ -941,17 +845,19 @@ export default function EventoDetalle() {
                           key={item.id ?? i}
                           className="border-b border-border last:border-0"
                         >
-                          <td className="px-5 py-3 text-foreground">{item.name}</td>
-                          <td className="px-5 py-3 text-center tabular-nums">
+                          <td className="max-w-0 truncate px-4 py-3 text-foreground">
+                            {item.name}
+                          </td>
+                          <td className="px-4 py-3 text-center tabular-nums">
                             {item.quantity}
                           </td>
-                          <td className="px-5 py-3 text-right tabular-nums text-muted-foreground">
+                          <td className="px-4 py-3 text-right tabular-nums text-muted-foreground">
                             ${formatCurrency(item.price)}
                           </td>
-                          <td className="px-5 py-3 text-right font-medium tabular-nums">
+                          <td className="px-4 py-3 text-right font-medium tabular-nums">
                             ${formatCurrency(item.price * item.quantity)}
                           </td>
-                          <td className="px-5 py-3 text-right">
+                          <td className="px-4 py-3 text-right">
                             {isEditMode && (
                               <Button
                                 type="button"

@@ -64,6 +64,26 @@ export interface InventoriedProps extends InventoryProps {
   id: number;
 }
 
+export type AvailabilityConflict = {
+  booking_id: number;
+  quantity: number;
+  organization: Organization;
+  event_type: EventType;
+  place: string;
+  start_time: string | null;
+  end_time: string | null;
+};
+
+export type AvailabilityItem = InventoriedProps & {
+  allocatedInSlot: number;
+  allocatedSameDay: number;
+  reusableSameDay: number;
+  allocated: number;
+  available: number;
+  hasTimeContext: boolean;
+  conflicts: AvailabilityConflict[];
+};
+
 // Equipment item types
 export interface EquipmentItemProps {
   id?: number;

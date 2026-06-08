@@ -7,6 +7,7 @@ import {
   Image,
 } from "@react-pdf/renderer";
 import companyLogo from "../assets/ShowRental.png";
+import { formatLocalDate } from "./formatDate";
 
 const colors = {
   primary: "#1e293b",
@@ -77,10 +78,6 @@ const eventTypes: Record<string, string> = {
   marriage: "Casamiento", birthday: "Cumpleaños",
 };
 
-function formatDate(d: string) {
-  return new Date(d).toLocaleDateString("es-AR", { year: "numeric", month: "long", day: "2-digit" });
-}
-
 function fmt(n: number) {
   return n.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
@@ -112,7 +109,7 @@ export default function PresupuestoPDF({ bookingData, clientData, equipment }: P
           </View>
           <View style={styles.headerRight}>
             <Text style={styles.badge}>Presupuesto</Text>
-            <Text style={styles.badgeDate}>{formatDate(bookingData.created_at)}</Text>
+            <Text style={styles.badgeDate}>{formatLocalDate(bookingData.created_at)}</Text>
           </View>
         </View>
 
@@ -134,7 +131,7 @@ export default function PresupuestoPDF({ bookingData, clientData, equipment }: P
             </View>
             <View style={styles.infoBlock}>
               <Text style={styles.infoLabel}>Fecha del evento</Text>
-              <Text style={styles.infoValue}>{formatDate(bookingData.event_date)}</Text>
+              <Text style={styles.infoValue}>{formatLocalDate(bookingData.event_date)}</Text>
             </View>
             <View style={styles.infoBlock}>
               <Text style={styles.infoLabel}>Lugar</Text>

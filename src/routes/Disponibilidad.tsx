@@ -103,6 +103,7 @@ export default function Disponibilidad() {
         setFilterByName={setFilterByName}
         value={categoryValue}
         setValue={setCategoryValue}
+        filterLabel="Filtrar por categoría..."
       />
 
       {filteredData.length > 0 ? (

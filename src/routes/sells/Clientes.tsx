@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
 import { Users, UserCheck, Mail, Phone, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import AddButton from "../components/AddButton";
-import CategoryLayout from "../components/CategoryLayout";
-import Spinner from "../components/Spinner";
-import { Button } from "../components/ui/button";
+import AddButton from "../../components/AddButton";
+import CategoryLayout from "../../components/CategoryLayout";
+import Spinner from "../../components/Spinner";
+import { Button } from "../../components/ui/button";
 import {
   Table,
   TableBody,
@@ -13,10 +13,10 @@ import {
   TableHead,
   TableHeaderData,
   TableRow,
-} from "../components/Table";
-import { KPICard } from "../components/ui/KPICard";
-import { Input } from "../components/ui/Input";
-import useGetClients from "../hooks/useGetClients";
+} from "../../components/Table";
+import { KPICard } from "../../components/ui/KPICard";
+import { Input } from "../../components/ui/Input";
+import useGetClients from "../../hooks/useGetClients";
 
 export default function Clientes() {
   const navigate = useNavigate();

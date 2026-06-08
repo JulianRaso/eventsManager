@@ -7,6 +7,7 @@ import {
   Image,
 } from "@react-pdf/renderer";
 import companyLogo from "../assets/ShowRental.png";
+import { formatLocalDate } from "./formatDate";
 
 const colors = {
   primary: "#1e293b",
@@ -82,12 +83,6 @@ const eventTypes: Record<string, string> = {
   marriage: "Casamiento", birthday: "Cumpleaños",
 };
 
-function formatDate(d: string) {
-  return new Date(d).toLocaleDateString("es-AR", {
-    weekday: "long", year: "numeric", month: "long", day: "2-digit",
-  });
-}
-
 function formatTime(t: string | null | undefined) {
   return t ? t.slice(0, 5) : "—";
 }
@@ -140,7 +135,14 @@ export default function FixturePDF({ booking, client, items }: Props) {
           <View style={styles.infoBlock}>
             <Text style={styles.infoLabel}>Evento</Text>
             <Text style={styles.infoValue}>{eventTypes[booking.event_type] ?? booking.event_type}</Text>
-            <Text style={styles.infoValueSub}>{formatDate(booking.event_date)}</Text>
+            <Text style={styles.infoValueSub}>
+              {formatLocalDate(booking.event_date, {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "2-digit",
+              })}
+            </Text>
             {hasTime && (
               <Text style={styles.infoValueSub}>
                 {formatTime(booking.start_time)} — {formatTime(booking.end_time)} hs

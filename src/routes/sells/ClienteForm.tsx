@@ -1,14 +1,14 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
-import AddLayout from "../components/AddLayout";
-import NavigationButtons from "../components/NavigationButtons";
-import Spinner from "../components/Spinner";
-import { Input } from "../components/ui/Input";
-import useAddClient from "../hooks/useAddClient";
-import useUpdateClient from "../hooks/useUpdateClient";
-import { checkClient } from "../services/client";
-import { ClientProps } from "../types";
+import AddLayout from "../../components/AddLayout";
+import NavigationButtons from "../../components/NavigationButtons";
+import Spinner from "../../components/Spinner";
+import { Input } from "../../components/ui/Input";
+import useAddClient from "../../hooks/useAddClient";
+import useUpdateClient from "../../hooks/useUpdateClient";
+import { checkClient } from "../../services/client";
+import { ClientProps } from "../../types";
 import { useState } from "react";
 
 const labelClass = "text-sm font-medium text-foreground";

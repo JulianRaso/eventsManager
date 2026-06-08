@@ -41,14 +41,31 @@ export function formatDateTime(date: string) {
   return formatedDate;
 }
 
-/** Formatea una fecha ISO a texto completo, ej: "25 de marzo de 2026". */
-export function formatDateLong(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("es-AR", {
+/** Parsea YYYY-MM-DD (tipo date de Postgres, sin hora) como fecha local. */
+export function parseLocalDate(iso: string): Date | null {
+  const [y, m, d] = iso.split("T")[0].trim().split("-").map(Number);
+  if (!y || !m || !d) return null;
+  const date = new Date(y, m - 1, d);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+/** Formatea YYYY-MM-DD en español (AR), sin desfase por zona horaria. */
+export function formatLocalDate(
+  iso: string,
+  options: Intl.DateTimeFormatOptions = {
     year: "numeric",
     month: "long",
     day: "2-digit",
-  });
+  },
+): string {
+  const date = parseLocalDate(iso);
+  if (!date) return "";
+  return date.toLocaleDateString("es-AR", options);
+}
+
+/** Formatea una fecha ISO a texto completo, ej: "25 de marzo de 2026". */
+export function formatDateLong(dateString: string): string {
+  return formatLocalDate(dateString);
 }
 
 export function formatDateCharts(yearMonth: string) {

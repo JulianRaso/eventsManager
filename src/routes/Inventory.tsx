@@ -86,6 +86,7 @@ export default function Inventory() {
           setFilterByName={setFilterByName}
           value={categoryValue}
           setValue={setCategoryValue}
+          filterLabel="Filtrar por categoría..."
           className="sm:flex-1 sm:max-w-none"
         />
         <AddButton navigateTo="/inventario/agregar" label="Nuevo elemento" />

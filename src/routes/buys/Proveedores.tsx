@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { Building2, Pencil, Trash2, Plus } from "lucide-react";
 import { useForm } from "react-hook-form";
-import CategoryLayout from "../components/CategoryLayout";
-import Spinner from "../components/Spinner";
-import { KPICard } from "../components/ui/KPICard";
-import { Input } from "../components/ui/Input";
-import { Button } from "../components/ui/button";
+import CategoryLayout from "@/components/CategoryLayout";
+import Spinner from "@/components/Spinner";
+import { KPICard } from "@/components/ui/KPICard";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
   DialogFooter, DialogDescription,
-} from "../components/ui/dialog";
-import { useGetSuppliers, useAddSupplier, useUpdateSupplier, useDeleteSupplier } from "../hooks/useSuppliers";
-import { SupplierProps } from "../services/suppliers";
+} from "@/components/ui/dialog";
+import { useGetSuppliers, useAddSupplier, useUpdateSupplier, useDeleteSupplier } from "@/hooks/useSuppliers";
+import { SupplierProps } from "@/services/suppliers";
 
 const labelClass = "text-sm font-medium text-foreground";
 

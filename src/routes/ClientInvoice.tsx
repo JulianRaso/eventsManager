@@ -1,18 +1,18 @@
 import AddLayout from "@/components/AddLayout";
 import { formatDateLong } from "@/components/formatDate";
+import ReciboPDF from "@/components/ReciboPDF";
+import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 import { getCurrentBooking } from "@/services/booking";
 import { getBookingPayments, PaymentProps } from "@/services/bookingPayments";
 import { checkClient } from "@/services/client";
 import { BookingRecord } from "@/types";
 import { formatCurrency } from "@/utils/formatCurrency";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import { FileDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import companyLogo from "../assets/ShowRental.png";
-import Spinner from "@/components/Spinner";
-import { FileDown } from "lucide-react";
-import { PDFDownloadLink } from "@react-pdf/renderer";
-import ReciboPDF from "@/components/ReciboPDF";
 
 const eventTypes: Record<string, { es: string }> = {
   other: { es: "Otro" },

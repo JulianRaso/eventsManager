@@ -1,4 +1,17 @@
+import { BookingStatus, EventType, Organization } from "../types";
 import { supabase } from "./supabase";
+
+export type UpcomingBookingItem = {
+  equipment_id: number;
+  quantity: number;
+  booking_id: number;
+  event_date: string;
+  start_time: string | null;
+  end_time: string | null;
+  organization: Organization;
+  event_type: EventType;
+  place: string;
+};
 
 type BookingItem = {
   id?: number;
@@ -65,12 +78,14 @@ export async function getItems(id: number) {
   return data;
 }
 
-export async function getUpcomingBookingItems() {
+export async function getUpcomingBookingItems(): Promise<UpcomingBookingItem[]> {
   const today = new Date().toISOString().split("T")[0];
 
   const { data: bookings, error: bookingsError } = await supabase
     .from("booking")
-    .select("id, event_date, start_time, end_time")
+    .select(
+      "id, event_date, start_time, end_time, organization, event_type, place"
+    )
     .gte("event_date", today)
     .neq("booking_status", "cancel");
 
@@ -90,12 +105,20 @@ export async function getUpcomingBookingItems() {
   if (itemsError)
     throw new Error("Hubo un error al cargar los equipos reservados");
 
-  return (items ?? []).map((item) => ({
-    ...item,
-    event_date: bookingMap.get(item.booking_id)?.event_date ?? "",
-    start_time: bookingMap.get(item.booking_id)?.start_time ?? null,
-    end_time: bookingMap.get(item.booking_id)?.end_time ?? null,
-  }));
+  return (items ?? []).map((item) => {
+    const booking = bookingMap.get(item.booking_id);
+    return {
+      equipment_id: item.equipment_id,
+      quantity: item.quantity,
+      booking_id: item.booking_id,
+      event_date: booking?.event_date ?? "",
+      start_time: booking?.start_time ?? null,
+      end_time: booking?.end_time ?? null,
+      organization: (booking?.organization ?? "Muzek") as Organization,
+      event_type: (booking?.event_type ?? "other") as EventType,
+      place: booking?.place ?? "",
+    };
+  });
 }
 
 export async function deleteItems(ids: number[]) {
@@ -129,10 +152,18 @@ export interface BookingItemWithDate {
   booking: { event_date: string; booking_status: string } | null;
 }
 
-export async function getAllBookingItemsWithDate(): Promise<BookingItemWithDate[]> {
-  const { data, error } = await supabase
+export async function getAllBookingItemsWithDate(options?: {
+  bookingStatus?: BookingStatus;
+}): Promise<BookingItemWithDate[]> {
+  let query = supabase
     .from("booking_items")
     .select("name, quantity, price, equipment_id, booking!inner(event_date, booking_status)");
+
+  if (options?.bookingStatus) {
+    query = query.eq("booking.booking_status", options.bookingStatus);
+  }
+
+  const { data, error } = await query;
 
   if (error) throw new Error("Error al cargar los artículos vendidos");
   return (data ?? []) as BookingItemWithDate[];

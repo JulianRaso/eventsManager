@@ -1,16 +1,16 @@
 import { useState, useMemo } from "react";
 import { ChevronDown, ChevronRight, AlertCircle, CheckCircle2, Building2, DollarSign } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import CategoryLayout from "../components/CategoryLayout";
-import Spinner from "../components/Spinner";
-import { KPICard } from "../components/ui/KPICard";
-import { Input } from "../components/ui/Input";
-import { Button } from "../components/ui/button";
-import { cn } from "../lib/utils";
-import { formatDate } from "../components/formatDate";
-import { formatCurrency } from "../utils/formatCurrency";
-import { useGetPurchases } from "../hooks/usePurchases";
-import { useGetSuppliers } from "../hooks/useSuppliers";
+import CategoryLayout from "@/components/CategoryLayout";
+import Spinner from "@/components/Spinner";
+import { KPICard } from "@/components/ui/KPICard";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { formatDate } from "@/components/formatDate";
+import { formatCurrency } from "@/utils/formatCurrency";
+import { useGetPurchases } from "@/hooks/usePurchases";
+import { useGetSuppliers } from "@/hooks/useSuppliers";
 
 interface SupplierBalance {
   supplierId: number | null;

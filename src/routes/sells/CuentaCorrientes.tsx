@@ -1,15 +1,15 @@
 import { Fragment, useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, AlertCircle, CheckCircle2, Users, DollarSign } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import CategoryLayout from "../components/CategoryLayout";
-import Spinner from "../components/Spinner";
-import { KPICard } from "../components/ui/KPICard";
-import { Input } from "../components/ui/Input";
-import { Button } from "../components/ui/button";
-import { cn } from "../lib/utils";
-import { formatDate } from "../components/formatDate";
-import { formatCurrency } from "../utils/formatCurrency";
-import useClientBalances from "../hooks/useClientBalances";
+import CategoryLayout from "@/components/CategoryLayout";
+import Spinner from "@/components/Spinner";
+import { KPICard } from "@/components/ui/KPICard";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { formatDate } from "@/components/formatDate";
+import { formatCurrency } from "@/utils/formatCurrency";
+import useClientBalances from "@/hooks/useClientBalances";
 
 export default function CuentaCorrientes() {
   const navigate = useNavigate();

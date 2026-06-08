@@ -1,20 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { CalendarDays, CalendarRange, CheckCircle2, Clock, LayoutList, XCircle } from "lucide-react";
-import AddButton from "../components/AddButton";
-import BookingsMobileList from "../components/Bookings/BookingsMobileList";
-import BookingsCalendar from "../components/Bookings/BookingsCalendar";
-import BookingRow from "../components/Bookings/BookingRow";
-import CategoryLayout from "../components/CategoryLayout";
-import Filter from "../components/Filter";
-import Spinner from "../components/Spinner";
-import { KPICard } from "../components/ui/KPICard";
+import AddButton from "../../components/AddButton";
+import BookingsMobileList from "../../components/Bookings/BookingsMobileList";
+import BookingsCalendar from "../../components/Bookings/BookingsCalendar";
+import BookingRow from "../../components/Bookings/BookingRow";
+import CategoryLayout from "../../components/CategoryLayout";
+import Filter from "../../components/Filter";
+import Spinner from "../../components/Spinner";
+import { KPICard } from "../../components/ui/KPICard";
 import {
   Table,
   TableBody,
   TableContainer,
   TableHead,
   TableHeaderData,
-} from "../components/Table";
+} from "../../components/Table";
 import {
   Pagination,
   PaginationContent,
@@ -22,11 +22,11 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "../components/ui/pagination";
-import useGetBookings from "../hooks/useGetBookings";
-import { useMediaQuery } from "../hooks/useMediaQuery";
-import usePagination from "../hooks/usePagination";
-import { FilterOption } from "../types";
+} from "../../components/ui/pagination";
+import useGetBookings from "../../hooks/useGetBookings";
+import { useMediaQuery } from "../../hooks/useMediaQuery";
+import usePagination from "../../hooks/usePagination";
+import { FilterOption } from "../../types";
 
 const filterByStatus: FilterOption[] = [
   { value: "confirm", label: "Confirmado" },

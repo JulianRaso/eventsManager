@@ -24,6 +24,7 @@ interface FilterProps {
   filterByName: string;
   setValue: (value: string) => void;
   setFilterByName: (value: string) => void;
+  filterLabel?: string;
 }
 
 export default function Filter({
@@ -33,6 +34,7 @@ export default function Filter({
   filterByName,
   setFilterByName,
   className,
+  filterLabel = "Filtrar por estado...",
 }: FilterProps) {
   const [open, setOpen] = useState(false);
   const hasFilters = Boolean(filterByName || value);
@@ -59,7 +61,7 @@ export default function Filter({
           >
             {value
               ? filterByStatus.find((s) => s.value === value)?.label
-              : "Filtrar por estado..."}
+              : filterLabel}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>

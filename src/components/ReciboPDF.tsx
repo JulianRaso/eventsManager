@@ -7,6 +7,7 @@ import {
   Image,
 } from "@react-pdf/renderer";
 import companyLogo from "../assets/ShowRental.png";
+import { formatLocalDate } from "./formatDate";
 
 const colors = {
   primary: "#1e293b",
@@ -87,10 +88,6 @@ const paymentMethodLabel: Record<string, string> = {
   cash: "Efectivo", transfer: "Transferencia", card: "Tarjeta",
 };
 
-function formatDate(d: string) {
-  return new Date(d).toLocaleDateString("es-AR", { year: "numeric", month: "long", day: "2-digit" });
-}
-
 function fmt(n: number) {
   return n.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
@@ -132,7 +129,7 @@ export default function ReciboPDF({ invoiceData, clientData, payments }: Props) 
           </View>
           <View style={styles.headerRight}>
             <Text style={styles.badge}>Recibo</Text>
-            <Text style={styles.badgeDate}>{formatDate(invoiceData.created_at)}</Text>
+            <Text style={styles.badgeDate}>{formatLocalDate(invoiceData.created_at)}</Text>
           </View>
         </View>
 
@@ -154,7 +151,7 @@ export default function ReciboPDF({ invoiceData, clientData, payments }: Props) 
             </View>
             <View style={styles.infoBlock}>
               <Text style={styles.infoLabel}>Fecha del evento</Text>
-              <Text style={styles.infoValue}>{formatDate(invoiceData.event_date)}</Text>
+              <Text style={styles.infoValue}>{formatLocalDate(invoiceData.event_date)}</Text>
             </View>
             <View style={styles.infoBlock}>
               <Text style={styles.infoLabel}>Lugar</Text>
@@ -174,7 +171,7 @@ export default function ReciboPDF({ invoiceData, clientData, payments }: Props) 
           </View>
           {payments.map((p, i) => (
             <View key={p.id} style={i % 2 === 1 ? [styles.row, styles.rowAlt] : styles.row}>
-              <Text style={styles.cellDate}>{formatDate(p.payment_date)}</Text>
+              <Text style={styles.cellDate}>{formatLocalDate(p.payment_date)}</Text>
               <Text style={styles.cellMethod}>{paymentMethodLabel[p.payment_method] ?? p.payment_method}</Text>
               <Text style={styles.cellNotes}>{p.notes ?? "—"}</Text>
               <Text style={styles.cellAmount}>$ {fmt(p.amount)}</Text>

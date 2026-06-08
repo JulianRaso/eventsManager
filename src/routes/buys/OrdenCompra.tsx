@@ -1,21 +1,21 @@
 import { useMemo, useState } from "react";
 import { ShoppingCart, Clock, CheckCircle2, AlertCircle, Plus } from "lucide-react";
 import { useForm } from "react-hook-form";
-import CategoryLayout from "../components/CategoryLayout";
-import Spinner from "../components/Spinner";
-import { KPICard } from "../components/ui/KPICard";
-import { Input } from "../components/ui/Input";
-import { Button } from "../components/ui/button";
+import CategoryLayout from "@/components/CategoryLayout";
+import Spinner from "@/components/Spinner";
+import { KPICard } from "@/components/ui/KPICard";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from "../components/ui/dialog";
-import { cn } from "../lib/utils";
-import { formatDate } from "../components/formatDate";
-import { formatCurrency } from "../utils/formatCurrency";
-import { useGetPurchases, useAddPurchase, useDeletePurchase } from "../hooks/usePurchases";
-import { useGetSuppliers } from "../hooks/useSuppliers";
-import { PurchaseProps } from "../services/purchases";
-import TableButtons from "../components/TableButtons";
+} from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
+import { formatDate } from "@/components/formatDate";
+import { formatCurrency } from "@/utils/formatCurrency";
+import { useGetPurchases, useAddPurchase, useDeletePurchase } from "@/hooks/usePurchases";
+import { useGetSuppliers } from "@/hooks/useSuppliers";
+import { PurchaseProps } from "@/services/purchases";
+import TableButtons from "@/components/TableButtons";
 
 const paymentStatusConfig: Record<string, { label: string; className: string }> = {
   pending: { label: "Pendiente", className: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300" },
