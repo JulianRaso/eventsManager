@@ -21,7 +21,7 @@ export interface AsientoData {
 export default function useAsientoTeorico(month: number, year: number) {
   const { data: saleItems = [], isLoading: loadingItems } = useQuery({
     queryKey: ["allBookingItemsWithDate"],
-    queryFn: getAllBookingItemsWithDate,
+    queryFn: () => getAllBookingItemsWithDate(),
   });
 
   const { data: purchaseItems = [], isLoading: loadingPurchaseItems } = useQuery({
