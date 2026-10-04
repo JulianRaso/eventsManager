@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ArrowLeft, Calendar, Clock, CreditCard, FileDown, FileText, MapPin, Package, Pencil, Phone, Plus, Receipt, Trash2, User, Users } from "lucide-react";
 import { PDFDownloadLink } from "@react-pdf/renderer";
+import toast from "react-hot-toast";
 import FixturePDF from "@/components/FixturePDF";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Spinner from "@/components/Spinner";
@@ -176,12 +177,32 @@ export default function EventoDetalle() {
     );
   }
 
+  const personnelCost = assignments.reduce(
+    (sum, a) => sum + a.days * a.rate,
+    0
+  );
+
+  const totalCollected = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+  const precioBaseEarly = booking?.price ?? 0;
+  const totalClienteEarly =
+    precioBaseEarly + (precioBaseEarly / 100) * (booking?.tax ?? 0);
+  const balance = Math.max(0, Math.round((totalClienteEarly - totalCollected) * 100) / 100);
+
   function handleRegisterPayment() {
-    if (!payAmount || Number(payAmount) <= 0) return;
+    const amount = Number(payAmount);
+    if (!payAmount || amount <= 0) return;
+    if (amount > balance) {
+      toast.error(
+        balance <= 0
+          ? "Este evento ya está completamente abonado"
+          : `El monto no puede superar el saldo pendiente ($${formatCurrency(balance)})`
+      );
+      return;
+    }
     registerPayment(
       {
         booking_id: id,
-        amount: Number(payAmount),
+        amount,
         payment_method: payMethod,
         payment_date: payDate,
         notes: payNotes || undefined,
@@ -197,14 +218,6 @@ export default function EventoDetalle() {
       }
     );
   }
-
-  const personnelCost = assignments.reduce(
-    (sum, a) => sum + a.days * a.rate,
-    0
-  );
-
-  const totalCollected = payments.reduce((sum, p) => sum + p.amount, 0);
-  const balance = (booking?.price ?? 0) - totalCollected;
 
   if (isLoading) return <Spinner />;
   if (!booking) {
@@ -224,14 +237,18 @@ export default function EventoDetalle() {
     lastName: string;
     phoneNumber: string;
     email?: string;
+    COD_CLIENTE?: string | null;
+    dni?: number | null;
   } | null;
 
   const bookingStatus = bookingStatusConfig[booking.booking_status] ?? {
     label: booking.booking_status,
     className: "",
   };
-  const paymentStatus = paymentStatusConfig[booking.payment_status] ?? {
-    label: booking.payment_status,
+  const derivedPaymentStatus =
+    totalCollected <= 0 ? "pending" : balance <= 0 ? "paid" : "partially_paid";
+  const paymentStatus = paymentStatusConfig[derivedPaymentStatus] ?? {
+    label: derivedPaymentStatus,
     className: "",
   };
 
@@ -543,7 +560,8 @@ export default function EventoDetalle() {
                     <p className="text-sm text-muted-foreground">{client.email}</p>
                   )}
                   <p className="text-xs text-muted-foreground">
-                    DNI {booking.client_dni}
+                    {client.COD_CLIENTE ? `${client.COD_CLIENTE}` : "Sin código"}
+                    {client.dni != null ? ` · DNI ${client.dni}` : ""}
                   </p>
                 </div>
               ) : (
@@ -569,7 +587,7 @@ export default function EventoDetalle() {
                 <CreditCard className="h-4 w-4" />
                 Pagos recibidos
               </h2>
-              {isEditMode && (
+              {isEditMode && balance > 0 && (
                 <Button
                   type="button"
                   variant="outline"
@@ -583,18 +601,29 @@ export default function EventoDetalle() {
             </div>
 
             {/* Formulario inline de pago */}
-            {isEditMode && showPaymentForm && (
+            {isEditMode && showPaymentForm && balance > 0 && (
               <div className="border-b border-border bg-muted/20 px-5 py-4">
                 <div className="grid gap-3 sm:grid-cols-4">
                   <div>
                     <label className="mb-1 block text-xs font-medium text-muted-foreground">
-                      Monto ($)
+                      Monto ($) · máx. ${formatCurrency(balance)}
                     </label>
                     <Input
                       type="number"
-                      min={0}
+                      min={0.01}
+                      max={balance}
+                      step="0.01"
                       value={payAmount}
-                      onChange={(e) => setPayAmount(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === "") {
+                          setPayAmount("");
+                          return;
+                        }
+                        const num = Number(value);
+                        if (Number.isNaN(num)) return;
+                        setPayAmount(String(Math.min(num, balance)));
+                      }}
                       placeholder="0.00"
                     />
                   </div>
@@ -734,9 +763,9 @@ export default function EventoDetalle() {
                 <div className="flex justify-end border-t border-border bg-muted/20 px-5 py-4">
                   <div className="flex flex-col gap-1.5 text-sm">
                     <div className="flex justify-between gap-10">
-                      <span className="text-muted-foreground">Precio del evento</span>
+                      <span className="text-muted-foreground">Total a abonar</span>
                       <span className="tabular-nums">
-                        ${formatCurrency(booking.price ?? 0)}
+                        ${formatCurrency(totalCliente)}
                       </span>
                     </div>
                     <div className="flex justify-between gap-10">
@@ -755,7 +784,7 @@ export default function EventoDetalle() {
                             : "text-amber-600 dark:text-amber-400"
                         )}
                       >
-                        ${formatCurrency(Math.max(balance, 0))}
+                        ${formatCurrency(balance)}
                       </span>
                     </div>
                   </div>

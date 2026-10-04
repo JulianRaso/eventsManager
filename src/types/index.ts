@@ -2,12 +2,19 @@
 
 // Client types
 export interface ClientProps {
-  dni: number;
+  ID_CLIENTE: number;
+  COD_CLIENTE: string;
   name: string;
   lastName: string;
   phoneNumber: string;
-  email?: string;
+  email?: string | null;
+  dni?: number | null;
+  Habilitado: boolean;
 }
+
+export type NewClientProps = Omit<ClientProps, "ID_CLIENTE"> & {
+  ID_CLIENTE?: number;
+};
 
 // Booking types
 export type BookingStatus = "pending" | "cancel" | "confirm";
@@ -21,7 +28,7 @@ export type EventType =
 export type Organization = "Muzek" | "Show Rental";
 
 export interface BookingProps {
-  client_dni: number;
+  client_id: number;
   booking_status: BookingStatus;
   comments: string;
   organization: Organization;
@@ -112,7 +119,7 @@ export interface FilterOption {
 export interface BookingRecord {
   id?: number;
   created_at: string;
-  client_dni: number;
+  client_id: number;
   event_date: string;
   start_time?: string | null;
   end_time?: string | null;

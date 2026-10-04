@@ -1,39 +1,47 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { checkClient } from "../services/client";
+import { getClientById } from "../services/client";
 
-export default function useCheckClient(dni: string) {
+export default function useCheckClient(clientId: string) {
   const [existClient, setExistClient] = useState(false);
   const [client, setClient] = useState({
+    ID_CLIENTE: "",
     dni: "",
     name: "",
     lastName: "",
     phoneNumber: "",
     email: "",
+    COD_CLIENTE: "",
   });
 
   useEffect(() => {
-    if (dni != "") {
-      checkClient(Number(dni))
+    if (clientId != "") {
+      getClientById(Number(clientId))
         .then((res) => {
-          if (res.data) {
+          if (res.data?.Habilitado) {
             setClient({
-              dni: res.data.dni.toString(),
+              ID_CLIENTE: res.data.ID_CLIENTE.toString(),
+              dni: res.data.dni != null ? res.data.dni.toString() : "",
               name: res.data.name,
               lastName: res.data.lastName,
               phoneNumber: res.data.phoneNumber,
               email: res.data.email || "",
+              COD_CLIENTE: res.data.COD_CLIENTE || "",
             });
             setExistClient(true);
-          }
-          if (!res.data) {
+          } else {
+            if (res.data && !res.data.Habilitado) {
+              toast.error("El cliente está deshabilitado");
+            }
             setExistClient(false);
             setClient({
+              ID_CLIENTE: "",
               dni: "",
               name: "",
               lastName: "",
               phoneNumber: "",
               email: "",
+              COD_CLIENTE: "",
             });
           }
         })
@@ -41,6 +49,6 @@ export default function useCheckClient(dni: string) {
           toast.error("Error al verificar el cliente");
         });
     }
-  }, [dni]);
+  }, [clientId]);
   return { existClient, client };
 }

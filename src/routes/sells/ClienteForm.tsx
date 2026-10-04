@@ -1,53 +1,116 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import toast from "react-hot-toast";
 import AddLayout from "../../components/AddLayout";
 import NavigationButtons from "../../components/NavigationButtons";
 import Spinner from "../../components/Spinner";
 import { Input } from "../../components/ui/Input";
 import useAddClient from "../../hooks/useAddClient";
 import useUpdateClient from "../../hooks/useUpdateClient";
-import { checkClient } from "../../services/client";
-import { ClientProps } from "../../types";
-import { useState } from "react";
+import { getClientById, isClientCodeTaken } from "../../services/client";
+import { ClientProps, NewClientProps } from "../../types";
+import { cn } from "../../lib/utils";
 
 const labelClass = "text-sm font-medium text-foreground";
 
-export default function ClienteForm() {
-  const { dni } = useParams();
-  const isEditing = Boolean(dni);
-  const [isLoadingClient, setIsLoadingClient] = useState(isEditing);
+type ClientFormValues = {
+  dni?: number | null;
+  name: string;
+  lastName: string;
+  phoneNumber: string;
+  email?: string;
+  COD_CLIENTE: string;
+  Habilitado: boolean;
+};
 
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<ClientProps>();
+export default function ClienteForm() {
+  const navigate = useNavigate();
+  const { clientId } = useParams();
+  const isEditing = Boolean(clientId);
+  const [isLoadingClient, setIsLoadingClient] = useState(isEditing);
+  const [loadedId, setLoadedId] = useState<number | null>(
+    clientId ? Number(clientId) : null
+  );
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<ClientFormValues>({
+    defaultValues: {
+      Habilitado: true,
+      COD_CLIENTE: "",
+      dni: null,
+    },
+  });
   const { isAdding, addClient } = useAddClient();
   const { isUpdating, editClient } = useUpdateClient();
+  const habilitado = watch("Habilitado");
 
   useEffect(() => {
-    if (isEditing && dni) {
-      checkClient(Number(dni))
+    if (isEditing && clientId) {
+      getClientById(Number(clientId))
         .then((res) => {
           if (res?.data) {
-            const { dni: d, name, lastName, phoneNumber, email } = res.data;
-            setValue("dni", d);
+            const {
+              ID_CLIENTE,
+              name,
+              lastName,
+              phoneNumber,
+              email,
+              COD_CLIENTE,
+              Habilitado,
+              dni,
+            } = res.data;
+            setLoadedId(ID_CLIENTE);
             setValue("name", name);
             setValue("lastName", lastName);
             setValue("phoneNumber", phoneNumber);
             setValue("email", email ?? "");
+            setValue("COD_CLIENTE", COD_CLIENTE ?? "");
+            setValue("Habilitado", Habilitado ?? true);
+            setValue("dni", dni ?? null);
           }
         })
         .finally(() => setIsLoadingClient(false));
     }
-  }, [dni, isEditing, setValue]);
+  }, [clientId, isEditing, setValue]);
 
   if (isLoadingClient) return <Spinner />;
 
-  function onSubmit(data: ClientProps) {
-    const payload: ClientProps = {
-      ...data,
-      dni: Number(data.dni),
+  async function onSubmit(data: ClientFormValues) {
+    const code = data.COD_CLIENTE.trim().toUpperCase();
+    const taken = await isClientCodeTaken(code, loadedId ?? undefined);
+    if (taken) {
+      toast.error("El código de cliente ya existe");
+      return;
+    }
+
+    const dniValue =
+      data.dni == null || data.dni === ("" as unknown as number) || Number.isNaN(Number(data.dni))
+        ? null
+        : Number(data.dni);
+
+    const base = {
+      name: data.name.trim(),
+      lastName: data.lastName.trim(),
+      phoneNumber: data.phoneNumber.trim(),
+      email: data.email?.trim() || null,
+      COD_CLIENTE: code,
+      Habilitado: Boolean(data.Habilitado),
+      dni: dniValue,
     };
-    if (isEditing) editClient(payload);
-    else addClient(payload);
+
+    if (isEditing && loadedId) {
+      const payload: ClientProps = { ...base, ID_CLIENTE: loadedId };
+      editClient(payload);
+    } else {
+      const payload: NewClientProps = base;
+      addClient(payload, { onSuccess: () => navigate("/clientes") });
+    }
   }
 
   return (
@@ -59,18 +122,37 @@ export default function ClienteForm() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-2">
             <label className={labelClass}>
-              DNI <span className="text-destructive">*</span>
+              Código <span className="text-destructive">*</span>
             </label>
             <Input
-              type="number"
-              placeholder="Número de documento"
-              disabled={isEditing}
-              className={isEditing ? "bg-muted" : ""}
-              {...register("dni", { required: "El DNI es requerido" })}
+              type="text"
+              placeholder="Ej: CLI001"
+              maxLength={6}
+              className="uppercase"
+              {...register("COD_CLIENTE", {
+                required: "El código es requerido",
+                maxLength: { value: 6, message: "Máximo 6 caracteres" },
+                pattern: {
+                  value: /^[A-Za-z0-9]{1,6}$/,
+                  message: "Solo letras y números (máx. 6)",
+                },
+              })}
             />
-            {errors.dni && (
-              <p className="text-xs text-destructive">{errors.dni.message}</p>
+            {errors.COD_CLIENTE && (
+              <p className="text-xs text-destructive">{errors.COD_CLIENTE.message}</p>
             )}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className={labelClass}>DNI</label>
+            <Input
+              type="number"
+              placeholder="Opcional"
+              {...register("dni", {
+                setValueAs: (v) =>
+                  v === "" || v == null || Number.isNaN(Number(v)) ? null : Number(v),
+              })}
+            />
           </div>
 
           <div className="flex flex-col gap-2">
@@ -80,8 +162,6 @@ export default function ClienteForm() {
             <Input
               type="text"
               placeholder="Nombre"
-              disabled={isEditing}
-              className={isEditing ? "bg-muted" : ""}
               {...register("name", { required: "El nombre es requerido" })}
             />
             {errors.name && (
@@ -96,8 +176,6 @@ export default function ClienteForm() {
             <Input
               type="text"
               placeholder="Apellido"
-              disabled={isEditing}
-              className={isEditing ? "bg-muted" : ""}
               {...register("lastName", { required: "El apellido es requerido" })}
             />
             {errors.lastName && (
@@ -119,13 +197,37 @@ export default function ClienteForm() {
             )}
           </div>
 
-          <div className="flex flex-col gap-2 sm:col-span-2">
+          <div className="flex flex-col gap-2">
             <label className={labelClass}>Email</label>
             <Input
               type="email"
               placeholder="correo@ejemplo.com"
               {...register("email")}
             />
+          </div>
+
+          <div className="flex flex-col gap-2 sm:col-span-2">
+            <label className={labelClass}>Estado</label>
+            <label
+              className={cn(
+                "flex cursor-pointer items-center justify-between rounded-lg border border-border px-4 py-3 transition-colors",
+                habilitado ? "bg-emerald-50/60" : "bg-muted/40"
+              )}
+            >
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  {habilitado ? "Cliente habilitado" : "Cliente deshabilitado"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Los clientes deshabilitados no se pueden usar en nuevas reservas.
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                className="h-4 w-4 accent-primary"
+                {...register("Habilitado")}
+              />
+            </label>
           </div>
         </div>
 

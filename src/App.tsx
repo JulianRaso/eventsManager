@@ -3,43 +3,55 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
 import { Route, Routes } from "react-router-dom";
 import Authentication from "./routes/Authentication";
-import Bill from "./routes/Bill";
-import Booking from "./routes/sells/Booking";
-import Bookings from "./routes/sells/Bookings";
 import Dashboard from "./routes/Dashboard";
-import Equipment from "./routes/Equipment";
-import HumandResource from "./routes/HumandResource";
-import PersonalReport from "./routes/PersonalReport";
-import PersonalReportDetail from "./routes/PersonalReportDetail";
-import PersonalForm from "./routes/PersonalForm";
-import PersonalRoles from "./routes/PersonalRoles";
-import Inventory from "./routes/Inventory";
 import Layout from "./routes/Layout";
 import Login from "./routes/Login";
 import PageNotFound from "./routes/PageNotFound";
 import Profile from "./routes/Profile";
-import Transport from "./routes/Transport";
-import Vehicle from "./routes/Vehicle";
-import Invoice from "./routes/Invoice";
-import ClientInvoice from "./routes/ClientInvoice";
-import Presupuesto from "./routes/Presupuesto";
 import ComingSoon from "./components/ComingSoon";
+
+// Ventas
+import Booking from "./routes/sells/Booking";
+import Bookings from "./routes/sells/Bookings";
+import ClientInvoice from "./routes/sells/ClientInvoice";
+import Presupuesto from "./routes/sells/Presupuesto";
 import Clientes from "./routes/sells/Clientes";
 import ClienteForm from "./routes/sells/ClienteForm";
 import CuentaCorrientes from "./routes/sells/CuentaCorrientes";
 import ArticulosVendidos from "./routes/sells/ArticulosVendidos";
-import ParametrizacionContable from "./routes/ParametrizacionContable";
-import CuentasContables from "./routes/CuentasContables";
-import AsientoTeorico from "./routes/AsientoTeorico";
+import EventoDetalle from "./routes/sells/EventoDetalle";
+import HumandResource from "./routes/sells/HumandResource";
+import PersonalReport from "./routes/sells/PersonalReport";
+import PersonalReportDetail from "./routes/sells/PersonalReportDetail";
+import PersonalForm from "./routes/sells/PersonalForm";
+import PersonalRoles from "./routes/sells/PersonalRoles";
+
+// Compras
 import Proveedores from "./routes/buys/Proveedores";
 import OrdenCompra from "./routes/buys/OrdenCompra";
-import CompraDetalle from "./routes/CompraDetalle";
+import CompraDetalle from "./routes/buys/CompraDetalle";
 import CuentaProveedores from "./routes/buys/CuentaProveedores";
-import Ingresos from "./routes/Ingresos";
-import Recaudacion from "./routes/Recaudacion";
-import Caja from "./routes/Caja";
-import EventoDetalle from "./routes/sells/EventoDetalle";
-import Disponibilidad from "./routes/Disponibilidad";
+
+// Stock
+import Inventory from "./routes/stock/Inventory";
+import Equipment from "./routes/stock/Equipment";
+import Disponibilidad from "./routes/stock/Disponibilidad";
+import ParametrizacionContable from "./routes/stock/ParametrizacionContable";
+
+// Tesorería
+import Ingresos from "./routes/treasury/Ingresos";
+import Recaudacion from "./routes/treasury/Recaudacion";
+import Caja from "./routes/treasury/Caja";
+import Bill from "./routes/treasury/Bill";
+import Invoice from "./routes/treasury/Invoice";
+
+// Contabilidad
+import CuentasContables from "./routes/accounting/CuentasContables";
+import AsientoTeorico from "./routes/accounting/AsientoTeorico";
+
+// Activo fijo
+import Transport from "./routes/assets/Transport";
+import Vehicle from "./routes/assets/Vehicle";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -90,7 +102,7 @@ function App() {
           {/* Ventas */}
           <Route path="/clientes" element={<Clientes />} />
           <Route path="/clientes/agregar" element={<ClienteForm />} />
-          <Route path="/clientes/editar/:dni" element={<ClienteForm />} />
+          <Route path="/clientes/editar/:clientId" element={<ClienteForm />} />
           <Route path="/cuenta-corrientes" element={<CuentaCorrientes />} />
           <Route path="/articulos-vendidos" element={<ArticulosVendidos />} />
           <Route path="/personal" element={<HumandResource />} />

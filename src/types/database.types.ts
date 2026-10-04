@@ -89,7 +89,7 @@ export type Database = {
         Row: {
           booking_status: Database["public"]["Enums"]["event_status"]
           cash_advance: number | null
-          client_dni: number
+          client_id: number
           comments: string | null
           created_at: string
           end_time: string | null
@@ -108,7 +108,7 @@ export type Database = {
         Insert: {
           booking_status?: Database["public"]["Enums"]["event_status"]
           cash_advance?: number | null
-          client_dni: number
+          client_id: number
           comments?: string | null
           created_at?: string
           end_time?: string | null
@@ -127,7 +127,7 @@ export type Database = {
         Update: {
           booking_status?: Database["public"]["Enums"]["event_status"]
           cash_advance?: number | null
-          client_dni?: number
+          client_id?: number
           comments?: string | null
           created_at?: string
           end_time?: string | null
@@ -145,11 +145,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "booking_client_dni_fkey"
-            columns: ["client_dni"]
+            foreignKeyName: "booking_client_id_fkey"
+            columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "client"
-            referencedColumns: ["dni"]
+            referencedColumns: ["ID_CLIENTE"]
           },
           {
             foreignKeyName: "booking_organization_id_fkey"
@@ -294,25 +294,34 @@ export type Database = {
       }
       client: {
         Row: {
+          COD_CLIENTE: string | null
           created_at: string
-          dni: number
+          dni: number | null
           email: string | null
+          Habilitado: boolean
+          ID_CLIENTE: number
           lastName: string
           name: string
           phoneNumber: string
         }
         Insert: {
+          COD_CLIENTE?: string | null
           created_at?: string
-          dni: number
+          dni?: number | null
           email?: string | null
+          Habilitado?: boolean
+          ID_CLIENTE?: number
           lastName: string
           name: string
           phoneNumber: string
         }
         Update: {
+          COD_CLIENTE?: string | null
           created_at?: string
-          dni?: number
+          dni?: number | null
           email?: string | null
+          Habilitado?: boolean
+          ID_CLIENTE?: number
           lastName?: string
           name?: string
           phoneNumber?: string
@@ -515,70 +524,43 @@ export type Database = {
         }
         Relationships: []
       }
-      personal_roles: {
-        Row: {
-          active: boolean
-          code: string
-          created_at: string
-          id: string
-          label: string
-          sort_order: number
-        }
-        Insert: {
-          active?: boolean
-          code: string
-          created_at?: string
-          id?: string
-          label: string
-          sort_order?: number
-        }
-        Update: {
-          active?: boolean
-          code?: string
-          created_at?: string
-          id?: string
-          label?: string
-          sort_order?: number
-        }
-        Relationships: []
-      }
       personal: {
         Row: {
-          created_at: string | null
+          alias: string | null
           cbu: string | null
+          created_at: string | null
           daily_rate: number
           dni: number | null
           id: number
           lastName: string
           name: string
           notes: string | null
-          alias: string | null
           phoneNumber: string | null
           role: string
         }
         Insert: {
-          created_at?: string | null
+          alias?: string | null
           cbu?: string | null
+          created_at?: string | null
           daily_rate: number
           dni?: number | null
           id?: number
           lastName: string
           name: string
           notes?: string | null
-          alias?: string | null
           phoneNumber?: string | null
           role: string
         }
         Update: {
-          created_at?: string | null
+          alias?: string | null
           cbu?: string | null
+          created_at?: string | null
           daily_rate?: number
           dni?: number | null
           id?: number
           lastName?: string
           name?: string
           notes?: string | null
-          alias?: string | null
           phoneNumber?: string | null
           role?: string
         }
@@ -621,6 +603,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      personal_roles: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          id: string
+          label: string
+          sort_order: number
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          id?: string
+          label: string
+          sort_order?: number
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          id?: string
+          label?: string
+          sort_order?: number
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -995,12 +1004,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1024,11 +1033,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1049,11 +1058,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1074,11 +1083,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1091,11 +1100,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }

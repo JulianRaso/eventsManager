@@ -1,14 +1,14 @@
 import { AssignmentProps, BookedProps, BookingProps, ClientProps, EquipmentItemProps } from "../types";
 import { addItems } from "./bookingItems";
 import { addAssignments } from "./bookingPersonal";
-import { checkClient, createClient } from "./client";
+import { getClientById } from "./client";
 import { supabase } from "./supabase";
 
 //Get data from database
 export async function getBookings() {
   const { data, error } = await supabase.from("booking").select(`
         *, 
-        client(name, lastName, phoneNumber)
+        client(name, lastName, phoneNumber, COD_CLIENTE, dni)
       `);
 
   if (error) {
@@ -58,20 +58,24 @@ export async function createBooking(
   equipment?: Omit<EquipmentItemProps, "booking_id">[],
   personnel?: Omit<AssignmentProps, "booking_id">[]
 ) {
-  // 1. Verificar/crear cliente
-  const confirmClientResponse = await checkClient(client.dni);
-  const confirmClient = confirmClientResponse.data;
-  if (
-    !confirmClient ||
-    (Array.isArray(confirmClient) && confirmClient.length === 0)
-  ) {
-    await createClient(client);
+  if (!client.ID_CLIENTE) {
+    throw new Error("Seleccioná un cliente válido");
   }
 
-  // 2. Crear la reserva y obtener el ID
-  const newBooking = await addBooking(booking);
+  const confirmClientResponse = await getClientById(client.ID_CLIENTE);
+  const confirmClient = confirmClientResponse.data;
+  if (!confirmClient) {
+    throw new Error("El cliente no existe");
+  }
+  if (!confirmClient.Habilitado) {
+    throw new Error("El cliente está deshabilitado y no puede usarse en reservas");
+  }
 
-  // 3. Si hay equipos, asignarles el booking_id y guardarlos
+  const newBooking = await addBooking({
+    ...booking,
+    client_id: client.ID_CLIENTE,
+  });
+
   if (equipment && equipment.length > 0 && newBooking?.id) {
     const equipmentWithBookingId = equipment.map((item) => ({
       ...item,
@@ -80,7 +84,6 @@ export async function createBooking(
     await addItems(equipmentWithBookingId);
   }
 
-  // 4. Si hay personal, asignarles el booking_id y guardarlos
   if (personnel && personnel.length > 0 && newBooking?.id) {
     const personnelWithBookingId = personnel.map((p) => ({
       ...p,
@@ -93,10 +96,12 @@ export async function createBooking(
 }
 
 export async function updateBooking(booking: BookedProps) {
+  // payment_status lo sincronizan los cobros; no pisarlo desde el form de reserva
+  const { id, payment_status: _paymentStatus, ...fields } = booking;
   const { data, error } = await supabase
     .from("booking")
-    .update({ ...booking })
-    .eq("id", booking.id)
+    .update(fields)
+    .eq("id", id)
     .select();
 
   if (error) {
@@ -126,7 +131,7 @@ export async function patchBooking(
 export async function getBookingEvent(id: number) {
   const { data, error } = await supabase
     .from("booking")
-    .select(`*, client(name, lastName, phoneNumber, email)`)
+    .select(`*, client(name, lastName, phoneNumber, email, COD_CLIENTE, dni)`)
     .eq("id", id)
     .single();
 

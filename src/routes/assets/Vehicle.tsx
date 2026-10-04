@@ -3,14 +3,14 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
-import AddLayout from "../components/AddLayout";
-import NavigationButtons from "../components/NavigationButtons";
-import { Input } from "../components/ui/Input";
-import useAddVehicle from "../hooks/useAddVehicle";
-import useUpdateVehicle from "../hooks/useUpdateVehicle";
-import { getCurrentTransport } from "../services/transport";
-import { cn } from "../lib/utils";
-import { toDDMMYYYY, fromDDMMYYYY } from "../components/formatDate";
+import AddLayout from "../../components/AddLayout";
+import NavigationButtons from "../../components/NavigationButtons";
+import { Input } from "../../components/ui/Input";
+import useAddVehicle from "../../hooks/useAddVehicle";
+import useUpdateVehicle from "../../hooks/useUpdateVehicle";
+import { getCurrentTransport } from "../../services/transport";
+import { cn } from "../../lib/utils";
+import { toDDMMYYYY, fromDDMMYYYY } from "../../components/formatDate";
 
 type vehicleProps = {
   id?: number;

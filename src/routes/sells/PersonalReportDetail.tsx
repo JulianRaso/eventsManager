@@ -14,19 +14,19 @@ import {
   Phone,
   UserCircle,
 } from "lucide-react";
-import CategoryLayout from "../components/CategoryLayout";
-import Spinner from "../components/Spinner";
-import { Button } from "../components/ui/button";
-import { KPICard } from "../components/ui/KPICard";
-import { cn } from "../lib/utils";
-import { formatDate } from "../components/formatDate";
-import { formatCurrency } from "../utils/formatCurrency";
-import usePersonalReportDetail from "../hooks/usePersonalReportDetail";
-import { getPersonalRoles } from "../services/personalRoles";
-import type { PersonalAssignmentDetail } from "../services/personalReport";
-import type { PersonaledProps } from "../types";
-import PersonalReportDetailPDF from "../components/PersonalReportDetailPDF";
-import type { PersonalReportDetailPDFProps } from "../components/PersonalReportDetailPDF";
+import CategoryLayout from "../../components/CategoryLayout";
+import Spinner from "../../components/Spinner";
+import { Button } from "../../components/ui/button";
+import { KPICard } from "../../components/ui/KPICard";
+import { cn } from "../../lib/utils";
+import { formatDate } from "../../components/formatDate";
+import { formatCurrency } from "../../utils/formatCurrency";
+import usePersonalReportDetail from "../../hooks/usePersonalReportDetail";
+import { getPersonalRoles } from "../../services/personalRoles";
+import type { PersonalAssignmentDetail } from "../../services/personalReport";
+import type { PersonaledProps } from "../../types";
+import PersonalReportDetailPDF from "../../components/PersonalReportDetailPDF";
+import type { PersonalReportDetailPDFProps } from "../../components/PersonalReportDetailPDF";
 
 const eventTypes: Record<string, string> = {
   other: "Otro",

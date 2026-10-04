@@ -15,7 +15,7 @@ export default function useUpdateClient() {
       toast.success("Cliente actualizado correctamente");
       navigate("/clientes");
     },
-    onError: () => toast.error("Error al actualizar el cliente"),
+    onError: (err) => toast.error(err.message || "Error al actualizar el cliente"),
   });
 
   return { isUpdating, editClient };

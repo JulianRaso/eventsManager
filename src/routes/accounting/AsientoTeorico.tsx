@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, AlertCircle, TrendingUp, ShoppingCart } from "lucide-react";
-import CategoryLayout from "../components/CategoryLayout";
-import Spinner from "../components/Spinner";
-import { cn } from "../lib/utils";
-import { formatCurrency } from "../utils/formatCurrency";
-import useAsientoTeorico from "../hooks/useAsientoTeorico";
-import type { AsientoData } from "../hooks/useAsientoTeorico";
+import CategoryLayout from "../../components/CategoryLayout";
+import Spinner from "../../components/Spinner";
+import { cn } from "../../lib/utils";
+import { formatCurrency } from "../../utils/formatCurrency";
+import useAsientoTeorico from "../../hooks/useAsientoTeorico";
+import type { AsientoData } from "../../hooks/useAsientoTeorico";
 
 const MONTH_NAMES = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",

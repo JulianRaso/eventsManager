@@ -1,9 +1,12 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { PDFDownloadLink } from "@react-pdf/renderer";
+import { pdf } from "@react-pdf/renderer";
 import {
   AlertCircle,
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   BarChart3,
   CheckCircle2,
   DollarSign,
@@ -11,9 +14,9 @@ import {
   Plus,
   UserCircle,
 } from "lucide-react";
-import CategoryLayout from "../components/CategoryLayout";
-import Spinner from "../components/Spinner";
-import PersonalReportGeneralPDF from "../components/PersonalReportGeneralPDF";
+import CategoryLayout from "../../components/CategoryLayout";
+import Spinner from "../../components/Spinner";
+import PersonalReportGeneralPDF from "../../components/PersonalReportGeneralPDF";
 import {
   Dialog,
   DialogContent,
@@ -21,19 +24,66 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "../components/ui/dialog";
-import { KPICard } from "../components/ui/KPICard";
-import { Input } from "../components/ui/Input";
-import { Button } from "../components/ui/button";
-import { cn } from "../lib/utils";
-import { formatCurrency } from "../utils/formatCurrency";
-import usePersonalBalances from "../hooks/usePersonalBalances";
-import useGetPersonal from "../hooks/useGetPersonal";
-import { getPersonalRoles } from "../services/personalRoles";
-import type { PersonaledProps } from "../types";
+} from "../../components/ui/dialog";
+import { KPICard } from "../../components/ui/KPICard";
+import { Input } from "../../components/ui/Input";
+import { Button } from "../../components/ui/button";
+import { cn } from "../../lib/utils";
+import { formatCurrency } from "../../utils/formatCurrency";
+import usePersonalBalances from "../../hooks/usePersonalBalances";
+import useGetPersonal from "../../hooks/useGetPersonal";
+import { getPersonalRoles } from "../../services/personalRoles";
+import type { PersonaledProps } from "../../types";
 
 const selectClass =
   "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
+type SortColumn = "name" | "role" | "trabajos" | "adeudado" | "pagado" | "saldo";
+type SortDir = "asc" | "desc";
+
+function SortableTh({
+  label,
+  column,
+  sortColumn,
+  sortDir,
+  onSort,
+  align = "left",
+}: {
+  label: string;
+  column: SortColumn;
+  sortColumn: SortColumn;
+  sortDir: SortDir;
+  onSort: (column: SortColumn) => void;
+  align?: "left" | "center" | "right";
+}) {
+  const active = sortColumn === column;
+  const Icon = !active ? ArrowUpDown : sortDir === "asc" ? ArrowUp : ArrowDown;
+
+  return (
+    <th
+      className={cn(
+        "px-4 py-3 font-medium text-muted-foreground",
+        align === "left" && "text-left",
+        align === "center" && "text-center",
+        align === "right" && "text-right"
+      )}
+    >
+      <button
+        type="button"
+        onClick={() => onSort(column)}
+        className={cn(
+          "inline-flex items-center gap-1 rounded-md transition-colors hover:text-foreground",
+          align === "right" && "flex-row-reverse",
+          align === "center" && "justify-center",
+          active && "text-foreground"
+        )}
+      >
+        {label}
+        <Icon className={cn("h-3.5 w-3.5 shrink-0", active ? "opacity-100" : "opacity-40")} />
+      </button>
+    </th>
+  );
+}
 
 export default function PersonalReport() {
   const navigate = useNavigate();
@@ -41,6 +91,8 @@ export default function PersonalReport() {
   const { data: personalList = [] } = useGetPersonal();
   const [search, setSearch] = useState("");
   const [onlyDebt, setOnlyDebt] = useState(false);
+  const [sortColumn, setSortColumn] = useState<SortColumn>("saldo");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
 
   const [payDialogOpen, setPayDialogOpen] = useState(false);
   const [payPersonalId, setPayPersonalId] = useState("");
@@ -48,6 +100,16 @@ export default function PersonalReport() {
   const [payDate, setPayDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [payMethod, setPayMethod] = useState<"cash" | "transfer" | "card" | "bank_check">("transfer");
   const [payNotes, setPayNotes] = useState("");
+  const [exportingPdf, setExportingPdf] = useState(false);
+
+  function handleSort(column: SortColumn) {
+    if (sortColumn === column) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+      return;
+    }
+    setSortColumn(column);
+    setSortDir(column === "name" || column === "role" ? "asc" : "desc");
+  }
 
   function openPayDialog() {
     const first = personalList[0] as PersonaledProps | undefined;
@@ -85,7 +147,7 @@ export default function PersonalReport() {
   }, [personalRoles]);
 
   const filtered = useMemo(() => {
-    return staff.filter((s) => {
+    const rows = staff.filter((s) => {
       const matchSearch =
         !search ||
         `${s.name} ${s.lastName}`.toLowerCase().includes(search.toLowerCase()) ||
@@ -93,7 +155,36 @@ export default function PersonalReport() {
       const matchDebt = !onlyDebt || s.saldo > 0;
       return matchSearch && matchDebt;
     });
-  }, [staff, search, onlyDebt]);
+
+    const fullName = (s: (typeof staff)[number]) =>
+      `${s.lastName ?? ""} ${s.name ?? ""}`.trim().toLowerCase();
+
+    const roleLabel = (s: (typeof staff)[number]) =>
+      (roleLabels[s.role] ?? s.role ?? "").toLowerCase();
+
+    const dir = sortDir === "asc" ? 1 : -1;
+    const num = (n: number | null | undefined) => Number(n) || 0;
+
+    return [...rows].sort((a, b) => {
+      switch (sortColumn) {
+        case "name":
+          return dir * fullName(a).localeCompare(fullName(b), "es");
+        case "role": {
+          const byRole = roleLabel(a).localeCompare(roleLabel(b), "es");
+          return dir * (byRole || fullName(a).localeCompare(fullName(b), "es"));
+        }
+        case "trabajos":
+          return dir * (num(a.trabajos) - num(b.trabajos));
+        case "adeudado":
+          return dir * (num(a.totalAdeudado) - num(b.totalAdeudado));
+        case "pagado":
+          return dir * (num(a.totalPagado) - num(b.totalPagado));
+        case "saldo":
+        default:
+          return dir * (num(a.saldo) - num(b.saldo));
+      }
+    });
+  }, [staff, search, onlyDebt, sortColumn, sortDir, roleLabels]);
 
   const totals = useMemo(() => {
     return {
@@ -126,6 +217,28 @@ export default function PersonalReport() {
     }));
   }, [filtered, roleLabels]);
 
+  async function handleExportPdf() {
+    if (pdfRows.length === 0 || exportingPdf) return;
+    setExportingPdf(true);
+    try {
+      const blob = await pdf(
+        <PersonalReportGeneralPDF
+          generatedAtIso={new Date().toISOString()}
+          summary={pdfSummary}
+          rows={pdfRows}
+        />
+      ).toBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `reporte-personal-general-${new Date().toISOString().slice(0, 10)}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setExportingPdf(false);
+    }
+  }
+
   if (isLoading) return <Spinner />;
 
   return (
@@ -147,50 +260,43 @@ export default function PersonalReport() {
         />
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <Input
           placeholder="Buscar por nombre o ID…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="sm:max-w-sm"
+          className="w-full lg:max-w-sm"
         />
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <Button type="button" variant="default" size="sm" className="gap-1" onClick={openPayDialog}>
             <Plus className="h-4 w-4" />
             Registrar pago
           </Button>
-          {pdfRows.length > 0 ? (
-            <PDFDownloadLink
-              document={
-                <PersonalReportGeneralPDF
-                  generatedAtIso={new Date().toISOString()}
-                  summary={pdfSummary}
-                  rows={pdfRows}
-                />
-              }
-              fileName={`reporte-personal-general-${new Date().toISOString().slice(0, 10)}.pdf`}
-            >
-              {({ loading }) => (
-                <Button type="button" variant="outline" size="sm" disabled={loading} className="gap-2">
-                  <FileDown className="h-4 w-4" />
-                  {loading ? "Generando…" : "Exportar PDF"}
-                </Button>
-              )}
-            </PDFDownloadLink>
-          ) : null}
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            disabled={pdfRows.length === 0 || exportingPdf}
+            onClick={() => void handleExportPdf()}
+          >
+            <FileDown className="h-4 w-4" />
+            {exportingPdf ? "Generando…" : "Exportar PDF"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
             onClick={() => setOnlyDebt((v) => !v)}
             className={cn(
-              "flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors",
-              onlyDebt
-                ? "border-amber-500 bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
-                : "border-border bg-background text-muted-foreground hover:text-foreground"
+              "gap-1.5",
+              onlyDebt &&
+                "border-amber-500 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 dark:bg-amber-950 dark:text-amber-300 dark:hover:bg-amber-900"
             )}
           >
             <AlertCircle className="h-4 w-4" />
-            {onlyDebt ? "Solo con deuda" : "Mostrar solo con deuda"}
-          </button>
+            {onlyDebt ? "Solo con deuda" : "Solo deuda"}
+          </Button>
         </div>
       </div>
 
@@ -203,16 +309,56 @@ export default function PersonalReport() {
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
+          <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Personal</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Rol</th>
-                <th className="px-4 py-3 text-center font-medium text-muted-foreground">Trabajos</th>
-                <th className="px-4 py-3 text-right font-medium text-muted-foreground">Adeudado</th>
-                <th className="px-4 py-3 text-right font-medium text-muted-foreground">Pagado</th>
-                <th className="px-4 py-3 text-right font-medium text-muted-foreground">Saldo</th>
+                <SortableTh
+                  label="Personal"
+                  column="name"
+                  sortColumn={sortColumn}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                />
+                <SortableTh
+                  label="Rol"
+                  column="role"
+                  sortColumn={sortColumn}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                />
+                <SortableTh
+                  label="Trabajos"
+                  column="trabajos"
+                  sortColumn={sortColumn}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                  align="center"
+                />
+                <SortableTh
+                  label="Adeudado"
+                  column="adeudado"
+                  sortColumn={sortColumn}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                  align="right"
+                />
+                <SortableTh
+                  label="Pagado"
+                  column="pagado"
+                  sortColumn={sortColumn}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                  align="right"
+                />
+                <SortableTh
+                  label="Saldo"
+                  column="saldo"
+                  sortColumn={sortColumn}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                  align="right"
+                />
               </tr>
             </thead>
             <tbody>
@@ -250,7 +396,7 @@ export default function PersonalReport() {
             </tbody>
           </table>
           <p className="border-t border-border bg-muted/20 px-4 py-2 text-xs text-muted-foreground">
-            Tocá una fila para ver eventos, montos por trabajo y pagos registrados.
+            Tocá una fila para ver eventos, montos por trabajo y pagos registrados. Tocá un encabezado para ordenar.
           </p>
         </div>
       )}

@@ -18,11 +18,11 @@ export default function CuentaCorrientes() {
   const [onlyDebt, setOnlyDebt] = useState(false);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
 
-  function toggleExpand(dni: number) {
+  function toggleExpand(clientId: number) {
     setExpanded((prev) => {
       const next = new Set(prev);
-      if (next.has(dni)) next.delete(dni);
-      else next.add(dni);
+      if (next.has(clientId)) next.delete(clientId);
+      else next.add(clientId);
       return next;
     });
   }
@@ -32,7 +32,8 @@ export default function CuentaCorrientes() {
       const matchSearch =
         !search ||
         `${c.name} ${c.lastName}`.toLowerCase().includes(search.toLowerCase()) ||
-        String(c.dni).includes(search);
+        (c.COD_CLIENTE ?? "").toLowerCase().includes(search.toLowerCase()) ||
+        (c.dni != null && String(c.dni).includes(search));
       const matchDebt = !onlyDebt || c.saldo > 0;
       return matchSearch && matchDebt;
     });
@@ -71,7 +72,7 @@ export default function CuentaCorrientes() {
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Input
-          placeholder="Buscar por nombre o DNI..."
+          placeholder="Buscar por nombre, código o DNI..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="sm:max-w-sm"
@@ -104,7 +105,7 @@ export default function CuentaCorrientes() {
               <tr className="border-b border-border bg-muted/30">
                 <th className="w-8 px-3 py-3" />
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Cliente</th>
-                <th className="px-4 py-3 text-center font-medium text-muted-foreground">Eventos</th>
+                <th className="px-4 py-3 text-center font-medium text-muted-foreground">Eventos / Estado</th>
                 <th className="px-4 py-3 text-right font-medium text-muted-foreground">Facturado</th>
                 <th className="px-4 py-3 text-right font-medium text-muted-foreground">Cobrado</th>
                 <th className="px-4 py-3 text-right font-medium text-muted-foreground">Saldo</th>
@@ -112,12 +113,12 @@ export default function CuentaCorrientes() {
             </thead>
             <tbody>
               {filtered.map((client) => {
-                const isOpen = expanded.has(client.dni);
+                const isOpen = expanded.has(client.ID_CLIENTE);
                 return (
-                  <Fragment key={client.dni}>
+                  <Fragment key={client.ID_CLIENTE}>
                     <tr
                       className="cursor-pointer border-b border-border transition-colors hover:bg-muted/20"
-                      onClick={() => toggleExpand(client.dni)}
+                      onClick={() => toggleExpand(client.ID_CLIENTE)}
                     >
                       <td className="px-3 py-3 text-muted-foreground">
                         {isOpen ? (
@@ -128,7 +129,10 @@ export default function CuentaCorrientes() {
                       </td>
                       <td className="px-4 py-3 font-medium text-foreground">
                         {client.name} {client.lastName}
-                        <span className="ml-2 text-xs text-muted-foreground">DNI {client.dni}</span>
+                        <span className="ml-2 text-xs text-muted-foreground">
+                          {client.COD_CLIENTE || "Sin código"}
+                          {client.dni != null ? ` · DNI ${client.dni}` : ""}
+                        </span>
                       </td>
                       <td className="px-4 py-3 text-center tabular-nums">{client.eventos}</td>
                       <td className="px-4 py-3 text-right tabular-nums">
@@ -164,12 +168,18 @@ export default function CuentaCorrientes() {
                             <span
                               className={cn(
                                 "inline-flex rounded-full px-2 py-0.5 text-xs font-medium",
-                                b.booking_status === "confirm"
+                                b.payment_status === "paid"
                                   ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
-                                  : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
+                                  : b.payment_status === "partially_paid"
+                                    ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
+                                    : "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300"
                               )}
                             >
-                              {b.booking_status === "confirm" ? "Confirmado" : "Pendiente"}
+                              {b.payment_status === "paid"
+                                ? "Abonado"
+                                : b.payment_status === "partially_paid"
+                                  ? "Señado"
+                                  : "Pendiente"}
                             </span>
                           </td>
                           <td className="px-4 py-2 text-right tabular-nums text-muted-foreground">

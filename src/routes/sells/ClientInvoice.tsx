@@ -5,14 +5,14 @@ import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 import { getCurrentBooking } from "@/services/booking";
 import { getBookingPayments, PaymentProps } from "@/services/bookingPayments";
-import { checkClient } from "@/services/client";
+import { getClientById } from "@/services/client";
 import { BookingRecord } from "@/types";
 import { formatCurrency } from "@/utils/formatCurrency";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { FileDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import companyLogo from "../assets/ShowRental.png";
+import companyLogo from "../../assets/ShowRental.png";
 
 const eventTypes: Record<string, { es: string }> = {
   other: { es: "Otro" },
@@ -47,7 +47,7 @@ export default function ClientInvoice() {
           const first = data[0];
           setInvoiceData({
             created_at: first.created_at,
-            client_dni: first.client_dni,
+            client_id: first.client_id,
             event_date: first.event_date,
             event_type: first.event_type,
             organization: first.organization,
@@ -59,7 +59,7 @@ export default function ClientInvoice() {
             revenue: first.revenue,
             price: first.price,
           });
-          checkClient(first.client_dni).then((res) => {
+          getClientById(first.client_id).then((res) => {
             if (res?.data) {
               const { name, lastName, phoneNumber, email } = res.data;
               setClientData({

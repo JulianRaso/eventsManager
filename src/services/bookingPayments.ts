@@ -11,35 +11,69 @@ export interface PaymentProps {
 }
 
 export type NewPaymentProps = Omit<PaymentProps, "id" | "created_at">;
+export type PaymentStatus = "pending" | "partially_paid" | "paid";
 
-async function syncPaymentStatus(bookingId: number) {
-  const [{ data: payments }, { data: booking }] = await Promise.all([
+function roundMoney(value: number) {
+  return Math.round(Number(value) * 100) / 100;
+}
+
+function sumAmounts(payments: { amount: number | string }[] | null | undefined) {
+  return roundMoney(
+    (payments ?? []).reduce((sum, p) => sum + Number(p.amount || 0), 0)
+  );
+}
+
+export function resolvePaymentStatus(
+  collected: number,
+  totalDue: number
+): PaymentStatus {
+  const paid = roundMoney(collected);
+  const due = roundMoney(totalDue);
+  if (paid <= 0) return "pending";
+  if (paid < due) return "partially_paid";
+  return "paid";
+}
+
+async function getBookingTotalDue(bookingId: number) {
+  const { data: booking, error } = await supabase
+    .from("booking")
+    .select("price, tax")
+    .eq("id", bookingId)
+    .single();
+
+  if (error) throw new Error("No se pudo cargar el total del evento");
+
+  const price = Number(booking?.price ?? 0);
+  const tax = Number(booking?.tax ?? 0);
+  return roundMoney(price + (price / 100) * tax);
+}
+
+async function syncPaymentStatus(bookingId: number): Promise<PaymentStatus> {
+  const [{ data: payments, error: paymentsError }, totalDue] = await Promise.all([
     supabase
       .from("booking_payments")
       .select("amount")
       .eq("booking_id", bookingId),
-    supabase
-      .from("booking")
-      .select("price")
-      .eq("id", bookingId)
-      .single(),
+    getBookingTotalDue(bookingId),
   ]);
 
-  const collected = (payments ?? []).reduce(
-    (sum: number, p: { amount: number }) => sum + p.amount,
-    0
-  );
-  const price = (booking as { price: number } | null)?.price ?? 0;
+  if (paymentsError) throw new Error("No se pudieron cargar los pagos del evento");
 
-  let payment_status: string;
-  if (collected <= 0) payment_status = "pending";
-  else if (collected < price) payment_status = "partially_paid";
-  else payment_status = "paid";
+  const collected = sumAmounts(payments);
+  const payment_status = resolvePaymentStatus(collected, totalDue);
 
-  await supabase
+  const { error } = await supabase
     .from("booking")
-    .update({ payment_status: payment_status as "pending" | "partially_paid" | "paid" })
+    .update({ payment_status })
     .eq("id", bookingId);
+
+  if (error) {
+    throw new Error(
+      `No se pudo actualizar el estado de pago: ${error.message}`
+    );
+  }
+
+  return payment_status;
 }
 
 export interface PaymentWithBooking extends PaymentProps {
@@ -73,15 +107,40 @@ export async function getBookingPayments(bookingId: number) {
 }
 
 export async function addPayment(payment: NewPaymentProps) {
+  const amount = roundMoney(Number(payment.amount));
+  if (!(amount > 0)) throw new Error("El monto debe ser mayor a 0");
+
+  const [{ data: payments, error: paymentsError }, totalDue] = await Promise.all([
+    supabase
+      .from("booking_payments")
+      .select("amount")
+      .eq("booking_id", payment.booking_id),
+    getBookingTotalDue(payment.booking_id),
+  ]);
+
+  if (paymentsError) throw new Error("No se pudieron cargar los pagos del evento");
+
+  const collected = sumAmounts(payments);
+  const remaining = roundMoney(Math.max(0, totalDue - collected));
+
+  if (amount > remaining) {
+    throw new Error(
+      remaining <= 0
+        ? "Este evento ya está completamente abonado"
+        : `El monto no puede superar el saldo pendiente ($${remaining.toFixed(2)})`
+    );
+  }
+
   const { data, error } = await supabase
     .from("booking_payments")
-    .insert([payment])
+    .insert([{ ...payment, amount }])
     .select()
     .single();
 
   if (error) throw new Error("Error al registrar el pago");
-  await syncPaymentStatus(payment.booking_id);
-  return data as PaymentProps;
+
+  const payment_status = await syncPaymentStatus(payment.booking_id);
+  return { payment: data as PaymentProps, payment_status };
 }
 
 export async function deletePayment(id: number, bookingId: number) {
@@ -91,5 +150,6 @@ export async function deletePayment(id: number, bookingId: number) {
     .eq("id", id);
 
   if (error) throw new Error("Error al eliminar el pago");
-  await syncPaymentStatus(bookingId);
+  const payment_status = await syncPaymentStatus(bookingId);
+  return { payment_status };
 }

@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { BookOpen, Plus, Pencil, Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
-import CategoryLayout from "../components/CategoryLayout";
-import Spinner from "../components/Spinner";
-import { KPICard } from "../components/ui/KPICard";
-import { Input } from "../components/ui/Input";
-import { Button } from "../components/ui/button";
+import CategoryLayout from "../../components/CategoryLayout";
+import Spinner from "../../components/Spinner";
+import { KPICard } from "../../components/ui/KPICard";
+import { Input } from "../../components/ui/Input";
+import { Button } from "../../components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -13,14 +13,14 @@ import {
   DialogTitle,
   DialogFooter,
   DialogDescription,
-} from "../components/ui/dialog";
+} from "../../components/ui/dialog";
 import {
   useGetAccounts,
   useAddAccount,
   useUpdateAccount,
   useDeleteAccount,
-} from "../hooks/useAccountingAccounts";
-import { AccountingAccount, NewAccount } from "../services/accountingAccounts";
+} from "../../hooks/useAccountingAccounts";
+import { AccountingAccount, NewAccount } from "../../services/accountingAccounts";
 
 const labelClass = "text-sm font-medium text-foreground";
 

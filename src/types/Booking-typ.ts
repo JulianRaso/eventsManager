@@ -1,9 +1,11 @@
 export type eventData = {
-    dni: number;
+    ID_CLIENTE: number;
     name: string;
     lastName: string;
     phoneNumber: string;
     email: string;
+    COD_CLIENTE?: string;
+    dni?: number | null;
     organization: "Muzek" | "Show Rental";
     event_type: "birthday" | "marriage" | "corporate" | "fifteen_party" | "other";
     place: string;

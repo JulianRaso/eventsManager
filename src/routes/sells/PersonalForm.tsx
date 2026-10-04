@@ -2,16 +2,16 @@ import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import AddLayout from "../components/AddLayout";
-import NavigationButtons from "../components/NavigationButtons";
-import Spinner from "../components/Spinner";
-import { Input } from "../components/ui/Input";
-import useAddPersonal from "../hooks/useAddPersonal";
-import useUpdatePersonal from "../hooks/useUpdatePersonal";
-import { getPersonalById } from "../services/personal";
-import { PersonalProps, PersonaledProps } from "../types";
-import { cn } from "../lib/utils";
-import { getPersonalRoles } from "../services/personalRoles";
+import AddLayout from "../../components/AddLayout";
+import NavigationButtons from "../../components/NavigationButtons";
+import Spinner from "../../components/Spinner";
+import { Input } from "../../components/ui/Input";
+import useAddPersonal from "../../hooks/useAddPersonal";
+import useUpdatePersonal from "../../hooks/useUpdatePersonal";
+import { getPersonalById } from "../../services/personal";
+import { PersonalProps, PersonaledProps } from "../../types";
+import { cn } from "../../lib/utils";
+import { getPersonalRoles } from "../../services/personalRoles";
 
 const fallbackRoles = [
   { value: "tecnico", label: "Técnico" },

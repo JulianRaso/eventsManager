@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Boxes } from "lucide-react";
-import CategoryLayout from "../components/CategoryLayout";
-import Filter from "../components/Filter";
-import Spinner from "../components/Spinner";
+import CategoryLayout from "../../components/CategoryLayout";
+import Filter from "../../components/Filter";
+import Spinner from "../../components/Spinner";
 import {
   Table,
   TableBody,
@@ -11,19 +11,13 @@ import {
   TableHead,
   TableHeaderData,
   TableRow,
-} from "../components/Table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "../components/ui/pagination";
-import useGetStockAvailability from "../hooks/useGetStockAvailability";
-import usePagination from "../hooks/usePagination";
-import { cn } from "../lib/utils";
-import { FilterOption } from "../types";
+} from "../../components/Table";
+import PageSizeSelector from "../../components/PageSizeSelector";
+import PaginationControls from "../../components/PaginationControls";
+import useGetStockAvailability from "../../hooks/useGetStockAvailability";
+import usePagination, { type PageSize } from "../../hooks/usePagination";
+import { cn } from "../../lib/utils";
+import { FilterOption } from "../../types";
 
 const filterByCategory: FilterOption[] = [
   { value: "sound", label: "Sonido" },
@@ -62,6 +56,7 @@ export default function Disponibilidad() {
   const { availability, isLoading } = useGetStockAvailability();
   const [filterByName, setFilterByName] = useState("");
   const [categoryValue, setCategoryValue] = useState("");
+  const [pageSize, setPageSize] = useState<PageSize>(10);
 
   const filteredData = useMemo<StockItem[]>(() => {
     return (availability as StockItem[]).filter((item) => {
@@ -77,15 +72,16 @@ export default function Disponibilidad() {
   const {
     currentPage,
     setCurrentPage,
-    pages,
+    totalPages,
     currentItems,
     goToNextPage,
     goToPrevPage,
-  } = usePagination({ data: filteredData, limit: 10 });
+    isPaginated,
+  } = usePagination({ data: filteredData, limit: pageSize });
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [filterByName, categoryValue, setCurrentPage]);
+  }, [filterByName, categoryValue, pageSize, setCurrentPage]);
 
   if (isLoading) return <Spinner />;
 
@@ -97,14 +93,18 @@ export default function Disponibilidad() {
         asignados a reservas confirmadas o pendientes con fecha futura.
       </p>
 
-      <Filter
-        filterByName={filterByName}
-        filterByStatus={filterByCategory}
-        setFilterByName={setFilterByName}
-        value={categoryValue}
-        setValue={setCategoryValue}
-        filterLabel="Filtrar por categoría..."
-      />
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <Filter
+          filterByName={filterByName}
+          filterByStatus={filterByCategory}
+          setFilterByName={setFilterByName}
+          value={categoryValue}
+          setValue={setCategoryValue}
+          filterLabel="Filtrar por categoría..."
+          className="sm:flex-1 sm:max-w-none"
+        />
+        <PageSizeSelector value={pageSize} onChange={setPageSize} />
+      </div>
 
       {filteredData.length > 0 ? (
         <TableContainer>
@@ -188,28 +188,14 @@ export default function Disponibilidad() {
         </div>
       )}
 
-      {filteredData.length > 10 && (
-        <Pagination className="mt-4 flex w-full items-center justify-center">
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious onClick={goToPrevPage} size="default" />
-            </PaginationItem>
-            {pages.map((page) => (
-              <PaginationItem key={page}>
-                <PaginationLink
-                  onClick={() => setCurrentPage(page)}
-                  isActive={currentPage === page}
-                  size="default"
-                >
-                  {page}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-            <PaginationItem>
-              <PaginationNext onClick={goToNextPage} size="default" />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+      {isPaginated && (
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          onPrevious={goToPrevPage}
+          onNext={goToNextPage}
+        />
       )}
     </CategoryLayout>
   );

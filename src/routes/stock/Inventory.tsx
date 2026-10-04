@@ -1,10 +1,10 @@
 import { useMemo, useState, useEffect } from "react";
 import { Package } from "lucide-react";
-import AddButton from "../components/AddButton";
-import CategoryLayout from "../components/CategoryLayout";
-import Filter from "../components/Filter";
-import { formatDateTime } from "../components/formatDate";
-import Spinner from "../components/Spinner";
+import AddButton from "../../components/AddButton";
+import CategoryLayout from "../../components/CategoryLayout";
+import Filter from "../../components/Filter";
+import { formatDateTime } from "../../components/formatDate";
+import Spinner from "../../components/Spinner";
 import {
   Table,
   TableBody,
@@ -13,20 +13,14 @@ import {
   TableHead,
   TableHeaderData,
   TableRow,
-} from "../components/Table";
-import TableButtons from "../components/TableButtons";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "../components/ui/pagination";
-import useDeleteStock from "../hooks/useDeleteStock";
-import useGetData from "../hooks/useGetData";
-import usePagination from "../hooks/usePagination";
-import { CategoryType, FilterOption } from "../types";
+} from "../../components/Table";
+import TableButtons from "../../components/TableButtons";
+import PageSizeSelector from "../../components/PageSizeSelector";
+import PaginationControls from "../../components/PaginationControls";
+import useDeleteStock from "../../hooks/useDeleteStock";
+import useGetData from "../../hooks/useGetData";
+import usePagination, { type PageSize } from "../../hooks/usePagination";
+import { CategoryType, FilterOption } from "../../types";
 
 const filterByCategory: FilterOption[] = [
   { value: "sound", label: "Sonido" },
@@ -44,6 +38,7 @@ export default function Inventory() {
   const defaultCategory = "sound";
   const [filterByName, setFilterByName] = useState("");
   const [categoryValue, setCategoryValue] = useState(defaultCategory);
+  const [pageSize, setPageSize] = useState<PageSize>(10);
   const { data = [], isLoading } = useGetData(categoryValue as CategoryType);
   const { isDelete, deleteStock } = useDeleteStock(categoryValue);
 
@@ -66,16 +61,20 @@ export default function Inventory() {
   const {
     currentPage,
     setCurrentPage,
-    pages,
+    totalPages,
     currentItems,
     goToNextPage,
     goToPrevPage,
-  } = usePagination({ data: filteredData, limit: 10 });
+    isPaginated,
+  } = usePagination({ data: filteredData, limit: pageSize });
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterByName, categoryValue, pageSize, setCurrentPage]);
 
   if (isLoading) return <Spinner />;
 
-  // Si hay filtro activo, mostrar todos los resultados filtrados; si no, usar paginación
-  const displayData = filterByName ? filteredData : currentItems;
+  const displayData = currentItems;
 
   return (
     <CategoryLayout title="Inventario">
@@ -89,7 +88,10 @@ export default function Inventory() {
           filterLabel="Filtrar por categoría..."
           className="sm:flex-1 sm:max-w-none"
         />
-        <AddButton navigateTo="/inventario/agregar" label="Nuevo elemento" />
+        <div className="flex items-center gap-2">
+          <PageSizeSelector value={pageSize} onChange={setPageSize} />
+          <AddButton navigateTo="/inventario/agregar" label="Nuevo elemento" />
+        </div>
       </div>
 
       {filteredData.length > 0 ? (
@@ -150,28 +152,14 @@ export default function Inventory() {
         </div>
       )}
 
-      {filteredData.length > 0 && !filterByName && (data?.length ?? 0) > 10 && (
-        <Pagination className="mt-4 flex w-full items-center justify-center">
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious onClick={goToPrevPage} size="default" />
-            </PaginationItem>
-            {pages.map((page) => (
-              <PaginationItem key={page}>
-                <PaginationLink
-                  onClick={() => setCurrentPage(page)}
-                  isActive={currentPage === page}
-                  size="default"
-                >
-                  {page}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-            <PaginationItem>
-              <PaginationNext onClick={goToNextPage} size="default" />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+      {isPaginated && (
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          onPrevious={goToPrevPage}
+          onNext={goToNextPage}
+        />
       )}
     </CategoryLayout>
   );

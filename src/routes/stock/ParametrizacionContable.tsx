@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { BookOpen, Pencil, CheckCircle2, AlertCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
-import CategoryLayout from "../components/CategoryLayout";
-import Spinner from "../components/Spinner";
+import CategoryLayout from "../../components/CategoryLayout";
+import Spinner from "../../components/Spinner";
 import { KPICard } from "@/components/ui/KPICard";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { cn } from "../lib/utils";
+import { cn } from "../../lib/utils";
 import { useGetItemAccounting, useUpsertItemAccounting } from "@/hooks/useItemAccounting";
 import { useGetAccounts } from "@/hooks/useAccountingAccounts";
 import { ItemAccountingProps } from "@/services/itemAccounting";

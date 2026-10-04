@@ -2,9 +2,9 @@ import { useMemo } from "react";
 import { Users, Wrench, DollarSign, Headphones, Settings2, BarChart3 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "react-router-dom";
-import AddButton from "../components/AddButton";
-import CategoryLayout from "../components/CategoryLayout";
-import Spinner from "../components/Spinner";
+import AddButton from "../../components/AddButton";
+import CategoryLayout from "../../components/CategoryLayout";
+import Spinner from "../../components/Spinner";
 import {
   Table,
   TableBody,
@@ -13,15 +13,15 @@ import {
   TableHead,
   TableHeaderData,
   TableRow,
-} from "../components/Table";
-import TableButtons from "../components/TableButtons";
-import { KPICard } from "../components/ui/KPICard";
-import { Button } from "../components/ui/button";
-import useGetPersonal from "../hooks/useGetPersonal";
-import useDeletePersonal from "../hooks/useDeletePersonal";
-import { formatCurrency } from "../utils/formatCurrency";
-import { PersonaledProps } from "../types";
-import { getPersonalRoles } from "../services/personalRoles";
+} from "../../components/Table";
+import TableButtons from "../../components/TableButtons";
+import { KPICard } from "../../components/ui/KPICard";
+import { Button } from "../../components/ui/button";
+import useGetPersonal from "../../hooks/useGetPersonal";
+import useDeletePersonal from "../../hooks/useDeletePersonal";
+import { formatCurrency } from "../../utils/formatCurrency";
+import { PersonaledProps } from "../../types";
+import { getPersonalRoles } from "../../services/personalRoles";
 
 export default function HumandResource() {
   const { data, isLoading } = useGetPersonal();

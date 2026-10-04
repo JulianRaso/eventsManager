@@ -1,16 +1,16 @@
 import { useForm } from "react-hook-form";
-import NavigationButtons from "../components/NavigationButtons";
-import { Input } from "../components/ui/Input";
-import useAddStock from "../hooks/useAddStock";
-import AddLayout from "../components/AddLayout";
+import NavigationButtons from "../../components/NavigationButtons";
+import { Input } from "../../components/ui/Input";
+import useAddStock from "../../hooks/useAddStock";
+import AddLayout from "../../components/AddLayout";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getCurrentInventory } from "../services/stock";
-import useUpdateStock from "../hooks/useUpdateStock";
+import { getCurrentInventory } from "../../services/stock";
+import useUpdateStock from "../../hooks/useUpdateStock";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import Spinner from "../components/Spinner";
-import { cn } from "../lib/utils";
+import Spinner from "../../components/Spinner";
+import { cn } from "../../lib/utils";
 
 type equipmentProps = {
   id: number;

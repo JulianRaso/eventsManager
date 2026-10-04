@@ -1,21 +1,21 @@
 import { useState } from "react";
 import { ArrowLeft, Plus, Trash2, CreditCard } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
-import Spinner from "../components/Spinner";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/Input";
-import { cn } from "../lib/utils";
-import { formatDate } from "../components/formatDate";
-import { formatCurrency } from "../utils/formatCurrency";
+import Spinner from "../../components/Spinner";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/Input";
+import { cn } from "../../lib/utils";
+import { formatDate } from "../../components/formatDate";
+import { formatCurrency } from "../../utils/formatCurrency";
 import {
   useGetPurchaseDetail,
   useGetPurchaseItems,
   useManagePurchaseItems,
   useGetPurchasePayments,
   useManagePurchasePayments,
-} from "../hooks/usePurchases";
-import { useGetSuppliers } from "../hooks/useSuppliers";
-import { getInventory } from "../services/stock";
+} from "../../hooks/usePurchases";
+import { useGetSuppliers } from "../../hooks/useSuppliers";
+import { getInventory } from "../../services/stock";
 import { useQuery } from "@tanstack/react-query";
 
 const paymentMethodLabel: Record<string, string> = {

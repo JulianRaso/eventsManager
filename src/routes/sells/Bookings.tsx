@@ -15,17 +15,11 @@ import {
   TableHead,
   TableHeaderData,
 } from "../../components/Table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "../../components/ui/pagination";
+import PageSizeSelector from "../../components/PageSizeSelector";
+import PaginationControls from "../../components/PaginationControls";
 import useGetBookings from "../../hooks/useGetBookings";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
-import usePagination from "../../hooks/usePagination";
+import usePagination, { type PageSize } from "../../hooks/usePagination";
 import { FilterOption } from "../../types";
 
 const filterByStatus: FilterOption[] = [
@@ -73,6 +67,7 @@ export default function Bookings() {
   const [filterByName, setFilterByName] = useState("");
   const [statusValue, setStatusValue] = useState("");
   const [view, setView] = useState<"table" | "calendar">("table");
+  const [pageSize, setPageSize] = useState<PageSize>(5);
 
   // Ordenar y filtrar datos
   const sortedData = useMemo(() => {
@@ -91,11 +86,12 @@ export default function Bookings() {
   const {
     currentPage,
     setCurrentPage,
-    pages,
+    totalPages,
     currentItems,
     goToNextPage,
     goToPrevPage,
-  } = usePagination({ data: filteredData, limit: 5 });
+    isPaginated,
+  } = usePagination({ data: filteredData, limit: pageSize });
 
   // KPI totals (over all bookings, not filtered)
   const totals = useMemo(() => {
@@ -108,10 +104,10 @@ export default function Bookings() {
     };
   }, [sortedData]);
 
-  // Resetear página al cambiar filtros
+  // Resetear página al cambiar filtros o tamaño de página
   useEffect(() => {
     setCurrentPage(1);
-  }, [filterByName, statusValue, setCurrentPage]);
+  }, [filterByName, statusValue, pageSize, setCurrentPage]);
 
   if (isLoading) return <Spinner />;
 
@@ -156,6 +152,9 @@ export default function Bookings() {
           className="sm:flex-1 sm:max-w-none"
         />
         <div className="flex items-center gap-2">
+          {view === "table" && (
+            <PageSizeSelector value={pageSize} onChange={setPageSize} />
+          )}
           <div className="flex rounded-lg border border-border bg-muted/30 p-0.5">
             <button
               type="button"
@@ -236,28 +235,14 @@ export default function Bookings() {
         </div>
       )}
 
-      {view === "table" && filteredData.length > 5 && (
-        <Pagination className="mt-4 flex w-full items-center justify-center">
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious onClick={goToPrevPage} size="default" />
-            </PaginationItem>
-            {pages.map((page) => (
-              <PaginationItem key={page}>
-                <PaginationLink
-                  onClick={() => setCurrentPage(page)}
-                  isActive={currentPage === page}
-                  size="default"
-                >
-                  {page}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-            <PaginationItem>
-              <PaginationNext onClick={goToNextPage} size="default" />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+      {view === "table" && isPaginated && (
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          onPrevious={goToPrevPage}
+          onNext={goToNextPage}
+        />
       )}
     </CategoryLayout>
   );

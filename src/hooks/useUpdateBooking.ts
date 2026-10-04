@@ -5,7 +5,7 @@ import { updateBooking as updateBookingAPI } from "../services/booking";
 
 interface bookingProps {
   id: number;
-  client_dni: number;
+  client_id: number;
   booking_status: "pending" | "cancel" | "confirm";
   comments: string;
   organization: "Muzek" | "Show Rental";

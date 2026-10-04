@@ -3,10 +3,10 @@ import { useForm } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { Plus, Pencil, Power, PowerOff } from "lucide-react";
-import CategoryLayout from "../components/CategoryLayout";
-import Spinner from "../components/Spinner";
-import { Input } from "../components/ui/Input";
-import { Button } from "../components/ui/button";
+import CategoryLayout from "../../components/CategoryLayout";
+import Spinner from "../../components/Spinner";
+import { Input } from "../../components/ui/Input";
+import { Button } from "../../components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "../components/ui/dialog";
+} from "../../components/ui/dialog";
 import {
   activatePersonalRole,
   addPersonalRole,
@@ -22,7 +22,7 @@ import {
   getPersonalRoles,
   updatePersonalRole,
   type PersonalRoleRow,
-} from "../services/personalRoles";
+} from "../../services/personalRoles";
 
 type FormValues = {
   code: string;

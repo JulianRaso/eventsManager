@@ -1,23 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
 import { CreditCard, Loader2, Package, Plus, Receipt, Trash2, Users } from "lucide-react";
 import Spinner from "../../components/Spinner";
 import EquipmentPickerDialog from "../../components/Booking/EquipmentPickerDialog";
+import NewClientDialog from "../../components/Booking/NewClientDialog";
+import PersonalPickerDialog from "../../components/Booking/PersonalPickerDialog";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/Input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "../../components/ui/dialog";
-import { DialogClose } from "@radix-ui/react-dialog";
 import { useAddBooking } from "../../hooks/useAddBooking";
 import useUpdateBooking from "../../hooks/useUpdateBooking";
 import useGetStockAvailability from "../../hooks/useGetStockAvailability";
 import useGetPersonal from "../../hooks/useGetPersonal";
+import useGetClients from "../../hooks/useGetClients";
 import useGetBookingEvent from "../../hooks/useGetBookingEvent";
 import useGetBookingPersonal from "../../hooks/useGetBookingPersonal";
 import { useAssignPersonal } from "../../hooks/useAssignPersonal";
@@ -27,12 +23,12 @@ import useGetBookingBills from "../../hooks/useGetBookingBills";
 import useBookingBills from "../../hooks/useBookingBills";
 import useManageBookingItems from "../../hooks/useManageBookingItems";
 import { getCurrentBooking } from "../../services/booking";
-import { checkClient } from "../../services/client";
+import { getClientById } from "../../services/client";
 import { fromDDMMYYYY } from "../../components/formatDate";
 import type { eventData } from "../../types/Booking-typ";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { cn } from "../../lib/utils";
-import type { PersonaledProps } from "../../types";
+import type { ClientProps, PersonaledProps } from "../../types";
 
 const selectClass =
   "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50";
@@ -72,7 +68,6 @@ export default function Booking() {
     reset,
     handleSubmit,
     setValue,
-    resetField,
     watch,
     formState: { errors },
   } = useForm<eventData>({
@@ -86,10 +81,8 @@ export default function Booking() {
 
   const { isAdding, addBooking } = useAddBooking();
   const { isUpdating, updateBooking } = useUpdateBooking();
-
-  const [dni, setDni] = useState(0);
-  const [existClient, setExistClient] = useState(false);
-  const [checkingClient, setCheckingClient] = useState(false);
+  const { data: clients, isLoading: isLoadingClients } = useGetClients();
+  const [showNewClient, setShowNewClient] = useState(false);
 
   const bookingId = Number(useParams().bookingId);
   const isEditingSession = Boolean(bookingId);
@@ -101,8 +94,6 @@ export default function Booking() {
   const [localPersonal, setLocalPersonal] = useState<LocalPersonalItem[]>([]);
   const [showEquipDialog, setShowEquipDialog] = useState(false);
   const [showPersonalDialog, setShowPersonalDialog] = useState(false);
-  const [personalDays, setPersonalDays] = useState<Record<number, string>>({});
-  const [personalRate, setPersonalRate] = useState<Record<number, string>>({});
 
   const watchPrice = watch("price") ?? 0;
   const watchTax = watch("tax") ?? 0;
@@ -158,10 +149,6 @@ export default function Booking() {
 
   // Edit-mode view state
   const [activeView, setActiveView] = useState<BookingEditView>("general");
-  const [showAssignForm, setShowAssignForm] = useState(false);
-  const [selectedPersonalId, setSelectedPersonalId] = useState("");
-  const [assignDays, setAssignDays] = useState("1");
-  const [assignRate, setAssignRate] = useState("");
 
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [payAmount, setPayAmount] = useState("");
@@ -201,42 +188,24 @@ export default function Booking() {
   const editMargen = Number(watchPrice) - editCostoTotal;
   const editMargenPct = Number(watchPrice) > 0 ? (editMargen / Number(watchPrice)) * 100 : 0;
 
-  const totalCollected = payments.reduce((sum, p) => sum + p.amount, 0);
-  const balance = totalCliente - totalCollected;
-
-  function handlePersonalSelect(e: React.ChangeEvent<HTMLSelectElement>) {
-    const pid = Number(e.target.value);
-    setSelectedPersonalId(e.target.value);
-    const person = (personalList as PersonaledProps[]).find((p) => p.id === pid);
-    if (person) setAssignRate(String(person.daily_rate));
-  }
-
-  function handleAssign() {
-    if (!selectedPersonalId || !assignDays || !assignRate) return;
-    assignPersonal(
-      {
-        booking_id: bookingId,
-        personal_id: Number(selectedPersonalId),
-        days: Number(assignDays),
-        rate: Number(assignRate),
-      },
-      {
-        onSuccess: () => {
-          setShowAssignForm(false);
-          setSelectedPersonalId("");
-          setAssignDays("1");
-          setAssignRate("");
-        },
-      }
-    );
-  }
+  const totalCollected = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+  const balance = Math.max(0, Math.round((totalCliente - totalCollected) * 100) / 100);
 
   function handleRegisterPayment() {
-    if (!payAmount || Number(payAmount) <= 0) return;
+    const amount = Number(payAmount);
+    if (!payAmount || amount <= 0) return;
+    if (amount > balance) {
+      toast.error(
+        balance <= 0
+          ? "Este evento ya está completamente abonado"
+          : `El monto no puede superar el saldo pendiente ($${formatCurrency(balance)})`
+      );
+      return;
+    }
     registerPayment(
       {
         booking_id: bookingId,
-        amount: Number(payAmount),
+        amount,
         payment_method: payMethod,
         payment_date: payDate,
         notes: payNotes || undefined,
@@ -277,16 +246,8 @@ export default function Booking() {
         setLoadedRevenue(b.revenue ?? 0);
         if (b.comments) setValue("comments", b.comments);
 
-        checkClient(b.client_dni).then((res) => {
-          if (res.data) {
-            const { dni, name, lastName, phoneNumber, email } = res.data;
-            setValue("dni", dni);
-            setValue("name", name);
-            setValue("lastName", lastName);
-            setValue("phoneNumber", phoneNumber);
-            if (email) setValue("email", email);
-            setExistClient(true);
-          }
+        getClientById(b.client_id).then((res) => {
+          if (res.data) applyClient(res.data as ClientProps);
           setIsLoadingBooking(false);
         });
       })
@@ -296,41 +257,32 @@ export default function Booking() {
       });
   }, [isEditingSession, bookingId, setValue, navigate]);
 
-  // Auto-completar cliente por DNI
-  useEffect(() => {
-    if (dni === 0 || isEditingSession) return;
-    setCheckingClient(true);
-    checkClient(dni)
-      .then((res) => {
-        if (!res.data) {
-          setExistClient(false);
-          resetField("name");
-          resetField("lastName");
-          resetField("phoneNumber");
-          resetField("email");
-          return;
-        }
-        const { name, lastName, phoneNumber, email } = res.data;
-        setValue("name", name);
-        setValue("lastName", lastName);
-        setValue("phoneNumber", phoneNumber);
-        if (email) setValue("email", email);
-        setExistClient(true);
-      })
-      .catch(() => toast.error("Error al verificar el cliente"))
-      .finally(() => setCheckingClient(false));
-  }, [dni, setValue, resetField, isEditingSession]);
+  const selectedClientId = Number(watch("ID_CLIENTE") || 0);
+  const clientOptions = useMemo(() => {
+    const map = new Map<number, ClientProps>();
+    for (const client of clients) {
+      if (client.Habilitado || client.ID_CLIENTE === selectedClientId) {
+        map.set(client.ID_CLIENTE, client);
+      }
+    }
+    return [...map.values()].sort((a, b) =>
+      `${a.lastName} ${a.name}`.localeCompare(`${b.lastName} ${b.name}`, "es")
+    );
+  }, [clients, selectedClientId]);
+
+  const selectedClient = clientOptions.find((c) => c.ID_CLIENTE === selectedClientId);
+
+  function applyClient(client: ClientProps) {
+    setValue("ID_CLIENTE", client.ID_CLIENTE, { shouldValidate: true });
+    setValue("name", client.name);
+    setValue("lastName", client.lastName);
+    setValue("phoneNumber", client.phoneNumber);
+    setValue("email", client.email ?? "");
+    setValue("COD_CLIENTE", client.COD_CLIENTE ?? "");
+    setValue("dni", client.dni ?? null);
+  }
 
   if (isLoadingBooking) return <Spinner />;
-
-  function handleCheckClient(value: string) {
-    const n = Number(value);
-    if (n > 999999 && n < 100000000) return setDni(n);
-    if (value === "") {
-      reset();
-      setExistClient(false);
-    }
-  }
 
   function handleAddEquipment(item: {
     equipment_id: number;
@@ -354,20 +306,24 @@ export default function Booking() {
     });
   }
 
-  function addPersonalItem(p: (typeof personalList)[0]) {
-    if (localPersonal.find((lp) => lp.personal_id === p.id)) return;
-    const days = Number(personalDays[p.id] ?? 1);
-    const rate = Number(personalRate[p.id] ?? p.daily_rate);
-    setLocalPersonal((prev) => [
-      ...prev,
-      {
-        personal_id: p.id,
-        display_name: `${p.name} ${p.lastName}`,
-        role: p.role,
-        days,
-        rate,
-      },
-    ]);
+  function handleAddPersonal(item: {
+    personal_id: number;
+    display_name: string;
+    role: string;
+    days: number;
+    rate: number;
+  }) {
+    if (isEditingSession) {
+      assignPersonal({
+        booking_id: bookingId,
+        personal_id: item.personal_id,
+        days: item.days,
+        rate: item.rate,
+      });
+      return;
+    }
+    if (localPersonal.find((lp) => lp.personal_id === item.personal_id)) return;
+    setLocalPersonal((prev) => [...prev, item]);
   }
 
   function onSubmit(data: eventData) {
@@ -377,7 +333,7 @@ export default function Booking() {
         : data.event_date;
 
     const bookingData = {
-      client_dni: data.dni,
+      client_id: data.ID_CLIENTE,
       booking_status: data.booking_status,
       organization: data.organization,
       comments: data.comments ?? "",
@@ -385,7 +341,6 @@ export default function Booking() {
       start_time: data.start_time || null,
       end_time: data.end_time || null,
       event_type: data.event_type,
-      payment_status: data.payment_status,
       place: data.place,
       tax: Number(data.tax),
       revenue: isEditingSession ? loadedRevenue : 0,
@@ -393,17 +348,28 @@ export default function Booking() {
     };
 
     if (isEditingSession) {
-      updateBooking({ id: bookingId, ...bookingData });
+      updateBooking({
+        id: bookingId,
+        ...bookingData,
+        // Requerido por el tipo; updateBooking no lo persiste (lo manejan los cobros)
+        payment_status: data.payment_status,
+      });
     } else {
       addBooking({
         client: {
-          dni: data.dni,
+          ID_CLIENTE: data.ID_CLIENTE,
+          dni: data.dni ?? null,
           name: data.name,
           lastName: data.lastName,
           phoneNumber: data.phoneNumber,
           email: data.email,
+          COD_CLIENTE: (data.COD_CLIENTE ?? "").trim().toUpperCase(),
+          Habilitado: true,
         },
-        booking: bookingData,
+        booking: {
+          ...bookingData,
+          payment_status: data.payment_status,
+        },
         equipment: localEquipment,
         personnel: localPersonal.map(({ personal_id, days, rate }) => ({
           personal_id,
@@ -463,71 +429,90 @@ export default function Booking() {
           </div>
         )}
 
-        {/* Cliente + Evento */}
+        {/* Evento (incluye cliente) */}
         {(!isEditingSession || activeView === "general") && (
-          <div className="grid gap-6 md:grid-cols-2">
-          {/* Cliente */}
-          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              Cliente
-            </h2>
-            <div className="flex flex-col gap-3">
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="DNI del cliente"
-                  required
-                  minLength={7}
-                  maxLength={8}
-                  {...register("dni")}
-                  disabled={isEditingSession}
-                  onBlur={(e) => handleCheckClient(e.currentTarget.value)}
-                />
-                {checkingClient && (
-                  <Loader2 className="absolute right-2.5 top-2 h-4 w-4 animate-spin text-muted-foreground" />
-                )}
-              </div>
-              <Input
-                type="text"
-                placeholder="Nombre"
-                required
-                {...register("name")}
-                disabled={existClient}
-              />
-              <Input
-                type="text"
-                placeholder="Apellido"
-                required
-                {...register("lastName")}
-                disabled={existClient}
-              />
-              <Input
-                type="tel"
-                placeholder="Teléfono"
-                required
-                {...register("phoneNumber")}
-                disabled={existClient}
-              />
-              <Input
-                type="email"
-                placeholder="Email (opcional)"
-                {...register("email")}
-                disabled={existClient}
-              />
-              {existClient && (
-                <p className="text-xs text-emerald-600 dark:text-emerald-400">
-                  Cliente encontrado en el sistema
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Evento */}
           <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               Evento
             </h2>
-            <div className="flex flex-col gap-3">
+
+            <input
+              type="hidden"
+              {...register("ID_CLIENTE", {
+                required: "Seleccioná un cliente",
+                valueAsNumber: true,
+                validate: (v) => Number(v) > 0 || "Seleccioná un cliente",
+              })}
+            />
+            <input type="hidden" {...register("name", { required: true })} />
+            <input type="hidden" {...register("lastName", { required: true })} />
+            <input type="hidden" {...register("phoneNumber", { required: true })} />
+            <input type="hidden" {...register("email")} />
+            <input type="hidden" {...register("COD_CLIENTE")} />
+            <input type="hidden" {...register("dni")} />
+
+            <div className="mb-5 flex flex-col gap-2">
+              <label className="text-xs font-medium text-muted-foreground">
+                Cliente
+              </label>
+              <div className="flex gap-2">
+                <select
+                  className={cn(selectClass, "flex-1")}
+                  disabled={isEditingSession || isLoadingClients}
+                  value={selectedClientId || ""}
+                  onChange={(e) => {
+                    const client = clientOptions.find(
+                      (c) => c.ID_CLIENTE === Number(e.target.value)
+                    );
+                    if (client) applyClient(client);
+                  }}
+                >
+                  <option value="">
+                    {isLoadingClients ? "Cargando clientes..." : "Seleccionar cliente..."}
+                  </option>
+                  {clientOptions.map((client) => (
+                    <option key={client.ID_CLIENTE} value={client.ID_CLIENTE}>
+                      {client.COD_CLIENTE ? `${client.COD_CLIENTE} — ` : ""}
+                      {client.lastName}, {client.name}
+                      {!client.Habilitado ? " (deshabilitado)" : ""}
+                    </option>
+                  ))}
+                </select>
+                {!isEditingSession && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    title="Nuevo cliente"
+                    onClick={() => setShowNewClient(true)}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              {errors.ID_CLIENTE && (
+                <p className="text-xs text-destructive">{errors.ID_CLIENTE.message}</p>
+              )}
+              {selectedClient && (
+                <div className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm">
+                  <p className="font-medium text-foreground">
+                    {selectedClient.name} {selectedClient.lastName}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {selectedClient.COD_CLIENTE
+                      ? `${selectedClient.COD_CLIENTE}`
+                      : "Sin código"}
+                    {selectedClient.dni != null ? ` · DNI ${selectedClient.dni}` : ""}
+                    {selectedClient.phoneNumber
+                      ? ` · ${selectedClient.phoneNumber}`
+                      : ""}
+                    {selectedClient.email ? ` · ${selectedClient.email}` : ""}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
                   Organización
@@ -588,26 +573,6 @@ export default function Booking() {
                   </p>
                 )}
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                    Hora inicio
-                  </label>
-                  <Input type="time" {...register("start_time")} />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                    Hora fin
-                  </label>
-                  <Input type="time" {...register("end_time")} />
-                </div>
-              </div>
-              {watchEventDate && (!watchStartTime || !watchEndTime) && (
-                <p className="text-xs text-amber-700 dark:text-amber-300">
-                  Sin hora de inicio y fin, el equipamiento de otros eventos del
-                  mismo día se considerará ocupado todo el día.
-                </p>
-              )}
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
                   Lugar
@@ -619,9 +584,26 @@ export default function Booking() {
                   {...register("place")}
                 />
               </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                  Hora inicio
+                </label>
+                <Input type="time" {...register("start_time")} />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                  Hora fin
+                </label>
+                <Input type="time" {...register("end_time")} />
+              </div>
             </div>
+            {watchEventDate && (!watchStartTime || !watchEndTime) && (
+              <p className="mt-3 text-xs text-amber-700 dark:text-amber-300">
+                Sin hora de inicio y fin, el equipamiento de otros eventos del
+                mismo día se considerará ocupado todo el día.
+              </p>
+            )}
           </div>
-        </div>
         )}
 
         {/* Edición: Materiales y mano de obra */}
@@ -718,78 +700,12 @@ export default function Booking() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => setShowAssignForm((v) => !v)}
+                  onClick={() => setShowPersonalDialog(true)}
                 >
                   <Plus className="mr-1 h-3.5 w-3.5" />
                   Asignar
                 </Button>
               </div>
-
-              {showAssignForm && (
-                <div className="border-b border-border bg-muted/20 px-5 py-4">
-                  <div className="grid gap-3 sm:grid-cols-4">
-                    <div className="sm:col-span-2">
-                      <label className="mb-1 block text-xs font-medium text-muted-foreground">
-                        Empleado
-                      </label>
-                      <select
-                        className={selectClass}
-                        value={selectedPersonalId}
-                        onChange={handlePersonalSelect}
-                      >
-                        <option value="">Seleccionar...</option>
-                        {(personalList as PersonaledProps[]).map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.name} {p.lastName} — {roleLabels[p.role] ?? p.role}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-xs font-medium text-muted-foreground">
-                        Días
-                      </label>
-                      <Input
-                        type="number"
-                        min={1}
-                        value={assignDays}
-                        onChange={(e) => setAssignDays(e.target.value)}
-                        placeholder="1"
-                      />
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-xs font-medium text-muted-foreground">
-                        Tarifa/día ($)
-                      </label>
-                      <Input
-                        type="number"
-                        min={0}
-                        value={assignRate}
-                        onChange={(e) => setAssignRate(e.target.value)}
-                        placeholder="0.00"
-                      />
-                    </div>
-                  </div>
-                  <div className="mt-3 flex gap-2">
-                    <Button
-                      type="button"
-                      size="sm"
-                      disabled={isAssigning || !selectedPersonalId}
-                      onClick={handleAssign}
-                    >
-                      {isAssigning ? "Guardando..." : "Confirmar"}
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setShowAssignForm(false)}
-                    >
-                      Cancelar
-                    </Button>
-                  </div>
-                </div>
-              )}
 
               {assignments.length > 0 ? (
                 <div className="overflow-x-auto">
@@ -857,11 +773,9 @@ export default function Booking() {
                   </table>
                 </div>
               ) : (
-                !showAssignForm && (
-                  <p className="px-5 py-8 text-center text-sm text-muted-foreground">
-                    No hay personal asignado.
-                  </p>
-                )
+                <p className="px-5 py-8 text-center text-sm text-muted-foreground">
+                  No hay personal asignado.
+                </p>
               )}
             </div>
           </>
@@ -938,29 +852,42 @@ export default function Booking() {
                   <CreditCard className="h-4 w-4" />
                   Pagos recibidos
                 </h2>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowPaymentForm((v) => !v)}
-                >
-                  <Plus className="mr-1 h-3.5 w-3.5" />
-                  Registrar pago
-                </Button>
+                {balance > 0 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowPaymentForm((v) => !v)}
+                  >
+                    <Plus className="mr-1 h-3.5 w-3.5" />
+                    Registrar pago
+                  </Button>
+                )}
               </div>
 
-              {showPaymentForm && (
+              {showPaymentForm && balance > 0 && (
                 <div className="border-b border-border bg-muted/20 px-5 py-4">
                   <div className="grid gap-3 sm:grid-cols-4">
                     <div>
                       <label className="mb-1 block text-xs font-medium text-muted-foreground">
-                        Monto ($)
+                        Monto ($) · máx. ${formatCurrency(balance)}
                       </label>
                       <Input
                         type="number"
-                        min={0}
+                        min={0.01}
+                        max={balance}
+                        step="0.01"
                         value={payAmount}
-                        onChange={(e) => setPayAmount(e.target.value)}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === "") {
+                            setPayAmount("");
+                            return;
+                          }
+                          const num = Number(value);
+                          if (Number.isNaN(num)) return;
+                          setPayAmount(String(Math.min(num, balance)));
+                        }}
                         placeholder="0.00"
                       />
                     </div>
@@ -1613,6 +1540,12 @@ export default function Booking() {
         </div>
       </form>
 
+      <NewClientDialog
+        open={showNewClient}
+        onOpenChange={setShowNewClient}
+        onCreated={applyClient}
+      />
+
       <EquipmentPickerDialog
         open={showEquipDialog}
         onOpenChange={setShowEquipDialog}
@@ -1627,104 +1560,18 @@ export default function Booking() {
         isAdding={isAddingItem}
       />
 
-      {/* Dialog: Asignar personal */}
-      <Dialog open={showPersonalDialog} onOpenChange={setShowPersonalDialog}>
-        <DialogContent className="max-w-xl">
-          <DialogHeader>
-            <DialogTitle>Asignar personal</DialogTitle>
-          </DialogHeader>
-          <div className="max-h-96 overflow-y-auto rounded-md border border-border">
-            {personalList.length === 0 ? (
-              <p className="p-4 text-sm text-muted-foreground">
-                No hay personal registrado.
-              </p>
-            ) : (
-              <table className="w-full text-sm">
-                <thead className="sticky top-0 bg-card">
-                  <tr className="border-b border-border text-left text-xs text-muted-foreground">
-                    <th className="px-3 py-2 font-medium">Personal</th>
-                    <th className="px-3 py-2 font-medium">Rol</th>
-                    <th className="px-3 py-2 font-medium text-right">Días</th>
-                    <th className="px-3 py-2 font-medium text-right">Tarifa/día</th>
-                    <th className="px-3 py-2" />
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {personalList.map((p) => {
-                    const alreadyAdded = localPersonal.some(
-                      (lp) => lp.personal_id === p.id
-                    );
-                    return (
-                      <tr
-                        key={p.id}
-                        className={alreadyAdded ? "opacity-40" : "hover:bg-muted/30"}
-                      >
-                        <td className="px-3 py-2">
-                          {p.name} {p.lastName}
-                        </td>
-                        <td className="px-3 py-2 capitalize text-muted-foreground">
-                          {p.role}
-                        </td>
-                        <td className="px-3 py-2 text-right">
-                          <Input
-                            type="number"
-                            min={1}
-                            placeholder="1"
-                            className="h-7 w-14 text-right"
-                            disabled={alreadyAdded}
-                            value={personalDays[p.id] ?? ""}
-                            onChange={(e) =>
-                              setPersonalDays((prev) => ({
-                                ...prev,
-                                [p.id]: e.target.value,
-                              }))
-                            }
-                          />
-                        </td>
-                        <td className="px-3 py-2 text-right">
-                          <Input
-                            type="number"
-                            min={0}
-                            placeholder={String(p.daily_rate)}
-                            className="h-7 w-24 text-right"
-                            disabled={alreadyAdded}
-                            value={personalRate[p.id] ?? ""}
-                            onChange={(e) =>
-                              setPersonalRate((prev) => ({
-                                ...prev,
-                                [p.id]: e.target.value,
-                              }))
-                            }
-                          />
-                        </td>
-                        <td className="px-3 py-2">
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            className="h-7 px-2 text-xs"
-                            disabled={alreadyAdded}
-                            onClick={() => addPersonalItem(p)}
-                          >
-                            {alreadyAdded ? "Agregado" : "Asignar"}
-                          </Button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
-          </div>
-          <div className="flex justify-end">
-            <DialogClose asChild>
-              <Button type="button" variant="outline">
-                Cerrar
-              </Button>
-            </DialogClose>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <PersonalPickerDialog
+        open={showPersonalDialog}
+        onOpenChange={setShowPersonalDialog}
+        personalList={personalList as PersonaledProps[]}
+        assignedIds={
+          isEditingSession
+            ? assignments.map((a) => a.personal_id)
+            : localPersonal.map((p) => p.personal_id)
+        }
+        isAdding={isEditingSession ? isAssigning : false}
+        onAdd={handleAddPersonal}
+      />
     </div>
   );
 }

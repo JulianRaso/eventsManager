@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Truck } from "lucide-react";
-import AddButton from "../components/AddButton";
-import CategoryLayout from "../components/CategoryLayout";
-import Filter from "../components/Filter";
-import { formatDate } from "../components/formatDate";
-import Spinner from "../components/Spinner";
+import AddButton from "../../components/AddButton";
+import CategoryLayout from "../../components/CategoryLayout";
+import Filter from "../../components/Filter";
+import { formatDate } from "../../components/formatDate";
+import PageSizeSelector from "../../components/PageSizeSelector";
+import Spinner from "../../components/Spinner";
 import {
   Table,
   TableBody,
@@ -13,19 +14,12 @@ import {
   TableHead,
   TableHeaderData,
   TableRow,
-} from "../components/Table";
-import TableButtons from "../components/TableButtons";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "../components/ui/pagination";
-import { useGetTransport } from "../hooks/useGetTransport";
+} from "../../components/Table";
+import TableButtons from "../../components/TableButtons";
+import PaginationControls from "../../components/PaginationControls";
+import { useGetTransport } from "../../hooks/useGetTransport";
 import useDeleteTransport from "@/hooks/useDeleteTransport";
-import usePagination from "../hooks/usePagination";
+import usePagination, { type PageSize } from "../../hooks/usePagination";
 
 const statusTypes = {
   available: {
@@ -83,6 +77,7 @@ function filterVehicles<T extends { brand?: string; status: string | null }>(
 export default function Transport() {
   const [value, setValue] = useState("");
   const [filterByName, setFilterByName] = useState("");
+  const [pageSize, setPageSize] = useState<PageSize>(10);
   const { data, isLoading } = useGetTransport();
   const { deleteTransport, isPending } = useDeleteTransport();
 
@@ -96,16 +91,20 @@ export default function Transport() {
   const {
     currentPage,
     setCurrentPage,
-    pages,
+    totalPages,
     currentItems,
     goToNextPage,
     goToPrevPage,
-  } = usePagination({ data: filteredData, limit: 10 });
+    isPaginated,
+  } = usePagination({ data: filteredData, limit: pageSize });
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterByName, value, pageSize, setCurrentPage]);
 
   if (isLoading) return <Spinner />;
 
-  // Si hay filtro activo, mostrar todos los resultados filtrados; si no, usar paginación
-  const displayData = filterByName || value ? filteredData : currentItems;
+  const displayData = currentItems;
 
   return (
     <CategoryLayout title="Transporte">
@@ -118,7 +117,10 @@ export default function Transport() {
           setValue={setValue}
           className="sm:flex-1 sm:max-w-none"
         />
-        <AddButton navigateTo="/transporte/agregar" label="Nuevo vehículo" />
+        <div className="flex items-center gap-2">
+          <PageSizeSelector value={pageSize} onChange={setPageSize} />
+          <AddButton navigateTo="/transporte/agregar" label="Nuevo vehículo" />
+        </div>
       </div>
 
       {filteredData.length > 0 ? (
@@ -195,28 +197,14 @@ export default function Transport() {
         </div>
       )}
 
-      {filteredData.length > 0 && !filterByName && !value && (data?.length ?? 0) > 10 && (
-        <Pagination className="mt-4 flex w-full items-center justify-center">
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious onClick={goToPrevPage} size="default" />
-            </PaginationItem>
-            {pages.map((page) => (
-              <PaginationItem key={page}>
-                <PaginationLink
-                  onClick={() => setCurrentPage(page)}
-                  isActive={currentPage === page}
-                  size="default"
-                >
-                  {page}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-            <PaginationItem>
-              <PaginationNext onClick={goToNextPage} size="default" />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+      {isPaginated && (
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          onPrevious={goToPrevPage}
+          onNext={goToNextPage}
+        />
       )}
     </CategoryLayout>
   );

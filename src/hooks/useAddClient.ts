@@ -1,22 +1,22 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
 import { createClient } from "../services/client";
-import { ClientProps } from "../types";
+import { ClientProps, NewClientProps } from "../types";
 
 export default function useAddClient() {
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
 
-  const { isPending: isAdding, mutate: addClient } = useMutation({
-    mutationFn: (client: ClientProps) => createClient(client),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
-      toast.success("Cliente creado correctamente");
-      navigate("/clientes");
-    },
-    onError: () => toast.error("Error al crear el cliente"),
-  });
+  const { isPending: isAdding, mutate: addClient, mutateAsync: addClientAsync } =
+    useMutation({
+      mutationFn: (client: NewClientProps) => createClient(client),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["clients"] });
+        toast.success("Cliente creado correctamente");
+      },
+      onError: (err) => toast.error(err.message || "Error al crear el cliente"),
+    });
 
-  return { isAdding, addClient };
+  return { isAdding, addClient, addClientAsync };
 }
+
+export type { ClientProps, NewClientProps };

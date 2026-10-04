@@ -1,8 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+
+export type PageSize = number | null;
 
 interface UsePaginationProps<T> {
   data: T[] | undefined;
-  limit?: number;
+  /** Cantidad por página. `null` = sin límite (mostrar todo). */
+  limit?: PageSize;
 }
 
 interface UsePaginationReturn<T> {
@@ -15,6 +18,8 @@ interface UsePaginationReturn<T> {
   hasPrevPage: boolean;
   goToNextPage: () => void;
   goToPrevPage: () => void;
+  /** true cuando hay más de una página (útil para ocultar controles). */
+  isPaginated: boolean;
 }
 
 export default function usePagination<T>({
@@ -22,11 +27,20 @@ export default function usePagination<T>({
   limit = 10,
 }: UsePaginationProps<T>): UsePaginationReturn<T> {
   const [currentPage, setCurrentPage] = useState(1);
+  const showAll = limit == null || limit <= 0;
+  const pageSize = showAll ? Math.max(data?.length ?? 0, 1) : limit;
 
-  const totalPages = useMemo(
-    () => Math.ceil((data?.length ?? 0) / limit),
-    [data?.length, limit]
-  );
+  const totalPages = useMemo(() => {
+    if (showAll) return 1;
+    return Math.max(1, Math.ceil((data?.length ?? 0) / pageSize));
+  }, [data?.length, pageSize, showAll]);
+
+  // Si cambia el límite o los datos y la página actual queda fuera de rango
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(1);
+    }
+  }, [currentPage, totalPages]);
 
   const pages = useMemo(() => {
     const pagesArray: number[] = [];
@@ -38,13 +52,15 @@ export default function usePagination<T>({
 
   const currentItems = useMemo(() => {
     if (!data) return [];
-    const lastIndex = currentPage * limit;
-    const firstIndex = lastIndex - limit;
+    if (showAll) return data;
+    const lastIndex = currentPage * pageSize;
+    const firstIndex = lastIndex - pageSize;
     return data.slice(firstIndex, lastIndex);
-  }, [data, currentPage, limit]);
+  }, [data, currentPage, pageSize, showAll]);
 
   const hasNextPage = currentPage < totalPages;
   const hasPrevPage = currentPage > 1;
+  const isPaginated = !showAll && (data?.length ?? 0) > pageSize;
 
   const goToNextPage = () => {
     if (hasNextPage) {
@@ -68,5 +84,6 @@ export default function usePagination<T>({
     hasPrevPage,
     goToNextPage,
     goToPrevPage,
+    isPaginated,
   };
 }
