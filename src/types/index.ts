@@ -99,6 +99,7 @@ export interface EquipmentItemProps {
   name: string;
   quantity: number;
   price: number;
+  category?: string | null;
 }
 
 // User types

@@ -68,6 +68,7 @@ export type EquipmentPickerDialogProps = {
     name: string;
     quantity: number;
     price: number;
+    category?: string;
   }) => void;
   isAdding?: boolean;
 };
@@ -106,6 +107,7 @@ export default function EquipmentPickerDialog({
       name: item.name,
       quantity: qty,
       price: item.price,
+      category: item.category,
     });
     setEquipQty((prev) => ({ ...prev, [item.id]: "" }));
   }

@@ -27,6 +27,7 @@ import { getClientById } from "../../services/client";
 import { fromDDMMYYYY } from "../../components/formatDate";
 import type { eventData } from "../../types/Booking-typ";
 import { formatCurrency } from "../../utils/formatCurrency";
+import { getCategoryLabel } from "../../utils/categoryLabels";
 import { cn } from "../../lib/utils";
 import type { ClientProps, PersonaledProps } from "../../types";
 
@@ -38,6 +39,7 @@ type LocalEquipItem = {
   name: string;
   price: number;
   quantity: number;
+  category?: string;
 };
 
 type LocalPersonalItem = {
@@ -289,6 +291,7 @@ export default function Booking() {
     name: string;
     quantity: number;
     price: number;
+    category?: string;
   }) {
     if (isEditingSession) {
       addItem(item);
@@ -635,6 +638,9 @@ export default function Booking() {
                         <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                           Nombre
                         </th>
+                        <th className="w-32 px-4 py-3 text-left font-medium text-muted-foreground">
+                          Rubro
+                        </th>
                         <th className="w-20 px-4 py-3 text-center font-medium text-muted-foreground">
                           Cantidad
                         </th>
@@ -655,6 +661,9 @@ export default function Booking() {
                         >
                           <td className="max-w-0 truncate px-4 py-3 text-foreground">
                             {item.name}
+                          </td>
+                          <td className="px-4 py-3 text-muted-foreground">
+                            {getCategoryLabel(item.category)}
                           </td>
                           <td className="px-4 py-3 text-center tabular-nums">
                             {item.quantity}
@@ -1266,6 +1275,7 @@ export default function Booking() {
                   <thead>
                     <tr className="border-b border-border text-left text-xs text-muted-foreground">
                       <th className="pb-2 font-medium">Artículo</th>
+                      <th className="w-28 pb-2 font-medium">Rubro</th>
                       <th className="w-16 pb-2 font-medium text-right">Cant.</th>
                       <th className="w-24 pb-2 font-medium text-right">Precio u.</th>
                       <th className="w-24 pb-2 font-medium text-right">Subtotal</th>
@@ -1276,6 +1286,9 @@ export default function Booking() {
                     {localEquipment.map((item) => (
                       <tr key={item.equipment_id}>
                         <td className="max-w-0 truncate py-2">{item.name}</td>
+                        <td className="py-2 text-muted-foreground">
+                          {getCategoryLabel(item.category)}
+                        </td>
                         <td className="py-2 text-right">{item.quantity}</td>
                         <td className="py-2 text-right tabular-nums">
                           ${formatCurrency(item.price)}

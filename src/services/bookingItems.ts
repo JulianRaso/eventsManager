@@ -1,4 +1,9 @@
-import { BookingStatus, EventType, Organization } from "../types";
+import {
+  BookingStatus,
+  EquipmentItemProps,
+  EventType,
+  Organization,
+} from "../types";
 import { supabase } from "./supabase";
 
 export type UpcomingBookingItem = {
@@ -66,16 +71,24 @@ export async function updateItem(item: updateItem) {
   }
 }
 
-export async function getItems(id: number) {
+export async function getItems(id: number): Promise<EquipmentItemProps[]> {
   const { data, error } = await supabase
     .from("booking_items")
-    .select("*")
+    .select("*, inventory!booking_items_equipment_id_fkey(category)")
     .eq("booking_id", id);
 
   if (error)
     throw new Error("Hubo un error al cargar los equipos. Intente de nuevo.");
 
-  return data;
+  return (data ?? []).map((row) => {
+    const { inventory, ...item } = row as typeof row & {
+      inventory: { category: string } | null;
+    };
+    return {
+      ...item,
+      category: inventory?.category ?? null,
+    } as EquipmentItemProps;
+  });
 }
 
 export async function getUpcomingBookingItems(): Promise<UpcomingBookingItem[]> {

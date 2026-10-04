@@ -21,6 +21,7 @@ import usePatchBooking from "@/hooks/usePatchBooking";
 import useGetStockAvailability from "@/hooks/useGetStockAvailability";
 import { formatDate } from "@/components/formatDate";
 import { formatCurrency } from "@/utils/formatCurrency";
+import { getCategoryLabel } from "@/utils/categoryLabels";
 import { cn } from "@/lib/utils";
 import { PersonaledProps, BookingStatus } from "@/types";
 
@@ -856,6 +857,9 @@ export default function EventoDetalle() {
                         <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                           Nombre
                         </th>
+                        <th className="w-32 px-4 py-3 text-left font-medium text-muted-foreground">
+                          Rubro
+                        </th>
                         <th className="w-20 px-4 py-3 text-center font-medium text-muted-foreground">
                           Cantidad
                         </th>
@@ -876,6 +880,9 @@ export default function EventoDetalle() {
                         >
                           <td className="max-w-0 truncate px-4 py-3 text-foreground">
                             {item.name}
+                          </td>
+                          <td className="px-4 py-3 text-muted-foreground">
+                            {getCategoryLabel(item.category)}
                           </td>
                           <td className="px-4 py-3 text-center tabular-nums">
                             {item.quantity}
